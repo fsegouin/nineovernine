@@ -8,14 +8,24 @@
   --surface: #ffffff;
 }
 
+/* OS preference (when no manual override) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: #0a0a0a;
     --foreground: #fafafa;
     --muted: #a3a3a3;
     --border: #262626;
     --surface: #171717;
   }
+}
+
+/* Manual dark override */
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --muted: #a3a3a3;
+  --border: #262626;
+  --surface: #171717;
 }
 
 @theme inline {

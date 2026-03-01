@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useTheme } from "./ThemeProvider";
 
 export function Footer() {
+  const { resolvedTheme, toggleTheme } = useTheme();
+
   return (
     <footer className="border-t border-border bg-foreground text-background">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-12 lg:py-20">
@@ -54,10 +59,17 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 border-t border-background/10 pt-8">
+        <div className="mt-16 flex items-center justify-between border-t border-background/10 pt-8">
           <p className="font-sans text-xs text-background/40">
-            &copy; {new Date().getFullYear()} Nine Over Nine. All rights reserved.
+            &copy; {new Date().getFullYear()} Nine Over Nine. All rights
+            reserved.
           </p>
+          <button
+            onClick={toggleTheme}
+            className="font-sans text-xs text-background/40 transition-colors hover:text-background"
+          >
+            {resolvedTheme === "light" ? "Dark" : "Light"}
+          </button>
         </div>
       </div>
     </footer>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { ProjectTransitionProvider } from "@/components/ProjectTransition";
 import "./globals.css";
 
@@ -39,11 +40,18 @@ export default function RootLayout({
       <body
         className={`${jost.variable} ${inter.variable} antialiased`}
       >
-        <ProjectTransitionProvider>
-          <Navigation />
-          <main>{children}</main>
-          <Footer />
-        </ProjectTransitionProvider>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.classList.add(t)}catch(e){}})()`,
+          }}
+        />
+        <ThemeProvider>
+          <ProjectTransitionProvider>
+            <Navigation />
+            <main>{children}</main>
+            <Footer />
+          </ProjectTransitionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
