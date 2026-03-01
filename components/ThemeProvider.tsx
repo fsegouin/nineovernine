@@ -48,14 +48,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  // Keep theme-color meta tags in sync with manual overrides
+  // Keep browser status bar in sync with the active theme
   useEffect(() => {
-    if (localStorage.getItem("theme")) {
-      const color = resolvedTheme === "dark" ? "#0a0a0a" : "#fafafa";
-      document
-        .querySelectorAll('meta[name="theme-color"]')
-        .forEach((meta) => meta.setAttribute("content", color));
+    const color = resolvedTheme === "dark" ? "#0a0a0a" : "#fafafa";
+
+    // Remove the static media-based meta tags from the server render
+    document
+      .querySelectorAll('meta[name="theme-color"][media]')
+      .forEach((meta) => meta.remove());
+
+    // Upsert a single dynamic meta tag without a media attribute
+    let meta = document.querySelector(
+      'meta[name="theme-color"]:not([media])'
+    ) as HTMLMetaElement | null;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "theme-color";
+      document.head.appendChild(meta);
     }
+    meta.content = color;
   }, [resolvedTheme]);
 
   const toggleTheme = useCallback(() => {
