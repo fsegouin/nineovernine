@@ -31,17 +31,16 @@ export function TextReveal({
         >
           <motion.span
             className="inline-block"
-            initial={{ y: "110%" }}
+            initial={{ y: "100%", opacity: 0 }}
             {...(trigger === "mount"
-              ? { animate: { y: "0%" } }
+              ? { animate: { y: "0%", opacity: 1 } }
               : {
-                  whileInView: { y: "0%" },
+                  whileInView: { y: "0%", opacity: 1 },
                   viewport: { once: true, margin: "-80px" },
                 })}
             transition={{
-              duration: 0.6,
-              delay: delay + i * 0.04,
-              ease: EASE,
+              y: { duration: 0.6, delay: delay + i * 0.04, ease: EASE },
+              opacity: { duration: 0.15, delay: delay + i * 0.04 },
             }}
           >
             {word}
