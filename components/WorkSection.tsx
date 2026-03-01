@@ -5,25 +5,25 @@ const projects = [
     title: "Project Alpha",
     category: "Brand Identity",
     aspectClass: "aspect-[4/3]",
-    bgClass: "bg-neutral-200",
+    bgClass: "bg-muted/20",
   },
   {
     title: "Project Beta",
     category: "Digital Platform",
     aspectClass: "aspect-[3/4]",
-    bgClass: "bg-neutral-300",
+    bgClass: "bg-muted/30",
   },
   {
     title: "Project Gamma",
     category: "AI Experience",
     aspectClass: "aspect-[3/4]",
-    bgClass: "bg-neutral-100",
+    bgClass: "bg-muted/10",
   },
   {
     title: "Project Delta",
     category: "Product Design",
     aspectClass: "aspect-[4/3]",
-    bgClass: "bg-neutral-200",
+    bgClass: "bg-muted/20",
   },
 ];
 

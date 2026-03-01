@@ -40,7 +40,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <FadeIn className="lg:col-span-5">
-              <div className="aspect-[3/4] w-full bg-neutral-200" />
+              <div className="aspect-[3/4] w-full bg-muted/20" />
             </FadeIn>
 
             <FadeIn className="lg:col-span-7" delay={0.15}>
