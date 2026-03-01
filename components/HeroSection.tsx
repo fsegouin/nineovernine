@@ -10,11 +10,11 @@ export function HeroSection() {
         <div className="grid grid-cols-12">
           <div className="col-span-12 lg:col-span-10">
             <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-              <TextReveal delay={0.15}>Crafting digital</TextReveal>
+              <TextReveal delay={0.15} trigger="mount">Crafting digital</TextReveal>
               <br />
-              <TextReveal delay={0.3}>experiences for the</TextReveal>
+              <TextReveal delay={0.3} trigger="mount">experiences for the</TextReveal>
               <br />
-              <TextReveal delay={0.45}>age of intelligence.</TextReveal>
+              <TextReveal delay={0.45} trigger="mount">age of intelligence.</TextReveal>
             </h1>
 
             <motion.p

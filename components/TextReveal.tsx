@@ -8,12 +8,15 @@ interface TextRevealProps {
   children: string;
   className?: string;
   delay?: number;
+  /** Use "mount" for above-the-fold content (triggers immediately). */
+  trigger?: "view" | "mount";
 }
 
 export function TextReveal({
   children,
   className,
   delay = 0,
+  trigger = "view",
 }: TextRevealProps) {
   const words = children.split(" ");
 
@@ -29,8 +32,12 @@ export function TextReveal({
           <motion.span
             className="inline-block"
             initial={{ y: "110%" }}
-            whileInView={{ y: "0%" }}
-            viewport={{ once: true, margin: "-80px" }}
+            {...(trigger === "mount"
+              ? { animate: { y: "0%" } }
+              : {
+                  whileInView: { y: "0%" },
+                  viewport: { once: true, margin: "-80px" },
+                })}
             transition={{
               duration: 0.6,
               delay: delay + i * 0.04,
