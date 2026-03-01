@@ -4,6 +4,8 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ProjectTransitionProvider } from "@/components/ProjectTransition";
+import { SmoothScroll } from "@/components/SmoothScroll";
+import { Cursor } from "@/components/Cursor";
 import "./globals.css";
 
 const jost = localFont({
@@ -46,11 +48,14 @@ export default function RootLayout({
           }}
         />
         <ThemeProvider>
-          <ProjectTransitionProvider>
-            <Navigation />
-            <main>{children}</main>
-            <Footer />
-          </ProjectTransitionProvider>
+          <SmoothScroll>
+            <ProjectTransitionProvider>
+              <Navigation />
+              <main>{children}</main>
+              <Footer />
+            </ProjectTransitionProvider>
+          </SmoothScroll>
+          <Cursor />
         </ThemeProvider>
       </body>
     </html>

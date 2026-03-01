@@ -1,4 +1,5 @@
 import { FadeIn } from "./FadeIn";
+import { Magnetic } from "./Magnetic";
 
 export function ContactSection() {
   return (
@@ -16,12 +17,14 @@ export function ContactSection() {
         </FadeIn>
 
         <FadeIn delay={0.2}>
-          <a
-            href="mailto:hello@nineovernine.com"
-            className="mt-10 inline-block font-sans text-xl text-muted underline decoration-border underline-offset-8 transition-colors hover:text-foreground hover:decoration-foreground md:text-2xl"
-          >
-            hello@nineovernine.com
-          </a>
+          <Magnetic strength={0.15} className="mt-10 inline-block">
+            <a
+              href="mailto:hello@nineovernine.com"
+              className="inline-block font-sans text-xl text-muted underline decoration-border underline-offset-8 transition-colors hover:text-foreground hover:decoration-foreground md:text-2xl"
+            >
+              hello@nineovernine.com
+            </a>
+          </Magnetic>
         </FadeIn>
 
         <FadeIn delay={0.3}>

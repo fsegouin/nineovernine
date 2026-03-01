@@ -1,4 +1,5 @@
 import { FadeIn } from "@/components/FadeIn";
+import { TextReveal } from "@/components/TextReveal";
 
 const values = [
   {
@@ -29,7 +30,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl">
           <FadeIn>
             <h1 className="font-display text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-              About
+              <TextReveal>About</TextReveal>
             </h1>
           </FadeIn>
         </div>

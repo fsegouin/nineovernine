@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Magnetic } from "./Magnetic";
 
 export function Navigation() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -9,30 +10,38 @@ export function Navigation() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-12">
-        <Link href="/" className="font-display text-lg font-bold tracking-tight">
-          9<span className="text-muted">/</span>9
-        </Link>
+        <Magnetic strength={0.2}>
+          <Link href="/" className="font-display text-lg font-bold tracking-tight">
+            9<span className="text-muted">/</span>9
+          </Link>
+        </Magnetic>
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-10 sm:flex">
-          <Link
-            href="/#work"
-            className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
-          >
-            Work
-          </Link>
-          <Link
-            href="/about"
-            className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
-          >
-            About
-          </Link>
-          <Link
-            href="/#contact"
-            className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
-          >
-            Contact
-          </Link>
+          <Magnetic>
+            <Link
+              href="/#work"
+              className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
+            >
+              Work
+            </Link>
+          </Magnetic>
+          <Magnetic>
+            <Link
+              href="/about"
+              className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
+            >
+              About
+            </Link>
+          </Magnetic>
+          <Magnetic>
+            <Link
+              href="/#contact"
+              className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
+            >
+              Contact
+            </Link>
+          </Magnetic>
         </div>
 
         {/* Mobile hamburger */}

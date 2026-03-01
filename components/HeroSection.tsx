@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { TextReveal } from "./TextReveal";
 
 export function HeroSection() {
   return (
@@ -8,22 +9,13 @@ export function HeroSection() {
       <div className="mx-auto w-full max-w-7xl">
         <div className="grid grid-cols-12">
           <div className="col-span-12 lg:col-span-10">
-            <motion.h1
-              className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.9,
-                delay: 0.15,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
-              Crafting digital
+            <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
+              <TextReveal delay={0.15}>Crafting digital</TextReveal>
               <br />
-              experiences for the
+              <TextReveal delay={0.3}>experiences for the</TextReveal>
               <br />
-              age of intelligence.
-            </motion.h1>
+              <TextReveal delay={0.45}>age of intelligence.</TextReveal>
+            </h1>
 
             <motion.p
               className="mt-8 max-w-lg font-sans text-lg leading-relaxed text-muted md:text-xl"
@@ -31,7 +23,7 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{
                 duration: 0.7,
-                delay: 0.5,
+                delay: 0.8,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >

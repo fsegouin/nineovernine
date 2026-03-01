@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTheme } from "./ThemeProvider";
+import { Magnetic } from "./Magnetic";
 
 export function Footer() {
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -64,12 +65,14 @@ export function Footer() {
             &copy; {new Date().getFullYear()} Nine Over Nine. All rights
             reserved.
           </p>
-          <button
-            onClick={toggleTheme}
-            className="font-sans text-xs text-background/40 transition-colors hover:text-background"
-          >
-            {resolvedTheme === "light" ? "Dark" : "Light"}
-          </button>
+          <Magnetic strength={0.4}>
+            <button
+              onClick={toggleTheme}
+              className="font-sans text-xs text-background/40 transition-colors hover:text-background"
+            >
+              {resolvedTheme === "light" ? "Dark" : "Light"}
+            </button>
+          </Magnetic>
         </div>
       </div>
     </footer>
