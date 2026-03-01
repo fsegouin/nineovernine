@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -15,6 +15,13 @@ const inter = localFont({
   variable: "--font-inter",
   weight: "100 900",
 });
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "Nine Over Nine",
