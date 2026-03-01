@@ -16,7 +16,7 @@ export function TextReveal({
   children,
   className,
   delay = 0,
-  trigger = "view",
+  trigger = "mount",
 }: TextRevealProps) {
   const words = children.split(" ");
 
@@ -25,7 +25,7 @@ export function TextReveal({
       {words.map((word, i) => (
         <span
           key={i}
-          className={`inline-block overflow-hidden py-[0.05em]${
+          className={`inline-block overflow-hidden pb-[0.15em] pt-[0.05em]${
             i < words.length - 1 ? " mr-[0.25em]" : ""
           }`}
         >
