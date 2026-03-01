@@ -49,15 +49,9 @@ function syncThemeColor(color: string) {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
-  // Initialise — only touch the meta if the user has a stored override,
-  // otherwise the server-rendered media-based metas already work.
+  // Sync React state with the theme the inline script already applied.
   useEffect(() => {
-    const theme = getResolvedTheme();
-    setResolvedTheme(theme);
-
-    if (localStorage.getItem("theme")) {
-      syncThemeColor(theme === "dark" ? "#0a0a0a" : "#fafafa");
-    }
+    setResolvedTheme(getResolvedTheme());
   }, []);
 
   // Listen for OS preference changes (only when no manual override)
