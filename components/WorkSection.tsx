@@ -1,31 +1,10 @@
-import { FadeIn } from "./FadeIn";
+"use client";
 
-const projects = [
-  {
-    title: "Project Alpha",
-    category: "Brand Identity",
-    aspectClass: "aspect-[4/3]",
-    bgClass: "bg-muted/20",
-  },
-  {
-    title: "Project Beta",
-    category: "Digital Platform",
-    aspectClass: "aspect-[3/4]",
-    bgClass: "bg-muted/30",
-  },
-  {
-    title: "Project Gamma",
-    category: "AI Experience",
-    aspectClass: "aspect-[3/4]",
-    bgClass: "bg-muted/10",
-  },
-  {
-    title: "Project Delta",
-    category: "Product Design",
-    aspectClass: "aspect-[4/3]",
-    bgClass: "bg-muted/20",
-  },
-];
+import { useRef } from "react";
+import { FadeIn } from "./FadeIn";
+import { useProjectTransition } from "./ProjectTransition";
+import { projects } from "@/lib/projects";
+import type { Project } from "@/lib/projects";
 
 export function WorkSection() {
   return (
@@ -62,14 +41,20 @@ export function WorkSection() {
   );
 }
 
-function ProjectCard({
-  project,
-}: {
-  project: (typeof projects)[number];
-}) {
+function ProjectCard({ project }: { project: Project }) {
+  const imageRef = useRef<HTMLDivElement>(null);
+  const { navigateToProject } = useProjectTransition();
+
+  const handleClick = () => {
+    if (imageRef.current) {
+      navigateToProject(project.slug, project.bgClass, imageRef.current);
+    }
+  };
+
   return (
-    <div className="group cursor-pointer">
+    <div className="group cursor-pointer" onClick={handleClick}>
       <div
+        ref={imageRef}
         className={`${project.aspectClass} ${project.bgClass} w-full overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]`}
       />
       <div className="mt-4">

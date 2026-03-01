@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { ProjectTransitionProvider } from "@/components/ProjectTransition";
 import "./globals.css";
 
 const jost = localFont({
@@ -38,9 +39,11 @@ export default function RootLayout({
       <body
         className={`${jost.variable} ${inter.variable} antialiased`}
       >
-        <Navigation />
-        <main>{children}</main>
-        <Footer />
+        <ProjectTransitionProvider>
+          <Navigation />
+          <main>{children}</main>
+          <Footer />
+        </ProjectTransitionProvider>
       </body>
     </html>
   );
