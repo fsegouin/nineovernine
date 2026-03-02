@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -20,13 +20,6 @@ const inter = localFont({
   weight: "100 900",
 });
 
-export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
-  ],
-};
-
 export const metadata: Metadata = {
   title: "Nine Over Nine",
   description: "A human-led digital agency built for the AI world.",
@@ -39,14 +32,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="theme-color" content="#fafafa" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme:dark)").matches);if(t==="light"||t==="dark")document.documentElement.classList.add(t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=d?"#0a0a0a":"#fafafa"}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body
         className={`${jost.variable} ${inter.variable} antialiased`}
       >
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme:dark)").matches);if(t==="light"||t==="dark")document.documentElement.classList.add(t);var m=document.querySelectorAll('meta[name="theme-color"]');for(var i=0;i<m.length;i++)m[i].remove();var n=document.createElement("meta");n.name="theme-color";n.content=d?"#0a0a0a":"#fafafa";document.head.appendChild(n)}catch(e){}})()`,
-          }}
-        />
         <ThemeProvider>
           <SmoothScroll>
             <ProjectTransitionProvider>
