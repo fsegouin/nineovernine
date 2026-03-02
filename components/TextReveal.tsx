@@ -89,8 +89,8 @@ export function TextReveal({
               className="absolute w-[0.07em] bg-current"
               style={{
                 left: "100%",
-                bottom: "0.12em",
-                height: "0.7em",
+                top: "-0.05em",
+                bottom: "-0.05em",
                 animation: "cursor-blink 0.53s step-end infinite",
               }}
             />
