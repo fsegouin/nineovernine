@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ProjectTransitionProvider } from "@/components/ProjectTransition";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { Cursor } from "@/components/Cursor";
+import content from "@/lib/content.json";
 import "./globals.css";
 
 const jost = localFont({
@@ -28,8 +29,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Nine Over Nine",
-  description: "A human-led digital agency built for the AI world.",
+  title: content.meta.title,
+  description: content.meta.description,
 };
 
 export default function RootLayout({

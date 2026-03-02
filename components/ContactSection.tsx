@@ -1,5 +1,8 @@
 import { FadeIn } from "./FadeIn";
 import { Magnetic } from "./Magnetic";
+import content from "@/lib/content.json";
+
+const { overline, heading, email, location } = content.contact;
 
 export function ContactSection() {
   return (
@@ -7,29 +10,32 @@ export function ContactSection() {
       <div className="mx-auto max-w-7xl text-center">
         <FadeIn>
           <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">
-            Get in Touch
+            {overline}
           </p>
           <h2 className="mt-6 font-display text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-            Let&apos;s build something
-            <br />
-            together.
+            {heading.split("\n").map((line, i) => (
+              <span key={i}>
+                {i > 0 && <br />}
+                {line}
+              </span>
+            ))}
           </h2>
         </FadeIn>
 
         <FadeIn delay={0.2}>
           <Magnetic strength={0.15} className="mt-10 inline-block">
             <a
-              href="mailto:hello@nineovernine.com"
+              href={`mailto:${email}`}
               className="inline-block font-sans text-xl text-muted underline decoration-border underline-offset-8 transition-colors hover:text-foreground hover:decoration-foreground md:text-2xl"
             >
-              hello@nineovernine.com
+              {email}
             </a>
           </Magnetic>
         </FadeIn>
 
         <FadeIn delay={0.3}>
           <p className="mt-8 font-sans text-sm text-muted">
-            London / Worldwide
+            {location}
           </p>
         </FadeIn>
       </div>

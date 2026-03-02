@@ -2,6 +2,9 @@
 
 import { motion } from "motion/react";
 import { TextReveal } from "./TextReveal";
+import content from "@/lib/content.json";
+
+const { headline, description, scrollLabel } = content.hero;
 
 export function HeroSection() {
   return (
@@ -10,11 +13,11 @@ export function HeroSection() {
         <div className="grid grid-cols-12">
           <div className="col-span-12 lg:col-span-10">
             <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-              <TextReveal delay={0.2} trigger="mount" cursorUntil={0.9}>Crafting digital</TextReveal>
+              <TextReveal delay={0.2} trigger="mount" cursorUntil={0.9}>{headline[0]}</TextReveal>
               <br />
-              <TextReveal delay={0.9} trigger="mount" cursorUntil={1.75}>experiences for the</TextReveal>
+              <TextReveal delay={0.9} trigger="mount" cursorUntil={1.75}>{headline[1]}</TextReveal>
               <br />
-              <TextReveal delay={1.75} trigger="mount">age of intelligence.</TextReveal>
+              <TextReveal delay={1.75} trigger="mount">{headline[2]}</TextReveal>
             </h1>
 
             <motion.p
@@ -27,7 +30,7 @@ export function HeroSection() {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              A human-led digital agency where craft meets intelligence.
+              {description}
             </motion.p>
           </div>
         </div>
@@ -41,7 +44,7 @@ export function HeroSection() {
         >
           <div className="flex flex-col items-center gap-2">
             <span className="font-sans text-[10px] uppercase tracking-[0.2em] text-muted">
-              Scroll
+              {scrollLabel}
             </span>
             <motion.div
               className="h-8 w-px bg-muted"

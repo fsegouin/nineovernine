@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useTheme } from "./ThemeProvider";
 import { Magnetic } from "./Magnetic";
+import content from "@/lib/content.json";
+
+const { tagline, navLabel, navLinks, contactLabel, copyright } = content.footer;
+const { email, location } = content.contact;
 
 export function Footer() {
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -16,45 +20,45 @@ export function Footer() {
               9<span className="text-muted">/</span>9
             </p>
             <p className="mt-3 font-sans text-sm leading-relaxed text-background/60">
-              A human-led digital agency
-              <br />
-              built for the AI world.
+              {tagline.split("\n").map((line, i) => (
+                <span key={i}>
+                  {i > 0 && <br />}
+                  {line}
+                </span>
+              ))}
             </p>
           </div>
 
           <div>
             <p className="font-sans text-xs font-medium uppercase tracking-widest text-background/40">
-              Navigation
+              {navLabel}
             </p>
             <div className="mt-4 flex flex-col gap-3">
-              <Link
-                href="/"
-                className="font-sans text-sm text-background/60 transition-colors hover:text-background"
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className="font-sans text-sm text-background/60 transition-colors hover:text-background"
-              >
-                About
-              </Link>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="font-sans text-sm text-background/60 transition-colors hover:text-background"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
           </div>
 
           <div>
             <p className="font-sans text-xs font-medium uppercase tracking-widest text-background/40">
-              Contact
+              {contactLabel}
             </p>
             <div className="mt-4 flex flex-col gap-3">
               <a
-                href="mailto:hello@nineovernine.com"
+                href={`mailto:${email}`}
                 className="font-sans text-sm text-background/60 transition-colors hover:text-background"
               >
-                hello@nineovernine.com
+                {email}
               </a>
               <p className="font-sans text-sm text-background/60">
-                London / Worldwide
+                {location}
               </p>
             </div>
           </div>
@@ -62,8 +66,7 @@ export function Footer() {
 
         <div className="mt-16 flex items-center justify-between border-t border-background/10 pt-8">
           <p className="font-sans text-xs text-background/40">
-            &copy; {new Date().getFullYear()} Nine Over Nine. All rights
-            reserved.
+            &copy; {new Date().getFullYear()} {copyright}
           </p>
           <Magnetic strength={0.4}>
             <button

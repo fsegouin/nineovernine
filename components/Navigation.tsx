@@ -1,11 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Magnetic } from "./Magnetic";
+import { useLenis } from "./SmoothScroll";
+import content from "@/lib/content.json";
+
+const { links } = content.nav;
 
 export function Navigation() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const lenisRef = useLenis();
+  const pathname = usePathname();
+
+  const handleAnchorClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, hash?: string) => {
+      // Only smooth-scroll when already on the home page
+      if (!hash || pathname !== "/") return;
+
+      const target = document.querySelector(hash);
+      if (target && lenisRef.current) {
+        e.preventDefault();
+        lenisRef.current.scrollTo(target as HTMLElement, { offset: -64 });
+      }
+    },
+    [pathname, lenisRef]
+  );
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
@@ -18,30 +39,17 @@ export function Navigation() {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-10 sm:flex">
-          <Magnetic>
-            <Link
-              href="/#work"
-              className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
-            >
-              Work
-            </Link>
-          </Magnetic>
-          <Magnetic>
-            <Link
-              href="/about"
-              className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
-            >
-              About
-            </Link>
-          </Magnetic>
-          <Magnetic>
-            <Link
-              href="/#contact"
-              className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
-            >
-              Contact
-            </Link>
-          </Magnetic>
+          {links.map((link) => (
+            <Magnetic key={link.href}>
+              <Link
+                href={link.href}
+                onClick={(e) => handleAnchorClick(e, link.hash)}
+                className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            </Magnetic>
+          ))}
         </div>
 
         {/* Mobile hamburger */}
@@ -67,27 +75,16 @@ export function Navigation() {
       {menuOpen && (
         <div className="border-t border-border px-6 pb-6 pt-4 sm:hidden">
           <div className="flex flex-col gap-4">
-            <Link
-              href="/#work"
-              onClick={() => setMenuOpen(false)}
-              className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
-            >
-              Work
-            </Link>
-            <Link
-              href="/about"
-              onClick={() => setMenuOpen(false)}
-              className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
-            >
-              About
-            </Link>
-            <Link
-              href="/#contact"
-              onClick={() => setMenuOpen(false)}
-              className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
-            >
-              Contact
-            </Link>
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={(e) => { setMenuOpen(false); handleAnchorClick(e, link.hash); }}
+                className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       )}
