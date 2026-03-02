@@ -19,6 +19,7 @@ interface Rect {
 
 interface TransitionState {
   bgClass: string;
+  snapshot: string | null;
   from: Rect;
   to: Rect;
 }
@@ -33,15 +34,49 @@ interface TransitionContextValue {
   ) => void;
   navigateBack: (slug: string, bgClass: string) => void;
   activeSlug: string | null;
+  snapshot: string | null;
+  clearSnapshot: () => void;
 }
 
 const TransitionContext = createContext<TransitionContextValue>({
   navigateToProject: () => {},
   navigateBack: () => {},
   activeSlug: null,
+  snapshot: null,
+  clearSnapshot: () => {},
 });
 
 export const useProjectTransition = () => useContext(TransitionContext);
+
+/** Capture a snapshot of an element's visible content as a data URL. */
+function captureSnapshot(el: HTMLElement): string | null {
+  try {
+    // Look for a video or image inside the element
+    const video = el.querySelector("video");
+    const img = el.querySelector("img");
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    if (video && video.readyState >= 2) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      return canvas.toDataURL("image/jpeg", 0.85);
+    }
+
+    if (img && img.complete && img.naturalWidth > 0) {
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.drawImage(img, 0, 0);
+      return canvas.toDataURL("image/jpeg", 0.85);
+    }
+  } catch {
+    // Cross-origin or other canvas errors — fall back to bgClass
+  }
+  return null;
+}
 
 export function ProjectTransitionProvider({
   children,
@@ -52,9 +87,17 @@ export function ProjectTransitionProvider({
   const lenisRef = useLenis();
   const [state, setState] = useState<TransitionState | null>(null);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const [persistedSnapshot, setPersistedSnapshot] = useState<string | null>(null);
+
+  const clearSnapshot = useCallback(() => {
+    setPersistedSnapshot(null);
+  }, []);
 
   const navigateToProject = useCallback(
     (slug: string, bgClass: string, el: HTMLElement) => {
+      const snapshot = captureSnapshot(el);
+      setPersistedSnapshot(snapshot);
+
       const r = el.getBoundingClientRect();
       const from: Rect = {
         top: r.top,
@@ -74,7 +117,7 @@ export function ProjectTransitionProvider({
       lenisRef.current?.stop();
 
       setActiveSlug(slug);
-      setState({ bgClass, from, to });
+      setState({ bgClass, snapshot, from, to });
 
       setTimeout(() => {
         window.scrollTo({ top: 0 });
@@ -92,7 +135,7 @@ export function ProjectTransitionProvider({
   );
 
   return (
-    <TransitionContext.Provider value={{ navigateToProject, navigateBack, activeSlug }}>
+    <TransitionContext.Provider value={{ navigateToProject, navigateBack, activeSlug, snapshot: persistedSnapshot, clearSnapshot }}>
       {children}
       <AnimatePresence>
         {state && (
@@ -113,7 +156,7 @@ export function ProjectTransitionProvider({
 
             {/* Animated rect */}
             <motion.div
-              className={`${state.bgClass} absolute`}
+              className={`${state.bgClass} absolute overflow-hidden`}
               initial={{
                 top: state.from.top,
                 left: state.from.left,
@@ -134,7 +177,15 @@ export function ProjectTransitionProvider({
                   setActiveSlug(null);
                 }, 150);
               }}
-            />
+            >
+              {state.snapshot && (
+                <img
+                  src={state.snapshot}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              )}
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

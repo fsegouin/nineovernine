@@ -1,10 +1,14 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { FadeIn } from "./FadeIn";
 import { useProjectTransition } from "./ProjectTransition";
 import { projects } from "@/lib/projects";
 import type { Project } from "@/lib/projects";
+import content from "@/lib/content.json";
+
+const { overline, heading, subtitle } = content.work;
 
 export function WorkSection() {
   return (
@@ -12,11 +16,16 @@ export function WorkSection() {
       <div className="mx-auto max-w-7xl">
         <FadeIn>
           <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">
-            Selected Work
+            {overline}
           </p>
           <h2 className="mt-4 font-display text-4xl font-bold tracking-tight md:text-5xl">
-            Projects
+            {heading}
           </h2>
+          {subtitle && (
+            <p className="mt-3 font-sans text-sm text-muted">
+              {subtitle}
+            </p>
+          )}
         </FadeIn>
 
         <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-12">
@@ -34,6 +43,11 @@ export function WorkSection() {
           </FadeIn>
           <FadeIn className="md:col-span-7" delay={0.2}>
             <ProjectCard project={projects[3]} />
+          </FadeIn>
+
+          {/* Row 3: full-width */}
+          <FadeIn className="md:col-span-12" delay={0.1}>
+            <ProjectCard project={projects[4]} />
           </FadeIn>
         </div>
       </div>
@@ -55,9 +69,30 @@ function ProjectCard({ project }: { project: Project }) {
     <div className="group cursor-pointer" onClick={handleClick}>
       <div
         ref={imageRef}
-        className={`${project.aspectClass} ${project.bgClass} w-full overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]`}
+        className={`relative ${project.aspectClass} ${project.bgClass} w-full overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]`}
         style={activeSlug === project.slug ? { opacity: 0 } : undefined}
-      />
+      >
+        {(project.cardVideo || project.heroVideo) ? (
+          <video
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+          >
+            <source src={(project.cardVideo ?? project.heroVideo)!.webm} type="video/webm" />
+            <source src={(project.cardVideo ?? project.heroVideo)!.mp4} type="video/mp4" />
+          </video>
+        ) : project.heroImage ? (
+          <Image
+            src={project.heroImage}
+            alt={project.title}
+            fill
+            sizes="(min-width: 768px) 58vw, 100vw"
+            className="object-cover"
+          />
+        ) : null}
+      </div>
       <div className="mt-4">
         <h3 className="font-display text-lg font-semibold tracking-tight">
           {project.title}
