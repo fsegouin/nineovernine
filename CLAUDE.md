@@ -16,6 +16,7 @@ Portfolio/agency website for a human-led digital agency. Built with Next.js 16, 
 - Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for all commit messages.
   - Format: `<type>: <description>` (e.g., `fix: resolve cursor visibility on light theme`)
   - Common types: `feat`, `fix`, `chore`, `refactor`, `style`, `docs`, `perf`, `test`
+- **One commit per feature/fix.** Never combine unrelated changes in the same commit. When multiple features were worked on, break them into separate commits.
 
 ## Project Structure
 
