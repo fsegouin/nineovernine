@@ -32,8 +32,11 @@ export function TextReveal({
   const chars = children.split("");
   const totalStreamTime = chars.length * CHAR_DELAY;
   const rawHideTime = cursorUntil ?? delay + totalStreamTime + CURSOR_LINGER;
-  // Round up to the next full blink cycle so the cursor never vanishes mid-blink
-  const cursorHideTime = Math.ceil(rawHideTime / BLINK_CYCLE) * BLINK_CYCLE;
+  // Round up to the next full blink cycle so the cursor never vanishes mid-blink.
+  // Skip rounding when cursorUntil is explicit — the caller controls the handoff.
+  const cursorHideTime = cursorUntil != null
+    ? rawHideTime
+    : Math.ceil(rawHideTime / BLINK_CYCLE) * BLINK_CYCLE;
 
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
