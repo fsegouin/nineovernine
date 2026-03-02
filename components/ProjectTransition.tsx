@@ -66,6 +66,7 @@ export function ProjectTransitionProvider({
       setState({ bgClass, from, to });
 
       setTimeout(() => {
+        window.scrollTo({ top: 0 });
         router.push(`/projects/${slug}`);
       }, 50);
     },
