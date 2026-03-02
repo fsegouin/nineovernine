@@ -12,6 +12,12 @@ interface TextRevealProps {
   delay?: number;
   /** Use "mount" for above-the-fold content (triggers immediately). */
   trigger?: "view" | "mount";
+  /** Show a blinking cursor. Defaults to true. */
+  cursor?: boolean;
+  /** Absolute time (seconds) when cursor should disappear.
+   *  Useful to hand off the cursor to the next TextReveal.
+   *  Defaults to end-of-streaming + CURSOR_LINGER. */
+  cursorUntil?: number;
 }
 
 export function TextReveal({
@@ -19,9 +25,12 @@ export function TextReveal({
   className,
   delay = 0,
   trigger = "mount",
+  cursor = true,
+  cursorUntil,
 }: TextRevealProps) {
   const chars = children.split("");
   const totalStreamTime = chars.length * CHAR_DELAY;
+  const cursorHideTime = cursorUntil ?? delay + totalStreamTime + CURSOR_LINGER;
 
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
@@ -30,7 +39,7 @@ export function TextReveal({
   const [showCursor, setShowCursor] = useState(false);
 
   useEffect(() => {
-    if (!shouldAnimate) return;
+    if (!shouldAnimate || !cursor) return;
 
     const showTimer = setTimeout(
       () => setShowCursor(true),
@@ -38,14 +47,14 @@ export function TextReveal({
     );
     const hideTimer = setTimeout(
       () => setShowCursor(false),
-      (delay + totalStreamTime + CURSOR_LINGER) * 1000
+      cursorHideTime * 1000
     );
 
     return () => {
       clearTimeout(showTimer);
       clearTimeout(hideTimer);
     };
-  }, [shouldAnimate, delay, totalStreamTime]);
+  }, [shouldAnimate, cursor, delay, cursorHideTime]);
 
   return (
     <span ref={ref} className={className}>
@@ -55,7 +64,7 @@ export function TextReveal({
           initial={{ opacity: 0 }}
           {...(shouldAnimate ? { animate: { opacity: 1 } } : {})}
           transition={{
-            duration: 0.02,
+            duration: 0.15,
             delay: delay + i * CHAR_DELAY,
           }}
         >

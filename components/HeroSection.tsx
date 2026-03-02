@@ -10,9 +10,9 @@ export function HeroSection() {
         <div className="grid grid-cols-12">
           <div className="col-span-12 lg:col-span-10">
             <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-              <TextReveal delay={0.2} trigger="mount">Crafting digital</TextReveal>
+              <TextReveal delay={0.2} trigger="mount" cursorUntil={0.75}>Crafting digital</TextReveal>
               <br />
-              <TextReveal delay={0.75} trigger="mount">experiences for the</TextReveal>
+              <TextReveal delay={0.75} trigger="mount" cursorUntil={1.4}>experiences for the</TextReveal>
               <br />
               <TextReveal delay={1.4} trigger="mount">age of intelligence.</TextReveal>
             </h1>
@@ -23,7 +23,7 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{
                 duration: 0.7,
-                delay: 2.2,
+                delay: 2.8,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
@@ -37,7 +37,7 @@ export function HeroSection() {
           className="mt-20 flex justify-start"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 2.6 }}
+          transition={{ duration: 0.6, delay: 3.2 }}
         >
           <div className="flex flex-col items-center gap-2">
             <span className="font-sans text-[10px] uppercase tracking-[0.2em] text-muted">
