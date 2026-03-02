@@ -105,12 +105,18 @@ export function ProjectTransitionProvider({
         width: r.width,
         height: r.height,
       };
-      const w = document.documentElement.clientWidth;
+      const vw = document.documentElement.clientWidth;
+      // Match the project page hero container: max-w-7xl (1280px) + px-6 / lg:px-12
+      const padding = vw >= 1024 ? 48 : 24; // lg:px-12 = 48px, px-6 = 24px
+      const containerWidth = Math.min(1280, vw);
+      const contentWidth = containerWidth - padding * 2;
+      const contentLeft = (vw - containerWidth) / 2 + padding;
+      const topPadding = vw >= 1024 ? 48 : 24; // lg:pt-12 = 48px, pt-6 = 24px
       const to: Rect = {
-        top: 64,
-        left: 0,
-        width: w,
-        height: w * (9 / 16),
+        top: 64 + topPadding,
+        left: contentLeft,
+        width: contentWidth,
+        height: contentWidth * (9 / 16),
       };
 
       // Stop Lenis to kill any scroll momentum before navigating

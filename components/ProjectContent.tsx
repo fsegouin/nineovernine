@@ -46,8 +46,8 @@ export function ProjectContent({
       animate={exiting ? { opacity: 0, y: -20 } : {}}
       transition={{ duration: 0.3, ease: EASE }}
     >
-      {/* Hero — matches overlay final position exactly */}
-      <div className="relative">
+      {/* Hero — constrained to content width */}
+      <div className="relative mx-auto max-w-7xl px-6 pt-6 lg:px-12 lg:pt-12">
         <motion.div
           initial={directLand ? { clipPath: "inset(0 0 100% 0)" } : false}
           animate={directLand ? { clipPath: "inset(0 0 0% 0)" } : undefined}
