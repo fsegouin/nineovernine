@@ -3,7 +3,7 @@
 import { motion, useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
-const CHAR_DELAY = 0.05; // seconds between each character
+const CHAR_DELAY = 0.04; // seconds between each character
 const CURSOR_LINGER = 2.5; // how long cursor stays after last char
 
 interface TextRevealProps {
