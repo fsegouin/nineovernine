@@ -1,0 +1,236 @@
+{
+  "meta": {
+    "title": "Nine Over Nine",
+    "description": "A human-led digital agency built for the AI world."
+  },
+  "nav": {
+    "links": [
+      { "label": "Work", "href": "/#work", "hash": "#work" },
+      { "label": "About", "href": "/about" },
+      { "label": "Contact", "href": "/#contact", "hash": "#contact" }
+    ]
+  },
+  "hero": {
+    "headline": ["Crafting digital", "experiences for the", "age of intelligence."],
+    "description": "A human-led digital agency where craft meets intelligence.",
+    "scrollLabel": "Scroll"
+  },
+  "services": {
+    "overline": "Capabilities",
+    "heading": "Services",
+    "items": [
+      {
+        "number": "01",
+        "title": "Strategy & Consulting",
+        "description": "We map out where your business meets the shifting landscape of AI and digital. From product-market positioning to technical roadmaps, we help you make decisions that compound over time."
+      },
+      {
+        "number": "02",
+        "title": "AI Integration",
+        "description": "Practical, purposeful implementation of AI into your products and workflows. Not novelty for its own sake. We find the leverage points where intelligence creates real, measurable value."
+      },
+      {
+        "number": "03",
+        "title": "Development & Engineering",
+        "description": "High-performance web applications, interactive installations, and platforms built with modern tools and an obsessive attention to detail. Code as craft."
+      },
+      {
+        "number": "04",
+        "title": "Content & Experience",
+        "description": "Immersive digital experiences that earn attention. From editorial storytelling to interactive campaigns, we create work people choose to spend time with."
+      }
+    ]
+  },
+  "work": {
+    "overline": "Selected Work",
+    "heading": "Projects",
+    "subtitle": "Completed prior to founding Nine Over Nine"
+  },
+  "philosophy": {
+    "quote": "We believe the best digital experiences emerge from the intersection of human intuition and artificial intelligence.",
+    "label": "Our Approach",
+    "paragraphs": [
+      "Technology moves fast. Taste doesn't. We pair deep technical fluency with the kind of design instinct that only comes from years of building things by hand. Every project starts with a question: what would this look like if we refused to cut corners?",
+      "The result is work that feels considered, not generated. Human judgment guiding intelligent tools, not the other way around."
+    ]
+  },
+  "contact": {
+    "overline": "Get in Touch",
+    "heading": "Let's build something\ntogether.",
+    "email": "hello@nineovernine.com",
+    "location": "Paris / Worldwide"
+  },
+  "footer": {
+    "tagline": "A human-led digital agency\nbuilt for the AI world.",
+    "navLabel": "Navigation",
+    "navLinks": [
+      { "label": "Home", "href": "/" },
+      { "label": "About", "href": "/about" }
+    ],
+    "contactLabel": "Contact",
+    "copyright": "Nine Over Nine. All rights reserved."
+  },
+  "about": {
+    "heading": "About",
+    "founder": {
+      "overline": "The Founder",
+      "name": "Florent Segouin",
+      "role": "Founder & Creative Director",
+      "paragraphs": [
+        "Nine Over Nine grew out of a decade spent leading creative technology at studios like AKQA and product companies like ARRIVAL. Interactive installations, immersive web experiences, digital products for brands that care about the details.",
+        "The agency was founded on a simple conviction: the best digital work still needs a human hand on the wheel. AI is changing what's possible, but craft, taste, and judgment are what separate forgettable from remarkable.",
+        "Today, we partner with a small number of clients who share that belief. Companies that want work they can be proud of, built by people who refuse to settle for good enough."
+      ]
+    },
+    "vision": {
+      "quote": "Craftsmanship in the age of algorithms.",
+      "paragraphs": [
+        "We started Nine Over Nine because we saw a gap. Agencies chasing scale at the expense of quality. AI tools bolted on without thought. We believe there's a better way: smaller teams, sharper focus, and a commitment to the work itself.",
+        "Our vision is simple. Be the agency you'd hire if you cared more about the outcome than the process deck. Use every tool available, including AI, but never let the tools do the thinking."
+      ]
+    },
+    "values": {
+      "overline": "What Drives Us",
+      "heading": "Values",
+      "items": [
+        {
+          "number": "01",
+          "title": "Craft",
+          "description": "Every detail is a decision. We sweat the margins, the transitions, the load times. The difference between good and great lives in the things most people never notice."
+        },
+        {
+          "number": "02",
+          "title": "Clarity",
+          "description": "Complexity is easy. Simplicity takes work. We strip away the unnecessary until what remains feels obvious, in our designs, our code, and how we communicate."
+        },
+        {
+          "number": "03",
+          "title": "Conviction",
+          "description": "We have opinions and we back them up. Clients hire us for our judgment, not just our execution. When something isn't right, we say so."
+        }
+      ]
+    }
+  },
+  "projectDetail": {
+    "backLabel": "Back to projects",
+    "yearLabel": "Year",
+    "roleLabel": "Role",
+    "agencyLabel": "Agency",
+    "clientLabel": "Client",
+    "overviewLabel": "Overview",
+    "nextLabel": "Next Project",
+    "visitLabel": "Visit project"
+  },
+  "projects": [
+    {
+      "slug": "volvo-penta-ips",
+      "title": "The All-New Volvo Penta IPS Experience",
+      "category": "Interactive Installation",
+      "year": "2024",
+      "description": "A state-of-the-art interactive installation built to showcase the Volvo Penta IPS 40 propulsion platform. Using real Volvo Penta hardware - including the helm control handle - visitors could explore the dual-input driveline through an immersive 3D experience: rotating around the powertrain, toggling technical overlays, and visualising performance data in real time. Designed for exhibitions and Volvo's own HQ, the installation ran on high-performance hardware driving 4K projectors or LED screens. A companion tablet experience offered additional data visualisations and product information in a read-only format.",
+      "aspectClass": "aspect-video",
+      "bgClass": "bg-neutral-800",
+      "heroImage": "/projects/volvo-penta-ips/f31e356230f6.webp",
+      "gallery": [
+        { "type": "video", "mp4": "/projects/volvo-penta-ips/2b5b8e154345.mp4", "webm": "/projects/volvo-penta-ips/2b5b8e154345.webm", "layout": "full" },
+        { "type": "image", "src": "/projects/volvo-penta-ips/f1c0b5b306a8.webp", "layout": "half", "position": "center" },
+        { "type": "image", "src": "/projects/volvo-penta-ips/a6da11ed2b78.webp", "layout": "half", "position": "left" }
+      ],
+      "role": "Creative Development Director",
+      "agency": "AKQA",
+      "client": "Volvo Penta",
+      "credit": "Imagery courtesy of AKQA and Volvo Penta",
+      "clientUrl": "https://www.volvopenta.com/marine/the-all-new-volvo-penta-ips-experience/"
+    },
+    {
+      "slug": "safety-in-mind",
+      "title": "Safety in Mind",
+      "category": "Interactive Experience",
+      "year": "2023",
+      "description": "An immersive web experience for Volvo Cars' \"For Life\" campaign, exploring how life affects your drive. Part of a broader initiative to understand the role of psychological safety behind the wheel, the site guided users through a meditative audio-visual survey — subtle animated gradients, smooth transitions, and carefully designed audio cues created a calm, contemplative atmosphere. Users answered questions about driving habits and emotions by selecting from animated, floating response options. At the end, personalised results compared your answers against other participants and offered actionable insights on mindfulness and safety while driving, with a shareable card for social media to spread the campaign further.",
+      "aspectClass": "aspect-[3/4]",
+      "bgClass": "bg-neutral-900",
+      "cardVideo": {
+        "mp4": "/projects/safety-in-mind/414f4591eb01.mp4",
+        "webm": "/projects/safety-in-mind/414f4591eb01.webm"
+      },
+      "heroVideo": {
+        "mp4": "/projects/safety-in-mind/479253e302a8.mp4",
+        "webm": "/projects/safety-in-mind/479253e302a8.webm"
+      },
+      "gallery": [
+        { "type": "video", "mp4": "/projects/safety-in-mind/143e71436db6.mp4", "webm": "/projects/safety-in-mind/143e71436db6.webm", "layout": "full" },
+        { "type": "video", "mp4": "/projects/safety-in-mind/dbc90d1ebc4a.mp4", "webm": "/projects/safety-in-mind/dbc90d1ebc4a.webm", "layout": "half" },
+        { "type": "video", "mp4": "/projects/safety-in-mind/cf0593cf1223.mp4", "webm": "/projects/safety-in-mind/cf0593cf1223.webm", "layout": "half" },
+        { "type": "video", "mp4": "/projects/safety-in-mind/bb13a7077dd4.mp4", "webm": "/projects/safety-in-mind/bb13a7077dd4.webm", "layout": "full" }
+      ],
+      "role": "Creative Development Director",
+      "agency": "AKQA",
+      "client": "Volvo Cars",
+      "credit": "Imagery courtesy of AKQA and Volvo Cars",
+      "clientUrl": "https://www.akqa.com/work/volvo-cars/for-life/"
+    },
+    {
+      "slug": "ambassadors-of-pride",
+      "title": "Ambassadors of Pride",
+      "category": "Campaign Website",
+      "year": "2022",
+      "description": "A website built from the ground up for West Pride's Ambassadors of Pride campaign, giving a platform to six anonymous LGBTQ+ refugees who shared their stories to challenge Sweden's asylum process. The site combined storytelling with advocacy — following World Refugee Day coverage, Sweden's Minister Mikael Damberg agreed to personally review demands for changes to the LGBTQ+ asylum process, and West Pride began offering free legal counsel to the ambassadors. The campaign was recognised by MUSE by Clio, Ad Age, and Little Black Book.",
+      "aspectClass": "aspect-video",
+      "bgClass": "bg-neutral-900",
+      "heroImage": "/projects/ambassadors-of-pride/945f4f97b224.webp",
+      "gallery": [
+        { "type": "image", "src": "/projects/ambassadors-of-pride/1500deb3d847.webp", "layout": "full" },
+        { "type": "video", "mp4": "/projects/ambassadors-of-pride/fb495eea82ff.mp4", "webm": "/projects/ambassadors-of-pride/fb495eea82ff.webm", "layout": "half" },
+        { "type": "video", "mp4": "/projects/ambassadors-of-pride/d886a18f9a7d.mp4", "webm": "/projects/ambassadors-of-pride/d886a18f9a7d.webm", "layout": "half" }
+      ],
+      "role": "Creative Development Director",
+      "agency": "AKQA",
+      "client": "West Pride",
+      "credit": "Imagery courtesy of AKQA and West Pride",
+      "clientUrl": "https://www.westpride.se/"
+    },
+    {
+      "slug": "fuzed",
+      "title": "FUZED",
+      "category": "Mobile App & Platform",
+      "year": "2025",
+      "description": "A complete revamp of FUZED's mobile app and technical architecture, rewriting the platform from the ground up to integrate seamlessly with their arena ecosystem — managing computer time, physical activity tracking, and user accounts. FUZED rewards kids for physical activity with gaming time, virtual rewards, and real prizes unlocked at arenas. With the launch of FUZED Trophy in summer 2025, we built a full online and offline tournament feature: kids join competitions via the app, follow live progression, and report match scores in real time, backed by an admin system for staff to manage events and resolve issues. The platform helped FUZED secure sponsorships from Nike, Stadium, LEGO, and EA Sports, and reaches 6–8 times more youth than traditional leisure programmes.",
+      "aspectClass": "aspect-video",
+      "bgClass": "bg-neutral-900",
+      "heroImage": "/projects/fuzed/241b47012a1f.webp",
+      "gallery": [
+        { "type": "image", "src": "/projects/fuzed/35c56ab72900.png", "layout": "full" },
+        { "type": "image", "src": "/projects/fuzed/92bf0917899d.jpg", "layout": "half" },
+        { "type": "image", "src": "/projects/fuzed/88741d637ebb.jpg", "layout": "half" },
+        { "type": "image", "src": "/projects/fuzed/1c91d6c79dc8.webp", "layout": "half" },
+        { "type": "image", "src": "/projects/fuzed/e5a9771a28df.webp", "layout": "half" }
+      ],
+      "role": "Creative Development Director",
+      "agency": "AKQA",
+      "client": "FUZED",
+      "credit": "Imagery courtesy of FUZED",
+      "clientUrl": "https://www.fuzed.com/en/fuzed-app"
+    },
+    {
+      "slug": "arrival",
+      "title": "ARRIVAL",
+      "category": "Automotive UX & Prototyping",
+      "year": "2021",
+      "description": "As head of the tech team within ARRIVAL's UX department, I led all UI prototyping across web-based and VR experiences for the British electric vehicle manufacturer. The work spanned the full vehicle lineup — van, bus, and car — covering in-car HMI and infotainment prototyping, VR-based interior and exterior design reviews, and interactive experiences used to validate design decisions before production. The web and VR prototypes became a core part of the design pipeline, enabling rapid iteration between the UX, design, and engineering teams.",
+      "aspectClass": "aspect-video",
+      "bgClass": "bg-neutral-900",
+      "heroImage": "/projects/arrival/98587e6328e2.webp",
+      "gallery": [
+        { "type": "video", "mp4": "/projects/arrival/cd1236bcd6da.mp4", "webm": "/projects/arrival/cd1236bcd6da.webm", "layout": "full" },
+        { "type": "video", "mp4": "/projects/arrival/99b476175347.mp4", "webm": "/projects/arrival/99b476175347.webm", "layout": "half" },
+        { "type": "video", "mp4": "/projects/arrival/ae45ac1525dc.mp4", "webm": "/projects/arrival/ae45ac1525dc.webm", "layout": "half" },
+        { "type": "image", "src": "/projects/arrival/113a438f6a02.webp", "layout": "half", "position": "right" },
+        { "type": "image", "src": "/projects/arrival/56843e4cc0c4.webp", "layout": "half" }
+      ],
+      "role": "Head of Tech, UX Department",
+      "client": "ARRIVAL",
+      "credit": "Imagery courtesy of ARRIVAL"
+    }
+  ]
+}

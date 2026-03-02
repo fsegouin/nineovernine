@@ -1,3 +1,14 @@
+import content from "./content.json";
+
+export interface GalleryItem {
+  type: "image" | "video";
+  src?: string;
+  mp4?: string;
+  webm?: string;
+  layout: "full" | "half";
+  position?: "left" | "center" | "right";
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -7,54 +18,18 @@ export interface Project {
   aspectClass: string;
   bgClass: string;
   imageUrl?: string;
+  heroImage?: string;
+  heroVideo?: { mp4: string; webm: string };
+  cardVideo?: { mp4: string; webm: string };
+  gallery?: GalleryItem[];
+  role?: string;
+  agency?: string;
+  client?: string;
+  credit?: string;
+  clientUrl?: string;
 }
 
-export const projects: Project[] = [
-  {
-    slug: "project-alpha",
-    title: "Project Alpha",
-    category: "Brand Identity",
-    year: "2024",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
-    aspectClass: "aspect-[4/3]",
-    bgClass: "bg-rose-500",
-    imageUrl: "https://picsum.photos/seed/alpha/1200/800",
-  },
-  {
-    slug: "project-beta",
-    title: "Project Beta",
-    category: "Digital Platform",
-    year: "2024",
-    description:
-      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.",
-    aspectClass: "aspect-[3/4]",
-    bgClass: "bg-blue-500",
-    imageUrl: "https://picsum.photos/seed/beta/1200/800",
-  },
-  {
-    slug: "project-gamma",
-    title: "Project Gamma",
-    category: "AI Experience",
-    year: "2025",
-    description:
-      "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.",
-    aspectClass: "aspect-[3/4]",
-    bgClass: "bg-emerald-500",
-    imageUrl: "https://picsum.photos/seed/gamma/1200/800",
-  },
-  {
-    slug: "project-delta",
-    title: "Project Delta",
-    category: "Product Design",
-    year: "2025",
-    description:
-      "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.",
-    aspectClass: "aspect-[4/3]",
-    bgClass: "bg-amber-500",
-    imageUrl: "https://picsum.photos/seed/delta/1200/800",
-  },
-];
+export const projects = content.projects as Project[];
 
 export function getProject(slug: string) {
   return projects.find((p) => p.slug === slug);
