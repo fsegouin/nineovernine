@@ -18,11 +18,13 @@ export function ProjectContent({
   const router = useRouter();
   const nextRef = useRef<HTMLDivElement>(null);
   const [exiting, setExiting] = useState(false);
-  const { navigateToProject } = useProjectTransition();
+  const { navigateToProject, navigateBack } = useProjectTransition();
 
   const handleBack = () => {
     setExiting(true);
-    setTimeout(() => router.push("/#work"), 300);
+    setTimeout(() => {
+      navigateBack(project.slug, project.bgClass);
+    }, 300);
   };
 
   const handleNext = () => {

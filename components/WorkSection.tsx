@@ -43,7 +43,7 @@ export function WorkSection() {
 
 function ProjectCard({ project }: { project: Project }) {
   const imageRef = useRef<HTMLDivElement>(null);
-  const { navigateToProject } = useProjectTransition();
+  const { navigateToProject, activeSlug } = useProjectTransition();
 
   const handleClick = () => {
     if (imageRef.current) {
@@ -56,6 +56,7 @@ function ProjectCard({ project }: { project: Project }) {
       <div
         ref={imageRef}
         className={`${project.aspectClass} ${project.bgClass} w-full overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]`}
+        style={activeSlug === project.slug ? { opacity: 0 } : undefined}
       />
       <div className="mt-4">
         <h3 className="font-display text-lg font-semibold tracking-tight">

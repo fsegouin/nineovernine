@@ -8,6 +8,7 @@ import {
 } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
+import { useLenis } from "@/components/SmoothScroll";
 
 interface Rect {
   top: number;
@@ -30,10 +31,14 @@ interface TransitionContextValue {
     bgClass: string,
     el: HTMLElement
   ) => void;
+  navigateBack: (slug: string, bgClass: string) => void;
+  activeSlug: string | null;
 }
 
 const TransitionContext = createContext<TransitionContextValue>({
   navigateToProject: () => {},
+  navigateBack: () => {},
+  activeSlug: null,
 });
 
 export const useProjectTransition = () => useContext(TransitionContext);
@@ -44,7 +49,9 @@ export function ProjectTransitionProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const lenisRef = useLenis();
   const [state, setState] = useState<TransitionState | null>(null);
+  const [activeSlug, setActiveSlug] = useState<string | null>(null);
 
   const navigateToProject = useCallback(
     (slug: string, bgClass: string, el: HTMLElement) => {
@@ -55,7 +62,7 @@ export function ProjectTransitionProvider({
         width: r.width,
         height: r.height,
       };
-      const w = window.innerWidth;
+      const w = document.documentElement.clientWidth;
       const to: Rect = {
         top: 64,
         left: 0,
@@ -63,6 +70,10 @@ export function ProjectTransitionProvider({
         height: w * (9 / 16),
       };
 
+      // Stop Lenis to kill any scroll momentum before navigating
+      lenisRef.current?.stop();
+
+      setActiveSlug(slug);
       setState({ bgClass, from, to });
 
       setTimeout(() => {
@@ -73,8 +84,15 @@ export function ProjectTransitionProvider({
     [router]
   );
 
+  const navigateBack = useCallback(
+    (_slug: string, _bgClass: string) => {
+      router.push("/#work");
+    },
+    [router]
+  );
+
   return (
-    <TransitionContext.Provider value={{ navigateToProject }}>
+    <TransitionContext.Provider value={{ navigateToProject, navigateBack, activeSlug }}>
       {children}
       <AnimatePresence>
         {state && (
@@ -85,15 +103,15 @@ export function ProjectTransitionProvider({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: EASE }}
           >
-            {/* Backdrop — covers page content during transition */}
+            {/* Backdrop */}
             <motion.div
               className="absolute inset-0 bg-background"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.2, ease: EASE }}
+              transition={{ duration: 0.08, ease: EASE }}
             />
 
-            {/* Expanding image */}
+            {/* Animated rect */}
             <motion.div
               className={`${state.bgClass} absolute`}
               initial={{
@@ -110,7 +128,11 @@ export function ProjectTransitionProvider({
               }}
               transition={{ duration: 0.55, ease: EASE }}
               onAnimationComplete={() => {
-                setTimeout(() => setState(null), 150);
+                setTimeout(() => {
+                  lenisRef.current?.start();
+                  setState(null);
+                  setActiveSlug(null);
+                }, 150);
               }}
             />
           </motion.div>
