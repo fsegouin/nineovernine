@@ -51,7 +51,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Sync React state with the theme the inline script already applied.
   useEffect(() => {
-    setResolvedTheme(getResolvedTheme());
+    const theme = getResolvedTheme();
+    setResolvedTheme(theme);
+    syncThemeColor(theme === "dark" ? "#0a0a0a" : "#fafafa");
   }, []);
 
   // Listen for OS preference changes (only when no manual override)

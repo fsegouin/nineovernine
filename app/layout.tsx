@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -20,6 +20,10 @@ const inter = localFont({
   weight: "100 900",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#fafafa",
+};
+
 export const metadata: Metadata = {
   title: "Nine Over Nine",
   description: "A human-led digital agency built for the AI world.",
@@ -32,17 +36,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <meta name="theme-color" content="#fafafa" />
+      <body
+        className={`${jost.variable} ${inter.variable} antialiased`}
+      >
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme:dark)").matches);if(t==="light"||t==="dark")document.documentElement.classList.add(t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=d?"#0a0a0a":"#fafafa"}catch(e){}})()`,
           }}
         />
-      </head>
-      <body
-        className={`${jost.variable} ${inter.variable} antialiased`}
-      >
         <ThemeProvider>
           <SmoothScroll>
             <ProjectTransitionProvider>
