@@ -4,7 +4,8 @@ import { motion, useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 const CHAR_DELAY = 0.04; // seconds between each character
-const CURSOR_LINGER = 2.5; // how long cursor stays after last char
+const CURSOR_LINGER = 5; // how long cursor stays after last char
+const BLINK_CYCLE = 1; // matches cursor-blink animation duration
 
 interface TextRevealProps {
   children: string;
@@ -30,7 +31,9 @@ export function TextReveal({
 }: TextRevealProps) {
   const chars = children.split("");
   const totalStreamTime = chars.length * CHAR_DELAY;
-  const cursorHideTime = cursorUntil ?? delay + totalStreamTime + CURSOR_LINGER;
+  const rawHideTime = cursorUntil ?? delay + totalStreamTime + CURSOR_LINGER;
+  // Round up to the next full blink cycle so the cursor never vanishes mid-blink
+  const cursorHideTime = Math.ceil(rawHideTime / BLINK_CYCLE) * BLINK_CYCLE;
 
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
@@ -89,8 +92,8 @@ export function TextReveal({
               className="absolute w-[0.07em] bg-current"
               style={{
                 left: "100%",
-                top: "-0.05em",
-                bottom: "-0.05em",
+                top: "0.1em",
+                bottom: "0.1em",
                 animation: "cursor-blink 1s step-end infinite",
               }}
             />
