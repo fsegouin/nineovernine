@@ -29,31 +29,12 @@ function getResolvedTheme(): "light" | "dark" {
     : "light";
 }
 
-/** Replace server-rendered media-based metas with a single dynamic one. */
-function syncThemeColor(color: string) {
-  document
-    .querySelectorAll('meta[name="theme-color"][media]')
-    .forEach((meta) => meta.remove());
-
-  let meta = document.querySelector(
-    'meta[name="theme-color"]:not([media])'
-  ) as HTMLMetaElement | null;
-  if (!meta) {
-    meta = document.createElement("meta");
-    meta.name = "theme-color";
-    document.head.appendChild(meta);
-  }
-  meta.content = color;
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
   // Sync React state with the theme the inline script already applied.
   useEffect(() => {
-    const theme = getResolvedTheme();
-    setResolvedTheme(theme);
-    syncThemeColor(theme === "dark" ? "#0a0a0a" : "#fafafa");
+    setResolvedTheme(getResolvedTheme());
   }, []);
 
   // Listen for OS preference changes (only when no manual override)
@@ -61,9 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const handler = () => {
       if (!localStorage.getItem("theme")) {
-        const next = mq.matches ? "dark" : "light";
-        setResolvedTheme(next);
-        syncThemeColor(next === "dark" ? "#0a0a0a" : "#fafafa");
+        setResolvedTheme(mq.matches ? "dark" : "light");
       }
     };
     mq.addEventListener("change", handler);
@@ -78,8 +57,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     root.classList.remove("light", "dark");
     root.classList.add(next);
     localStorage.setItem("theme", next);
-
-    syncThemeColor(next === "dark" ? "#0a0a0a" : "#fafafa");
   }, [resolvedTheme]);
 
   return (

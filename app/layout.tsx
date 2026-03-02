@@ -21,7 +21,10 @@ const inter = localFont({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#fafafa",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -41,7 +44,7 @@ export default function RootLayout({
       >
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme:dark)").matches);if(t==="light"||t==="dark")document.documentElement.classList.add(t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=d?"#0a0a0a":"#fafafa"}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.classList.add(t)}catch(e){}})()`,
           }}
         />
         <ThemeProvider>
