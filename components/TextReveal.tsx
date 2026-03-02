@@ -36,51 +36,66 @@ export function TextReveal({
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const shouldAnimate = trigger === "mount" || isInView;
 
-  const [showCursor, setShowCursor] = useState(false);
+  // -1 = hidden, 0..n = cursor sits after character at that index
+  const [cursorPos, setCursorPos] = useState(-1);
 
   useEffect(() => {
     if (!shouldAnimate || !cursor) return;
 
-    const showTimer = setTimeout(
-      () => setShowCursor(true),
-      delay * 1000
-    );
-    const hideTimer = setTimeout(
-      () => setShowCursor(false),
-      cursorHideTime * 1000
-    );
+    const mountTime = performance.now();
+    let rafId: number;
 
-    return () => {
-      clearTimeout(showTimer);
-      clearTimeout(hideTimer);
+    const tick = () => {
+      const elapsed = (performance.now() - mountTime) / 1000;
+
+      if (elapsed >= cursorHideTime) {
+        setCursorPos(-1);
+        return;
+      }
+
+      if (elapsed < delay) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      const idx = Math.min(
+        Math.floor((elapsed - delay) / CHAR_DELAY),
+        chars.length - 1
+      );
+      setCursorPos(idx);
+      rafId = requestAnimationFrame(tick);
     };
-  }, [shouldAnimate, cursor, delay, cursorHideTime]);
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [shouldAnimate, cursor, delay, chars.length, cursorHideTime]);
 
   return (
     <span ref={ref} className={className}>
       {chars.map((char, i) => (
-        <motion.span
-          key={i}
-          initial={{ opacity: 0 }}
-          {...(shouldAnimate ? { animate: { opacity: 1 } } : {})}
-          transition={{
-            duration: 0.15,
-            delay: delay + i * CHAR_DELAY,
-          }}
-        >
-          {char}
-        </motion.span>
+        <span key={i} className="relative">
+          <motion.span
+            initial={{ opacity: 0 }}
+            {...(shouldAnimate ? { animate: { opacity: 1 } } : {})}
+            transition={{
+              duration: 0.15,
+              delay: delay + i * CHAR_DELAY,
+            }}
+          >
+            {char}
+          </motion.span>
+          {cursorPos === i && (
+            <span
+              className="absolute top-[0.1em] w-[0.07em] bg-current"
+              style={{
+                left: "100%",
+                height: "0.8em",
+                animation: "cursor-blink 0.53s step-end infinite",
+              }}
+            />
+          )}
+        </span>
       ))}
-      {showCursor && (
-        <span
-          className="inline-block w-[0.06em] bg-current align-baseline"
-          style={{
-            height: "0.85em",
-            marginLeft: "1px",
-            animation: "cursor-blink 0.53s step-end infinite",
-          }}
-        />
-      )}
     </span>
   );
 }
