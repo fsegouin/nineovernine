@@ -6,6 +6,7 @@ export interface Project {
   description: string;
   aspectClass: string;
   bgClass: string;
+  imageUrl?: string;
 }
 
 export const projects: Project[] = [
@@ -17,7 +18,8 @@ export const projects: Project[] = [
     description:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
     aspectClass: "aspect-[4/3]",
-    bgClass: "bg-muted/20",
+    bgClass: "bg-rose-500",
+    imageUrl: "https://picsum.photos/seed/alpha/1200/800",
   },
   {
     slug: "project-beta",
@@ -27,7 +29,8 @@ export const projects: Project[] = [
     description:
       "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.",
     aspectClass: "aspect-[3/4]",
-    bgClass: "bg-muted/30",
+    bgClass: "bg-blue-500",
+    imageUrl: "https://picsum.photos/seed/beta/1200/800",
   },
   {
     slug: "project-gamma",
@@ -37,7 +40,8 @@ export const projects: Project[] = [
     description:
       "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.",
     aspectClass: "aspect-[3/4]",
-    bgClass: "bg-muted/10",
+    bgClass: "bg-emerald-500",
+    imageUrl: "https://picsum.photos/seed/gamma/1200/800",
   },
   {
     slug: "project-delta",
@@ -47,7 +51,8 @@ export const projects: Project[] = [
     description:
       "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.",
     aspectClass: "aspect-[4/3]",
-    bgClass: "bg-muted/20",
+    bgClass: "bg-amber-500",
+    imageUrl: "https://picsum.photos/seed/delta/1200/800",
   },
 ];
 
