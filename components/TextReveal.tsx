@@ -86,10 +86,10 @@ export function TextReveal({
           </motion.span>
           {cursorPos === i && (
             <span
-              className="absolute top-[0.1em] w-[0.07em] bg-current"
+              className="absolute bottom-0 w-[0.07em] bg-current"
               style={{
                 left: "100%",
-                height: "0.8em",
+                height: "0.75em",
                 animation: "cursor-blink 0.53s step-end infinite",
               }}
             />
