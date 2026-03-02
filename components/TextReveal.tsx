@@ -3,8 +3,8 @@
 import { motion, useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
-const CHAR_DELAY = 0.03; // seconds between each character
-const CURSOR_LINGER = 0.8; // how long cursor stays after last char
+const CHAR_DELAY = 0.05; // seconds between each character
+const CURSOR_LINGER = 2.5; // how long cursor stays after last char
 
 interface TextRevealProps {
   children: string;
@@ -91,7 +91,7 @@ export function TextReveal({
                 left: "100%",
                 top: "-0.05em",
                 bottom: "-0.05em",
-                animation: "cursor-blink 0.53s step-end infinite",
+                animation: "cursor-blink 1s step-end infinite",
               }}
             />
           )}
