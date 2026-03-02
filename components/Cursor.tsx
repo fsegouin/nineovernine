@@ -1,25 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, useMotionValue, useSpring } from "motion/react";
 
 export function Cursor() {
   const [visible, setVisible] = useState(false);
+  const hasMoved = useRef(false);
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const scale = useMotionValue(1);
 
+  const pathname = usePathname();
+
   const springX = useSpring(mouseX, { damping: 25, stiffness: 250, mass: 0.5 });
   const springY = useSpring(mouseY, { damping: 25, stiffness: 250, mass: 0.5 });
   const springScale = useSpring(scale, { damping: 20, stiffness: 300 });
 
+  // Reset cursor scale on route change
+  useEffect(() => {
+    scale.set(1);
+  }, [pathname, scale]);
+
   useEffect(() => {
     // Only show on devices with a precise pointer (mouse)
     if (!window.matchMedia("(pointer: fine)").matches) return;
-    setVisible(true);
 
     const move = (e: MouseEvent) => {
+      if (!hasMoved.current) {
+        // Jump to initial position instantly (no spring from 0,0)
+        hasMoved.current = true;
+        springX.jump(e.clientX);
+        springY.jump(e.clientY);
+        setVisible(true);
+      }
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
     };
