@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -68,6 +69,7 @@ export default function RootLayout({
           </SmoothScroll>
           <Cursor />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
