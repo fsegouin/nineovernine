@@ -1,8 +1,10 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useInView } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const CHAR_DELAY = 0.03; // seconds between each character
+const CURSOR_LINGER = 0.8; // how long cursor stays after last char
 
 interface TextRevealProps {
   children: string;
@@ -18,35 +20,58 @@ export function TextReveal({
   delay = 0,
   trigger = "mount",
 }: TextRevealProps) {
-  const words = children.split(" ");
+  const chars = children.split("");
+  const totalStreamTime = chars.length * CHAR_DELAY;
+
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const shouldAnimate = trigger === "mount" || isInView;
+
+  const [showCursor, setShowCursor] = useState(false);
+
+  useEffect(() => {
+    if (!shouldAnimate) return;
+
+    const showTimer = setTimeout(
+      () => setShowCursor(true),
+      delay * 1000
+    );
+    const hideTimer = setTimeout(
+      () => setShowCursor(false),
+      (delay + totalStreamTime + CURSOR_LINGER) * 1000
+    );
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [shouldAnimate, delay, totalStreamTime]);
 
   return (
-    <span className={className}>
-      {words.map((word, i) => (
-        <span
+    <span ref={ref} className={className}>
+      {chars.map((char, i) => (
+        <motion.span
           key={i}
-          className={`inline-block overflow-hidden pb-[0.15em] pt-[0.05em]${
-            i < words.length - 1 ? " mr-[0.25em]" : ""
-          }`}
+          initial={{ opacity: 0 }}
+          {...(shouldAnimate ? { animate: { opacity: 1 } } : {})}
+          transition={{
+            duration: 0.02,
+            delay: delay + i * CHAR_DELAY,
+          }}
         >
-          <motion.span
-            className="inline-block"
-            initial={{ y: "100%", opacity: 0 }}
-            {...(trigger === "mount"
-              ? { animate: { y: "0%", opacity: 1 } }
-              : {
-                  whileInView: { y: "0%", opacity: 1 },
-                  viewport: { once: true, margin: "-80px" },
-                })}
-            transition={{
-              y: { duration: 0.6, delay: delay + i * 0.04, ease: EASE },
-              opacity: { duration: 0.15, delay: delay + i * 0.04 },
-            }}
-          >
-            {word}
-          </motion.span>
-        </span>
+          {char}
+        </motion.span>
       ))}
+      {showCursor && (
+        <span
+          className="inline-block w-[0.06em] bg-current align-baseline"
+          style={{
+            height: "0.85em",
+            marginLeft: "1px",
+            animation: "cursor-blink 0.53s step-end infinite",
+          }}
+        />
+      )}
     </span>
   );
 }
