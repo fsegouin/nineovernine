@@ -160,7 +160,7 @@ export function DitherField() {
   const visibleRef = useRef(true);
   const dimsRef = useRef({ w: 0, h: 0 });
   const scrollingRef = useRef(false);
-  const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const frameSkipRef = useRef(0);
 
   useEffect(() => {
