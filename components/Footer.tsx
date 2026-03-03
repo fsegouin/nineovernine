@@ -12,7 +12,7 @@ export function Footer() {
   const { resolvedTheme, toggleTheme } = useTheme();
 
   return (
-    <footer className="border-t border-border bg-foreground text-background">
+    <footer className="bg-grain border-t border-border bg-foreground text-background">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-12 lg:py-20">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
           <div>

@@ -39,7 +39,8 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image: var(--grain-url, none);
   color: var(--foreground);
 }
 
@@ -48,6 +49,11 @@ body {
   * {
     cursor: none !important;
   }
+}
+
+/* Grain background — applies the canvas-generated noise tile */
+.bg-grain {
+  background-image: var(--grain-url, none);
 }
 
 /* Streaming cursor blink */

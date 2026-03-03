@@ -5,7 +5,7 @@ const { quote, label, paragraphs } = content.philosophy;
 
 export function PhilosophySection() {
   return (
-    <section className="bg-foreground px-6 py-24 text-background lg:px-12 lg:py-32">
+    <section className="bg-grain bg-foreground px-6 py-24 text-background lg:px-12 lg:py-32">
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">
           <FadeIn className="lg:col-span-7" direction="none">
