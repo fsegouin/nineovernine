@@ -2,13 +2,15 @@
 
 import { motion } from "motion/react";
 import { TextReveal } from "./TextReveal";
+import { DitherField } from "./DitherField";
 import content from "@/lib/content.json";
 
 const { headline, description, scrollLabel } = content.hero;
 
 export function HeroSection() {
   return (
-    <section className="flex min-h-[90vh] items-end px-6 pb-24 pt-32 lg:px-12">
+    <section className="relative flex min-h-[90vh] items-end px-6 pb-24 pt-32 lg:px-12">
+      <DitherField />
       <div className="mx-auto w-full max-w-7xl">
         <div className="grid grid-cols-12">
           <div className="col-span-12 lg:col-span-10">
