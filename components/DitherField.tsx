@@ -32,10 +32,6 @@ function fade(t: number) {
   return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
-function lerp(a: number, b: number, t: number) {
-  return a + t * (b - a);
-}
-
 function noise2d(x: number, y: number): number {
   const xi = Math.floor(x) & 255;
   const yi = Math.floor(y) & 255;
@@ -49,46 +45,43 @@ function noise2d(x: number, y: number): number {
   const ba = PERM[PERM[xi + 1] + yi] % 8;
   const bb = PERM[PERM[xi + 1] + yi + 1] % 8;
 
-  const dot = (g: number[], fx: number, fy: number) => g[0] * fx + g[1] * fy;
+  const g = GRAD;
+  const x1 = xf - 1;
+  const y1 = yf - 1;
 
-  return lerp(
-    lerp(dot(GRAD[aa], xf, yf), dot(GRAD[ba], xf - 1, yf), u),
-    lerp(dot(GRAD[ab], xf, yf - 1), dot(GRAD[bb], xf - 1, yf - 1), u),
-    v,
+  return (
+    (g[aa][0] * xf + g[aa][1] * yf) * (1 - u) * (1 - v) +
+    (g[ba][0] * x1 + g[ba][1] * yf) * u * (1 - v) +
+    (g[ab][0] * xf + g[ab][1] * y1) * (1 - u) * v +
+    (g[bb][0] * x1 + g[bb][1] * y1) * u * v
   );
 }
 
-function fbm(x: number, y: number, octaves: number = 4): number {
-  let value = 0;
-  let amplitude = 1;
-  let frequency = 1;
-  let max = 0;
-  for (let i = 0; i < octaves; i++) {
-    value += noise2d(x * frequency, y * frequency) * amplitude;
-    max += amplitude;
-    amplitude *= 0.5;
-    frequency *= 2;
-  }
-  return value / max;
+// 2-octave fbm — lighter than 3-octave, still organic enough
+function fbm2(x: number, y: number): number {
+  return noise2d(x, y) * 0.667 + noise2d(x * 2, y * 2) * 0.333;
 }
 
 // --- Config ---
 
 const CELL_SIZE = 8;
 const BASE_OPACITY = 0.12;
-const CURSOR_RADIUS_MIN = 120; // base flashlight radius
-const CURSOR_RADIUS_MAX = 350; // max spread when dwelling
+const CURSOR_RADIUS_MIN = 120;
+const CURSOR_RADIUS_MAX = 350;
 const CURSOR_BOOST = 0.4;
-const GLOW_DECAY = 0.0015; // how fast the flashlight trail fades (per ms)
-const SPREAD_GROW = 0.15; // how fast radius grows per ms when stationary
-const SPREAD_SHRINK = 0.8; // how fast radius shrinks per ms when moving
-const MOVE_THRESHOLD = 1.5; // px movement to count as "moving"
+const GLOW_DECAY = 0.0015;
+const SPREAD_GROW = 0.15;
+const SPREAD_SHRINK = 0.8;
+const MOVE_THRESHOLD = 1.5;
 const NOISE_SCALE = 0.02;
 const NOISE_TIME_SCALE = 0.001;
-const SCATTER_RADIUS = 250; // how far scatter pixels spread from cursor
-const SCATTER_BOOST = 0.35; // max opacity of scatter pixels
-const ENERGY_GROW = 0.004; // how fast movement energy builds (per ms, scaled by speed)
-const ENERGY_DECAY = 0.003; // how fast energy fades when cursor stops (per ms)
+const SCATTER_RADIUS = 250;
+const SCATTER_BOOST = 0.35;
+const ENERGY_GROW = 0.004;
+const ENERGY_DECAY = 0.003;
+
+// Squared radii to avoid sqrt in hot loop
+const SCATTER_RADIUS_SQ = SCATTER_RADIUS * SCATTER_RADIUS;
 
 // --- Helpers ---
 
@@ -119,8 +112,10 @@ function mulberry32(seed: number) {
 }
 
 interface Dot {
-  px: number; // fixed pixel position (grid-snapped)
+  px: number;
   py: number;
+  nx: number; // pre-computed noise coords
+  ny: number;
   size: number;
   glow: number;
 }
@@ -134,12 +129,17 @@ function createDots(width: number, height: number): Dot[] {
     for (let col = 0; col < cols; col++) {
       const rng = mulberry32(col * 7919 + row * 104729 + 31337);
       const size = 0.5 + rng() * 1.8;
-
-      // Exact grid center, no jitter
       const px = col * CELL_SIZE + CELL_SIZE * 0.5;
       const py = row * CELL_SIZE + CELL_SIZE * 0.5;
 
-      dots.push({ px, py, size, glow: 0 });
+      dots.push({
+        px,
+        py,
+        nx: px * NOISE_SCALE,
+        ny: py * NOISE_SCALE,
+        size,
+        glow: 0,
+      });
     }
   }
 
@@ -156,7 +156,12 @@ export function DitherField() {
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const spreadRef = useRef(CURSOR_RADIUS_MIN);
-  const energyRef = useRef(0); // 0–1, how much "scatter" is active
+  const energyRef = useRef(0);
+  const visibleRef = useRef(true);
+  const dimsRef = useRef({ w: 0, h: 0 });
+  const scrollingRef = useRef(false);
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const frameSkipRef = useRef(0);
 
   useEffect(() => {
     if (!window.matchMedia("(pointer: fine)").matches) return;
@@ -184,6 +189,8 @@ export function DitherField() {
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      dimsRef.current.w = rect.width;
+      dimsRef.current.h = rect.height;
       dotsRef.current = createDots(rect.width, rect.height);
     };
 
@@ -193,22 +200,54 @@ export function DitherField() {
       mouseRef.current.y = e.clientY - rect.top;
     };
 
+    const onScroll = () => {
+      scrollingRef.current = true;
+      clearTimeout(scrollTimerRef.current);
+      scrollTimerRef.current = setTimeout(() => {
+        scrollingRef.current = false;
+      }, 150);
+    };
+
+    // Pause animation when hero is off-screen
+    const intersectionObs = new IntersectionObserver(
+      ([entry]) => {
+        const wasVisible = visibleRef.current;
+        visibleRef.current = entry.isIntersecting;
+        // Resume loop if becoming visible again
+        if (!wasVisible && entry.isIntersecting) {
+          lastTimeRef.current = 0;
+          rafRef.current = requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0 },
+    );
+    intersectionObs.observe(container);
+
     const animate = (time: number) => {
+      if (!visibleRef.current) return;
+
+      // While scrolling, only render every 3rd frame
+      if (scrollingRef.current) {
+        frameSkipRef.current++;
+        if (frameSkipRef.current % 3 !== 0) {
+          rafRef.current = requestAnimationFrame(animate);
+          return;
+        }
+      }
+
       const dt = lastTimeRef.current ? time - lastTimeRef.current : 16;
       lastTimeRef.current = time;
 
-      const cw = parseInt(canvas.style.width) || canvas.width;
-      const ch = parseInt(canvas.style.height) || canvas.height;
+      const { w: cw, h: ch } = dimsRef.current;
       ctx.clearRect(0, 0, cw, ch);
 
       const { r, g, b } = colorRef.current;
       const dots = dotsRef.current;
 
-      // Smooth cursor — lerp toward actual mouse position for lag
+      // Smooth cursor
       const lerpFactor = 1 - Math.exp(-0.006 * dt);
       const sm = smoothMouseRef.current;
       const rm = mouseRef.current;
-      // Snap on first real mouse position, lerp after that
       if (sm.x < -9000) {
         sm.x = rm.x;
         sm.y = rm.y;
@@ -219,7 +258,7 @@ export function DitherField() {
       const mx = sm.x;
       const my = sm.y;
 
-      // Detect if cursor is stationary — grow spread radius, else shrink
+      // Cursor movement detection
       const mdx = mx - prevMouseRef.current.x;
       const mdy = my - prevMouseRef.current.y;
       const cursorSpeed = Math.sqrt(mdx * mdx + mdy * mdy);
@@ -227,6 +266,7 @@ export function DitherField() {
       prevMouseRef.current.x = mx;
       prevMouseRef.current.y = my;
 
+      // Spread radius
       if (!moved && mx > 0 && my > 0) {
         spreadRef.current = Math.min(
           CURSOR_RADIUS_MAX,
@@ -239,8 +279,9 @@ export function DitherField() {
         );
       }
       const cursorRadius = spreadRef.current;
+      const cursorRadiusSq = cursorRadius * cursorRadius;
 
-      // Movement energy — builds while moving, decays when stopped
+      // Movement energy
       if (moved) {
         const speedFactor = Math.min(1, cursorSpeed / 15);
         energyRef.current = Math.min(
@@ -254,37 +295,44 @@ export function DitherField() {
         );
       }
       const energy = energyRef.current;
+      const hasEnergy = energy > 0.01;
 
       const nt = time * NOISE_TIME_SCALE;
+      const maxInteractRadius = Math.max(cursorRadius, hasEnergy ? SCATTER_RADIUS : 0);
+      const maxInteractRadiusSq = maxInteractRadius * maxInteractRadius;
 
       ctx.fillStyle = `rgb(${r},${g},${b})`;
 
       for (let i = 0; i < dots.length; i++) {
         const dot = dots[i];
-
         const px = dot.px;
         const py = dot.py;
+        const nx = dot.nx;
+        const ny = dot.ny;
 
-        // Noise-driven base visibility
-        const nx = px * NOISE_SCALE;
-        const ny = py * NOISE_SCALE;
-        const n1 = fbm(nx + nt, ny + nt * 0.6, 3);
+        // Base visibility — 2-octave fbm + one fast flicker layer
+        const n1 = fbm2(nx + nt, ny + nt * 0.6);
         const n2 = noise2d(nx * 2.5 + nt * 3, ny * 2.5 - nt * 2);
-        const n3 = noise2d(nx * 0.8 - nt * 1.5, ny * 1.2 + nt * 1.8);
-        const n = n1 * 0.4 + n2 * 0.35 + n3 * 0.25;
-        const noiseVal = (n + 1) * 0.5;
+        const noiseVal = ((n1 * 0.55 + n2 * 0.45) + 1) * 0.5;
 
         const baseAlpha =
           noiseVal > 0.35
             ? BASE_OPACITY * Math.min(1, (noiseVal - 0.35) * 3)
             : 0;
 
-        // Flashlight — cursor proximity sets glow, radius spreads when dwelling
+        // Squared distance to cursor — avoid sqrt unless needed
         const dx = px - mx;
         const dy = py - my;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const distSq = dx * dx + dy * dy;
 
-        if (dist < cursorRadius) {
+        // Early exit: if dot has no base visibility, no glow, and is far from cursor
+        if (baseAlpha < 0.003 && dot.glow <= 0 && distSq > maxInteractRadiusSq) {
+          continue;
+        }
+
+        // Flashlight glow
+        if (distSq < cursorRadiusSq) {
+          const dist = Math.sqrt(distSq);
           const proximity = 1 - dist / cursorRadius;
           const target = CURSOR_BOOST * proximity * proximity;
           if (target > dot.glow) {
@@ -297,33 +345,25 @@ export function DitherField() {
           dot.glow = Math.max(0, dot.glow - GLOW_DECAY * dt);
         }
 
-        // Scatter — extra pixels appear around cursor while moving
+        // Scatter
         let scatterAlpha = 0;
-        if (energy > 0.01 && dist < SCATTER_RADIUS) {
-          // Use noise to randomly select which dots get scattered
-          const scatterNoise = noise2d(
-            nx * 3.7 + nt * 5,
-            ny * 3.7 - nt * 4,
-          );
-          // Higher energy = lower threshold = more dots appear
-          const threshold = 1 - energy * 0.9; // energy 1 → threshold 0.1
+        if (hasEnergy && distSq < SCATTER_RADIUS_SQ) {
+          const scatterNoise = noise2d(nx * 3.7 + nt * 5, ny * 3.7 - nt * 4);
+          const threshold = 1 - energy * 0.9;
           if ((scatterNoise + 1) * 0.5 > threshold) {
-            const distFade = 1 - dist / SCATTER_RADIUS;
-            scatterAlpha = SCATTER_BOOST * distFade * energy;
+            const dist = Math.sqrt(distSq);
+            scatterAlpha = SCATTER_BOOST * (1 - dist / SCATTER_RADIUS) * energy;
           }
         }
 
         const alpha = Math.min(0.6, baseAlpha + dot.glow + scatterAlpha);
         if (alpha < 0.003) continue;
 
-        // Per-dot size variation over time
-        const sizeNoise = noise2d(nx * 1.3 + 100 + nt * 2, ny * 1.3 + 200 - nt * 1.4);
-        const rawSize = dot.size * (0.5 + (sizeNoise + 1) * 0.4);
-        const full = Math.max(2, Math.round(rawSize) * 2);
+        // Size variation + jitter — reuse one noise call for both
+        const sn = noise2d(nx * 1.3 + 100 + nt * 2, ny * 1.3 + 200 - nt * 1.4);
+        const full = Math.max(2, Math.round(dot.size * (0.5 + (sn + 1) * 0.4)) * 2);
         const half = full * 0.5;
-
-        // Tiny jitter tied to size noise — wobbles as it scales
-        const jx = noise2d(nx * 2.1 + 50 + nt * 2.5, ny * 2.1 + 80) * 1.2;
+        const jx = sn * 1.2; // derive jitter from same noise
         const jy = noise2d(nx * 2.1 + 80, ny * 2.1 + 50 - nt * 2.5) * 1.2;
 
         ctx.globalAlpha = alpha;
@@ -334,8 +374,8 @@ export function DitherField() {
       rafRef.current = requestAnimationFrame(animate);
     };
 
-    const observer = new MutationObserver(updateColor);
-    observer.observe(document.documentElement, {
+    const themeObs = new MutationObserver(updateColor);
+    themeObs.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
@@ -350,14 +390,18 @@ export function DitherField() {
     resize();
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("resize", debouncedResize);
+    window.addEventListener("scroll", onScroll, { passive: true });
     rafRef.current = requestAnimationFrame(animate);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", debouncedResize);
+      window.removeEventListener("scroll", onScroll);
       clearTimeout(resizeTimer);
-      observer.disconnect();
+      clearTimeout(scrollTimerRef.current);
+      themeObs.disconnect();
+      intersectionObs.disconnect();
     };
   }, []);
 
