@@ -164,8 +164,6 @@ export function DitherField() {
   const frameSkipRef = useRef(0);
 
   useEffect(() => {
-    if (!window.matchMedia("(pointer: fine)").matches) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -173,6 +171,8 @@ export function DitherField() {
 
     const container = canvas.parentElement;
     if (!container) return;
+
+    const isPointerFine = window.matchMedia("(pointer: fine)").matches;
 
     initNoise();
 
@@ -198,6 +198,34 @@ export function DitherField() {
       const rect = container.getBoundingClientRect();
       mouseRef.current.x = e.clientX - rect.left;
       mouseRef.current.y = e.clientY - rect.top;
+    };
+
+    // Touch: set position on tap/drag, clear on end
+    let touchFadeTimer: ReturnType<typeof setTimeout> | undefined;
+    const onTouchStart = (e: TouchEvent) => {
+      clearTimeout(touchFadeTimer);
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      mouseRef.current.x = touch.clientX - rect.left;
+      mouseRef.current.y = touch.clientY - rect.top;
+      // Instant snap for touch — no lag
+      smoothMouseRef.current.x = mouseRef.current.x;
+      smoothMouseRef.current.y = mouseRef.current.y;
+      // Boost energy for scatter burst
+      energyRef.current = Math.min(1, energyRef.current + 0.5);
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      mouseRef.current.x = touch.clientX - rect.left;
+      mouseRef.current.y = touch.clientY - rect.top;
+    };
+    const onTouchEnd = () => {
+      // Let the glow linger, then move cursor off-canvas so it fades naturally
+      touchFadeTimer = setTimeout(() => {
+        mouseRef.current.x = -9999;
+        mouseRef.current.y = -9999;
+      }, 600);
     };
 
     const onScroll = () => {
@@ -244,8 +272,10 @@ export function DitherField() {
       const { r, g, b } = colorRef.current;
       const dots = dotsRef.current;
 
-      // Smooth cursor
-      const lerpFactor = 1 - Math.exp(-0.006 * dt);
+      // Smooth cursor — pointer devices get lag, touch snaps faster
+      const lerpFactor = isPointerFine
+        ? 1 - Math.exp(-0.006 * dt)
+        : 1 - Math.exp(-0.02 * dt);
       const sm = smoothMouseRef.current;
       const rm = mouseRef.current;
       if (sm.x < -9000) {
@@ -388,7 +418,12 @@ export function DitherField() {
 
     updateColor();
     resize();
-    window.addEventListener("mousemove", onMouseMove);
+    if (isPointerFine) {
+      window.addEventListener("mousemove", onMouseMove);
+    }
+    container.addEventListener("touchstart", onTouchStart, { passive: true });
+    container.addEventListener("touchmove", onTouchMove, { passive: true });
+    container.addEventListener("touchend", onTouchEnd);
     window.addEventListener("resize", debouncedResize);
     window.addEventListener("scroll", onScroll, { passive: true });
     rafRef.current = requestAnimationFrame(animate);
@@ -396,10 +431,14 @@ export function DitherField() {
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("mousemove", onMouseMove);
+      container.removeEventListener("touchstart", onTouchStart);
+      container.removeEventListener("touchmove", onTouchMove);
+      container.removeEventListener("touchend", onTouchEnd);
       window.removeEventListener("resize", debouncedResize);
       window.removeEventListener("scroll", onScroll);
       clearTimeout(resizeTimer);
       clearTimeout(scrollTimerRef.current);
+      clearTimeout(touchFadeTimer);
       themeObs.disconnect();
       intersectionObs.disconnect();
     };
