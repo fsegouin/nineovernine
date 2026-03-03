@@ -75,7 +75,7 @@
     "founder": {
       "overline": "The Founder",
       "name": "Florent Segouin",
-      "role": "Founder & Creative Director",
+      "role": "Founder & Director",
       "paragraphs": [
         "Nine Over Nine grew out of a decade spent leading creative technology at studios like AKQA and product companies like ARRIVAL. Interactive installations, immersive web experiences, digital products for brands that care about the details.",
         "The agency was founded on a simple conviction: the best digital work still needs a human hand on the wheel. AI is changing what's possible, but craft, taste, and judgment are what separate forgettable from remarkable.",
@@ -148,11 +148,11 @@
       "category": "Interactive Experience",
       "year": "2023",
       "description": "An immersive web experience for Volvo Cars' \"For Life\" campaign, exploring how life affects your drive. Part of a broader initiative to understand the role of psychological safety behind the wheel, the site guided users through a meditative audio-visual survey — subtle animated gradients, smooth transitions, and carefully designed audio cues created a calm, contemplative atmosphere. Users answered questions about driving habits and emotions by selecting from animated, floating response options. At the end, personalised results compared your answers against other participants and offered actionable insights on mindfulness and safety while driving, with a shareable card for social media to spread the campaign further.",
-      "aspectClass": "aspect-[3/4]",
+      "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-900",
       "cardVideo": {
-        "mp4": "/projects/safety-in-mind/414f4591eb01.mp4",
-        "webm": "/projects/safety-in-mind/414f4591eb01.webm"
+        "mp4": "/projects/safety-in-mind/479253e302a8.mp4",
+        "webm": "/projects/safety-in-mind/479253e302a8.webm"
       },
       "heroVideo": {
         "mp4": "/projects/safety-in-mind/479253e302a8.mp4",
