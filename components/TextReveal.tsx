@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef } from "react";
 
 const CHAR_DELAY = 0.04; // seconds between each character
 const CURSOR_LINGER = 5; // how long cursor stays after last char
@@ -21,6 +21,27 @@ interface TextRevealProps {
   cursorUntil?: number;
 }
 
+/** Individual character — memoized so it never re-renders after mount. */
+const Char = memo(function Char({
+  char,
+  shouldAnimate,
+  delay,
+}: {
+  char: string;
+  shouldAnimate: boolean;
+  delay: number;
+}) {
+  return (
+    <motion.span
+      initial={{ opacity: 0 }}
+      {...(shouldAnimate ? { animate: { opacity: 1 } } : {})}
+      transition={{ duration: 0.15, delay }}
+    >
+      {char}
+    </motion.span>
+  );
+});
+
 export function TextReveal({
   children,
   className,
@@ -32,30 +53,32 @@ export function TextReveal({
   const chars = children.split("");
   const totalStreamTime = chars.length * CHAR_DELAY;
   const rawHideTime = cursorUntil ?? delay + totalStreamTime + CURSOR_LINGER;
-  // Round up to the next full blink cycle so the cursor never vanishes mid-blink.
-  // Skip rounding when cursorUntil is explicit — the caller controls the handoff.
   const cursorHideTime = cursorUntil != null
     ? rawHideTime
     : Math.ceil(rawHideTime / BLINK_CYCLE) * BLINK_CYCLE;
 
   const ref = useRef<HTMLSpanElement>(null);
+  const cursorRef = useRef<HTMLSpanElement>(null);
+  const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const shouldAnimate = trigger === "mount" || isInView;
 
-  // -1 = hidden, 0..n = cursor sits after character at that index
-  const [cursorPos, setCursorPos] = useState(-1);
-
+  // Direct DOM manipulation for cursor — no state, no re-renders
   useEffect(() => {
     if (!shouldAnimate || !cursor) return;
 
+    const cursorEl = cursorRef.current;
+    if (!cursorEl) return;
+
     const mountTime = performance.now();
+    let prevIdx = -1;
     let rafId: number;
 
     const tick = () => {
       const elapsed = (performance.now() - mountTime) / 1000;
 
       if (elapsed >= cursorHideTime) {
-        setCursorPos(-1);
+        cursorEl.style.display = "none";
         return;
       }
 
@@ -66,9 +89,20 @@ export function TextReveal({
 
       const idx = Math.min(
         Math.floor((elapsed - delay) / CHAR_DELAY),
-        chars.length - 1
+        chars.length - 1,
       );
-      setCursorPos(idx);
+
+      // Only touch the DOM when the index actually changes
+      if (idx !== prevIdx) {
+        prevIdx = idx;
+        const charEl = charRefs.current[idx];
+        if (charEl) {
+          // Re-parent cursor into the active character span
+          charEl.appendChild(cursorEl);
+          cursorEl.style.display = "";
+        }
+      }
+
       rafId = requestAnimationFrame(tick);
     };
 
@@ -79,30 +113,32 @@ export function TextReveal({
   return (
     <span ref={ref} className={className}>
       {chars.map((char, i) => (
-        <span key={i} className="relative">
-          <motion.span
-            initial={{ opacity: 0 }}
-            {...(shouldAnimate ? { animate: { opacity: 1 } } : {})}
-            transition={{
-              duration: 0.15,
-              delay: delay + i * CHAR_DELAY,
-            }}
-          >
-            {char}
-          </motion.span>
-          {cursorPos === i && (
-            <span
-              className="absolute w-[0.07em] bg-current"
-              style={{
-                left: "100%",
-                top: "0.1em",
-                bottom: "0.1em",
-                animation: "cursor-blink 1s step-end infinite",
-              }}
-            />
-          )}
+        <span
+          key={i}
+          className="relative"
+          ref={(el) => { charRefs.current[i] = el; }}
+        >
+          <Char
+            char={char}
+            shouldAnimate={shouldAnimate}
+            delay={delay + i * CHAR_DELAY}
+          />
         </span>
       ))}
+      {/* Single cursor element — moved via DOM, never triggers re-renders */}
+      {cursor && (
+        <span
+          ref={cursorRef}
+          className="absolute w-[0.07em] bg-current"
+          style={{
+            left: "100%",
+            top: "0.1em",
+            bottom: "0.1em",
+            animation: "cursor-blink 1s step-end infinite",
+            display: "none",
+          }}
+        />
+      )}
     </span>
   );
 }
