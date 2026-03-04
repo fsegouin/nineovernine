@@ -19,18 +19,26 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 }
 
 export function DitherField() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const container = canvas.parentElement;
+    const container = containerRef.current;
     if (!container) return;
 
+    // Create a fresh canvas each mount — transferControlToOffscreen
+    // can only be called once per canvas element, and React may reuse
+    // DOM nodes across client-side navigations.
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("aria-hidden", "true");
+    canvas.className = "pointer-events-none absolute inset-0";
+    container.appendChild(canvas);
+
     // OffscreenCanvas required for worker rendering
-    if (typeof canvas.transferControlToOffscreen !== "function") return;
+    if (typeof canvas.transferControlToOffscreen !== "function") {
+      container.removeChild(canvas);
+      return;
+    }
 
     const offscreen = canvas.transferControlToOffscreen();
     const worker = new Worker(
@@ -151,12 +159,13 @@ export function DitherField() {
       clearTimeout(resizeTimer);
       themeObs.disconnect();
       intersectionObs.disconnect();
+      canvas.remove();
     };
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      ref={containerRef}
       aria-hidden="true"
       className="pointer-events-none absolute inset-0"
     />
