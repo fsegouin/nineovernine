@@ -9,6 +9,8 @@ import { ProjectTransitionProvider } from "@/components/ProjectTransition";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { Cursor } from "@/components/Cursor";
 import { GrainOverlay } from "@/components/GrainOverlay";
+import { ConsoleMessage } from "@/components/ConsoleMessage";
+import { organizationJsonLd, webSiteJsonLd } from "@/lib/jsonld";
 import content from "@/lib/content.json";
 import "./globals.css";
 
@@ -31,9 +33,25 @@ export const viewport: Viewport = {
   ],
 };
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nineovernine.com";
+
 export const metadata: Metadata = {
-  title: content.meta.title,
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: content.meta.title,
+    template: `%s — ${content.meta.title}`,
+  },
   description: content.meta.description,
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: content.meta.title,
+    title: content.meta.title,
+    description: content.meta.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({
@@ -43,6 +61,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd()),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(webSiteJsonLd()),
+          }}
+        />
+      </head>
       <body
         className={`${jost.variable} ${inter.variable} antialiased`}
       >
@@ -62,6 +94,7 @@ export default function RootLayout({
           </SmoothScroll>
           <Cursor />
         </ThemeProvider>
+        <ConsoleMessage />
         <Analytics />
         <SpeedInsights />
       </body>
