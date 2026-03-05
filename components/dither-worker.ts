@@ -330,10 +330,27 @@ function animate(time: number) {
   scheduleFrame();
 }
 
-// --- Frame scheduling (no requestAnimationFrame in workers) ---
+// --- Frame scheduling ---
+// Use requestAnimationFrame when available in worker (Chrome 105+),
+// fall back to setTimeout. Throttle to ~30fps when not interacting.
+
+const hasRAF = typeof requestAnimationFrame === "function";
+let interacting = false;
+let idleTimeout: ReturnType<typeof setTimeout>;
+
+function markInteracting() {
+  interacting = true;
+  clearTimeout(idleTimeout);
+  idleTimeout = setTimeout(() => { interacting = false; }, 200);
+}
 
 function scheduleFrame() {
-  setTimeout(() => animate(performance.now()), 16);
+  if (hasRAF) {
+    requestAnimationFrame(animate);
+  } else {
+    const interval = interacting ? 16 : 33;
+    setTimeout(() => animate(performance.now()), interval);
+  }
 }
 
 // --- Message handler ---
@@ -373,6 +390,7 @@ self.onmessage = (e: MessageEvent) => {
     case "mouse":
       mouse.x = msg.x;
       mouse.y = msg.y;
+      markInteracting();
       break;
 
     case "touchstart":
@@ -381,11 +399,13 @@ self.onmessage = (e: MessageEvent) => {
       smoothMouse.x = msg.x;
       smoothMouse.y = msg.y;
       energy = Math.min(1, energy + 0.5);
+      markInteracting();
       break;
 
     case "touchmove":
       mouse.x = msg.x;
       mouse.y = msg.y;
+      markInteracting();
       break;
 
     case "touchend":

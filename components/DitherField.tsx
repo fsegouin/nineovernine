@@ -66,37 +66,49 @@ export function DitherField() {
 
     // --- Forward events to worker ---
 
+    // Cache bounding rect to avoid layout thrashing on every mouse/touch event.
+    // Updated on resize and scroll.
+    let cachedRect = rect;
+
     const onMouseMove = (e: MouseEvent) => {
-      const r = container.getBoundingClientRect();
       worker.postMessage({
         type: "mouse",
-        x: e.clientX - r.left,
-        y: e.clientY - r.top,
+        x: e.clientX - cachedRect.left,
+        y: e.clientY - cachedRect.top,
       });
     };
 
     const onTouchStart = (e: TouchEvent) => {
       const touch = e.touches[0];
-      const r = container.getBoundingClientRect();
       worker.postMessage({
         type: "touchstart",
-        x: touch.clientX - r.left,
-        y: touch.clientY - r.top,
+        x: touch.clientX - cachedRect.left,
+        y: touch.clientY - cachedRect.top,
       });
     };
 
     const onTouchMove = (e: TouchEvent) => {
       const touch = e.touches[0];
-      const r = container.getBoundingClientRect();
       worker.postMessage({
         type: "touchmove",
-        x: touch.clientX - r.left,
-        y: touch.clientY - r.top,
+        x: touch.clientX - cachedRect.left,
+        y: touch.clientY - cachedRect.top,
       });
     };
 
     const onTouchEnd = () => {
       worker.postMessage({ type: "touchend" });
+    };
+
+    // Update cached rect on scroll (debounced to avoid thrashing)
+    let scrollRafId = 0;
+    const onScroll = () => {
+      if (!scrollRafId) {
+        scrollRafId = requestAnimationFrame(() => {
+          cachedRect = container.getBoundingClientRect();
+          scrollRafId = 0;
+        });
+      }
     };
 
     // Pause when hero is off-screen
@@ -116,11 +128,11 @@ export function DitherField() {
     const onResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        const r = container.getBoundingClientRect();
+        cachedRect = container.getBoundingClientRect();
         worker.postMessage({
           type: "resize",
-          width: r.width,
-          height: r.height,
+          width: cachedRect.width,
+          height: cachedRect.height,
           dpr: window.devicePixelRatio || 1,
         });
       }, 150);
@@ -139,11 +151,10 @@ export function DitherField() {
     });
 
     const onClick = (e: MouseEvent) => {
-      const r = container.getBoundingClientRect();
       worker.postMessage({
         type: "click",
-        x: e.clientX - r.left,
-        y: e.clientY - r.top,
+        x: e.clientX - cachedRect.left,
+        y: e.clientY - cachedRect.top,
       });
     };
 
@@ -156,6 +167,7 @@ export function DitherField() {
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("touchend", onTouchEnd);
     window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
       worker.postMessage({ type: "destroy" });
@@ -167,6 +179,8 @@ export function DitherField() {
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onTouchEnd);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll);
+      if (scrollRafId) cancelAnimationFrame(scrollRafId);
       clearTimeout(resizeTimer);
       themeObs.disconnect();
       intersectionObs.disconnect();

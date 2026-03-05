@@ -27,9 +27,9 @@ export function Cursor() {
   const springY = useSpring(mouseY, { damping: 25, stiffness: 250, mass: 0.5 });
   const springScale = useSpring(scale, { damping: 20, stiffness: 300 });
 
-  // Trail state
+  // Trail state — canvas created on demand, removed when trail fades
   const trailRef = useRef<TrailDot[]>([]);
-  const trailCanvasRef = useRef<HTMLCanvasElement>(null);
+  const trailCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const lastPos = useRef({ x: 0, y: 0 });
   const rafId = useRef(0);
 
@@ -38,11 +38,35 @@ export function Cursor() {
     scale.set(1);
   }, [pathname, scale]);
 
+  // Create trail canvas on demand (avoids permanent full-viewport compositing cost)
+  const ensureTrailCanvas = useCallback(() => {
+    if (trailCanvasRef.current) return;
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("aria-hidden", "true");
+    canvas.style.cssText =
+      "pointer-events:none;position:fixed;inset:0;z-index:98;mix-blend-mode:difference";
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
+    document.body.appendChild(canvas);
+    trailCanvasRef.current = canvas;
+  }, []);
+
+  const removeTrailCanvas = useCallback(() => {
+    const canvas = trailCanvasRef.current;
+    if (canvas) {
+      canvas.remove();
+      trailCanvasRef.current = null;
+    }
+  }, []);
+
   const renderTrail = useCallback(() => {
     const canvas = trailCanvasRef.current;
-    if (!canvas) return;
+    if (!canvas) { rafId.current = 0; return; }
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) { rafId.current = 0; return; }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const dpr = window.devicePixelRatio || 1;
@@ -68,27 +92,17 @@ export function Cursor() {
       rafId.current = requestAnimationFrame(renderTrail);
     } else {
       rafId.current = 0;
+      removeTrailCanvas();
     }
-  }, []);
+  }, [removeTrailCanvas]);
 
+  // Clean up on unmount
   useEffect(() => {
-    // Only show on devices with a precise pointer (mouse)
-    if (!window.matchMedia("(pointer: fine)").matches) return;
-
-    const canvas = trailCanvasRef.current;
-    if (canvas) {
-      const resize = () => {
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight}px`;
-      };
-      resize();
-      window.addEventListener("resize", resize);
-      return () => window.removeEventListener("resize", resize);
-    }
-  }, [visible]);
+    return () => {
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+      removeTrailCanvas();
+    };
+  }, [removeTrailCanvas]);
 
   useEffect(() => {
     if (!window.matchMedia("(pointer: fine)").matches) return;
@@ -111,6 +125,7 @@ export function Cursor() {
       lastPos.current = { x: e.clientX, y: e.clientY };
 
       if (velocity > VELOCITY_THRESHOLD) {
+        ensureTrailCanvas();
         trailRef.current.push({ x: e.clientX, y: e.clientY, opacity: 0.6 });
         if (trailRef.current.length > TRAIL_COUNT * 3) {
           trailRef.current = trailRef.current.slice(-TRAIL_COUNT * 2);
@@ -145,21 +160,14 @@ export function Cursor() {
       document.removeEventListener("mouseout", out);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
-  }, [mouseX, mouseY, scale, renderTrail]);
+  }, [mouseX, mouseY, scale, renderTrail, ensureTrailCanvas]);
 
   if (!visible) return null;
 
   return (
-    <>
-      <canvas
-        ref={trailCanvasRef}
-        className="pointer-events-none fixed inset-0 z-[98] mix-blend-difference"
-        aria-hidden="true"
-      />
-      <motion.div
-        className="pointer-events-none fixed left-0 top-0 z-[99] h-3 w-3 -ml-1.5 -mt-1.5 rounded-full bg-white mix-blend-difference"
-        style={{ x: springX, y: springY, scale: springScale }}
-      />
-    </>
+    <motion.div
+      className="pointer-events-none fixed left-0 top-0 z-[99] h-3 w-3 -ml-1.5 -mt-1.5 rounded-full bg-white mix-blend-difference"
+      style={{ x: springX, y: springY, scale: springScale }}
+    />
   );
 }
