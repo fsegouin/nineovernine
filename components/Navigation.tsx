@@ -7,19 +7,30 @@ import { AnimatePresence, motion } from "motion/react";
 import { Magnetic } from "./Magnetic";
 import { useLenis } from "./SmoothScroll";
 import { useLocale } from "./LocaleProvider";
+import { useEntrance } from "./EntranceProvider";
 import { getContent } from "@/lib/content";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function Navigation() {
   const locale = useLocale();
   const content = getContent(locale);
   const { links } = content.nav;
+  const { isFirstVisit, ready } = useEntrance();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoMorphed, setLogoMorphed] = useState(false);
   const clickCount = useRef(0);
   const clickTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const lenisRef = useLenis();
   const pathname = usePathname();
+
+  // Entrance states:
+  // - entranceWaiting: first visit, fonts not ready → elements should be hidden
+  // - entranceActive: first visit, fonts ready → elements should animate in
+  // - neither: return visit → elements visible immediately, no animation
+  const entranceWaiting = isFirstVisit && !ready;
+  const entranceActive = isFirstVisit && ready;
 
   const handleLogoClick = useCallback(() => {
     if (logoMorphed) return;
@@ -74,9 +85,17 @@ export function Navigation() {
               ) : (
                 <motion.span
                   key="logo"
-                  initial={{ scale: 1, opacity: 1 }}
+                  data-entrance-el
+                  initial={false}
+                  animate={entranceWaiting
+                    ? { scale: 0.95, opacity: 0 }
+                    : { scale: 1, opacity: 1 }
+                  }
                   exit={{ scale: 0.5, rotate: -180, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  transition={entranceActive
+                    ? { duration: 1.0, delay: 0.8, ease: EASE }
+                    : { duration: 0.3, ease: EASE }
+                  }
                   className="inline-block"
                 >
                   9<span className="text-muted">/</span>9
@@ -88,19 +107,45 @@ export function Navigation() {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-10 sm:flex">
-          {links.map((link) => (
+          {links.map((link, i) => (
             <Magnetic key={link.href}>
-              <Link
-                href={`${localePath}${link.href}`}
-                onClick={(e) => handleAnchorClick(e, link.hash)}
-                className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
+              <motion.div
+                data-entrance-el
+                initial={false}
+                animate={entranceWaiting
+                  ? { opacity: 0, y: -8 }
+                  : { opacity: 1, y: 0 }
+                }
+                transition={entranceActive
+                  ? { duration: 0.5, delay: 2.0 + i * 0.15, ease: EASE }
+                  : { duration: 0 }
+                }
               >
-                {link.label}
-              </Link>
+                <Link
+                  href={`${localePath}${link.href}`}
+                  onClick={(e) => handleAnchorClick(e, link.hash)}
+                  className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              </motion.div>
             </Magnetic>
           ))}
           <Magnetic strength={0.3}>
-            <LanguageSwitcher />
+            <motion.div
+              data-entrance-el
+              initial={false}
+              animate={entranceWaiting
+                ? { opacity: 0, y: -8 }
+                : { opacity: 1, y: 0 }
+              }
+              transition={entranceActive
+                ? { duration: 0.5, delay: 2.0 + links.length * 0.15, ease: EASE }
+                : { duration: 0 }
+              }
+            >
+              <LanguageSwitcher />
+            </motion.div>
           </Magnetic>
         </div>
 

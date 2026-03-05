@@ -21,7 +21,7 @@ export function HeroSection() {
 
   // On first visit, shift all delays so hero starts after nav entrance.
   // These delays are relative to when textActive becomes true.
-  const d = isFirstVisit ? 0.6 : 0;
+  const d = isFirstVisit ? 2.8 : 0;
 
   // entranceWaiting: first visit, not ready yet → description/indicator hidden
   const entranceWaiting = isFirstVisit && !ready;
@@ -29,7 +29,8 @@ export function HeroSection() {
   return (
     <section className="relative flex min-h-[90vh] items-end overflow-hidden px-6 pb-24 pt-32 lg:px-12">
       <div
-        className="absolute inset-0 transition-opacity duration-1200"
+        data-entrance-el
+        className="absolute inset-0 transition-opacity duration-2000"
         style={{ opacity: entranceWaiting ? 0 : 1 }}
       >
         <DitherField />
@@ -38,14 +39,15 @@ export function HeroSection() {
         <div className="grid grid-cols-12">
           <div className="col-span-12 lg:col-span-10">
             <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-              <TextReveal delay={d + 0.2} trigger="mount" cursorUntil={d + 0.9} active={textActive}>{headline[0]}</TextReveal>
+              <TextReveal delay={d + 0} trigger="mount" cursorUntil={d + 1.0} active={textActive}>{headline[0]}</TextReveal>
               <br />
-              <TextReveal delay={d + 0.9} trigger="mount" cursorUntil={d + 1.75} active={textActive}>{headline[1]}</TextReveal>
+              <TextReveal delay={d + 1.0} trigger="mount" cursorUntil={d + 2.1} active={textActive}>{headline[1]}</TextReveal>
               <br />
-              <TextReveal delay={d + 1.75} trigger="mount" active={textActive}>{headline[2]}</TextReveal>
+              <TextReveal delay={d + 2.1} trigger="mount" active={textActive}>{headline[2]}</TextReveal>
             </h1>
 
             <motion.p
+              data-entrance-el
               className="mt-8 max-w-lg font-sans text-lg leading-relaxed text-muted md:text-xl"
               initial={false}
               animate={entranceWaiting
@@ -54,7 +56,7 @@ export function HeroSection() {
               }
               transition={{
                 duration: 0.7,
-                delay: entranceWaiting ? 0 : d + 3.2,
+                delay: entranceWaiting ? 0 : d + 3.8,
                 ease: EASE,
               }}
             >
@@ -65,6 +67,7 @@ export function HeroSection() {
 
         {/* Scroll indicator */}
         <motion.div
+          data-entrance-el
           className="mt-20 flex justify-start"
           initial={false}
           animate={entranceWaiting
@@ -73,7 +76,7 @@ export function HeroSection() {
           }
           transition={{
             duration: 0.6,
-            delay: entranceWaiting ? 0 : d + 3.6,
+            delay: entranceWaiting ? 0 : d + 4.2,
           }}
         >
           <div className="flex flex-col items-center gap-2">

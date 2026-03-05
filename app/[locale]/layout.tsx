@@ -74,6 +74,12 @@ export default async function LocaleLayout({
           __html: `document.documentElement.lang="${typedLocale}"`,
         }}
       />
+      {/* Hide entrance elements before React hydrates to prevent flash */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `try{if(!sessionStorage.getItem('9o9-visited')&&!window.matchMedia('(prefers-reduced-motion:reduce)').matches){document.documentElement.dataset.entrance='pending'}}catch(e){}`,
+        }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
