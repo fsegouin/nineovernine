@@ -80,6 +80,10 @@ const SCATTER_BOOST = 0.35;
 const ENERGY_GROW = 0.004;
 const ENERGY_DECAY = 0.003;
 const SCATTER_RADIUS_SQ = SCATTER_RADIUS * SCATTER_RADIUS;
+const DISSIPATE_SPEED = 0.25;
+const DISSIPATE_RING_WIDTH = 100;
+const DISSIPATE_DURATION = 1200;
+const DISSIPATE_BOOST = 0.3;
 
 // --- Helpers ---
 
@@ -153,6 +157,9 @@ const prevMouse = { x: -9999, y: -9999 };
 let spread = CURSOR_RADIUS_MIN;
 let energy = 0;
 
+// Dissipation state
+const dissipation = { active: false, x: 0, y: 0, elapsed: 0, radius0: 0 };
+
 // Animation state
 let visible = true;
 let lastTime = 0;
@@ -214,8 +221,26 @@ function animate(time: number) {
   }
   const hasEnergy = energy > 0.01;
 
+  // Dissipation ring
+  let dissipateInner = 0;
+  let dissipateOuter = 0;
+  let dissipateFade = 0;
+  if (dissipation.active) {
+    dissipation.elapsed += dt;
+    if (dissipation.elapsed > DISSIPATE_DURATION) {
+      dissipation.active = false;
+    } else {
+      const progress = dissipation.elapsed / DISSIPATE_DURATION;
+      dissipateFade = 1 - progress;
+      const ringCenter = dissipation.radius0 + dissipation.elapsed * DISSIPATE_SPEED;
+      dissipateInner = Math.max(0, ringCenter - DISSIPATE_RING_WIDTH * 0.5);
+      dissipateOuter = ringCenter + DISSIPATE_RING_WIDTH * 0.5;
+    }
+  }
+
   const nt = time * NOISE_TIME_SCALE;
-  const maxInteractRadius = Math.max(cursorRadius, hasEnergy ? SCATTER_RADIUS : 0);
+  const maxDissipateRadius = dissipation.active ? dissipateOuter : 0;
+  const maxInteractRadius = Math.max(cursorRadius, hasEnergy ? SCATTER_RADIUS : 0, maxDissipateRadius);
   const maxInteractRadiusSq = maxInteractRadius * maxInteractRadius;
 
   // Noise update pass — every 4th frame
@@ -243,7 +268,16 @@ function animate(time: number) {
     const dy = dot.py - my;
     const distSq = dx * dx + dy * dy;
 
-    if (dot.baseAlpha < 0.003 && dot.glow <= 0 && distSq > maxInteractRadiusSq) {
+    // Distance from dissipation origin (computed lazily)
+    let ddist = -1;
+    if (dissipation.active) {
+      const ddx = dot.px - dissipation.x;
+      const ddy = dot.py - dissipation.y;
+      ddist = Math.sqrt(ddx * ddx + ddy * ddy);
+    }
+
+    if (dot.baseAlpha < 0.003 && dot.glow <= 0 && distSq > maxInteractRadiusSq
+        && (ddist < 0 || ddist > dissipateOuter)) {
       continue;
     }
 
@@ -272,7 +306,19 @@ function animate(time: number) {
       }
     }
 
-    const alpha = Math.min(0.6, dot.baseAlpha + dot.glow + scatterAlpha);
+    // Dissipation ring
+    let dissipateAlpha = 0;
+    if (dissipation.active && ddist >= dissipateInner && ddist <= dissipateOuter) {
+      // Position within ring: 0 at edges, 1 at center
+      const ringCenter = (dissipateInner + dissipateOuter) * 0.5;
+      const halfWidth = DISSIPATE_RING_WIDTH * 0.5;
+      const ringPos = 1 - Math.abs(ddist - ringCenter) / halfWidth;
+      // Noise variation so dots don't all dissipate uniformly
+      const dn = (noise2d(dot.nx * 4.1 + 300, dot.ny * 4.1 + 400) + 1) * 0.5;
+      dissipateAlpha = DISSIPATE_BOOST * ringPos * dissipateFade * (0.4 + dn * 0.6);
+    }
+
+    const alpha = Math.min(0.6, dot.baseAlpha + dot.glow + scatterAlpha + dissipateAlpha);
     if (alpha < 0.003) continue;
 
     const half = dot.drawSize * 0.5;
@@ -343,10 +389,13 @@ self.onmessage = (e: MessageEvent) => {
       break;
 
     case "touchend":
-      setTimeout(() => {
-        mouse.x = -9999;
-        mouse.y = -9999;
-      }, 600);
+      dissipation.active = true;
+      dissipation.x = smoothMouse.x;
+      dissipation.y = smoothMouse.y;
+      dissipation.elapsed = 0;
+      dissipation.radius0 = spread;
+      mouse.x = -9999;
+      mouse.y = -9999;
       break;
 
     case "visibility": {
