@@ -31,7 +31,7 @@ export function DitherField() {
     // DOM nodes across client-side navigations.
     const canvas = document.createElement("canvas");
     canvas.setAttribute("aria-hidden", "true");
-    canvas.className = "pointer-events-none absolute inset-0";
+    canvas.className = "pointer-events-none absolute inset-0 h-full w-full";
     container.appendChild(canvas);
 
     // OffscreenCanvas required for worker rendering
@@ -138,13 +138,23 @@ export function DitherField() {
       attributeFilter: ["class"],
     });
 
+    const onClick = (e: MouseEvent) => {
+      const r = container.getBoundingClientRect();
+      worker.postMessage({
+        type: "click",
+        x: e.clientX - r.left,
+        y: e.clientY - r.top,
+      });
+    };
+
     // Attach listeners
     if (isPointerFine) {
       window.addEventListener("mousemove", onMouseMove);
+      container.addEventListener("click", onClick);
     }
-    container.addEventListener("touchstart", onTouchStart, { passive: true });
-    container.addEventListener("touchmove", onTouchMove, { passive: true });
-    container.addEventListener("touchend", onTouchEnd);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd);
     window.addEventListener("resize", onResize);
 
     return () => {
@@ -152,9 +162,10 @@ export function DitherField() {
       worker.terminate();
       workerRef.current = null;
       window.removeEventListener("mousemove", onMouseMove);
-      container.removeEventListener("touchstart", onTouchStart);
-      container.removeEventListener("touchmove", onTouchMove);
-      container.removeEventListener("touchend", onTouchEnd);
+      container.removeEventListener("click", onClick);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
       window.removeEventListener("resize", onResize);
       clearTimeout(resizeTimer);
       themeObs.disconnect();
@@ -167,7 +178,7 @@ export function DitherField() {
     <div
       ref={containerRef}
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0"
+      className="absolute inset-0"
     />
   );
 }

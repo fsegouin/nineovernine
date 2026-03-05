@@ -398,6 +398,15 @@ self.onmessage = (e: MessageEvent) => {
       mouse.y = -9999;
       break;
 
+    case "click":
+      energy = Math.min(1, energy + 0.5);
+      dissipation.active = true;
+      dissipation.x = msg.x;
+      dissipation.y = msg.y;
+      dissipation.elapsed = 0;
+      dissipation.radius0 = spread;
+      break;
+
     case "visibility": {
       const wasVisible = visible;
       visible = msg.visible;
