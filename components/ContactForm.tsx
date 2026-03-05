@@ -2,12 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import content from "@/lib/content.json";
 import { Magnetic } from "./Magnetic";
+import { useLocale } from "./LocaleProvider";
+import { getContent } from "@/lib/content";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
-const { steps, nextLabel, submitLabel, successHeading, successMessage, errorMessage, orEmailLabel } = content.contact.form;
-const TOTAL_STEPS = steps.length;
 
 type FormData = {
   name: string;
@@ -34,14 +33,23 @@ function validateStep(step: number, data: FormData): string | null {
 }
 
 export function ContactForm() {
+  const locale = useLocale();
+  const { steps, nextLabel, submitLabel, successHeading, successMessage, errorMessage } = getContent(locale).contact.form;
+  const TOTAL_STEPS = steps.length;
   const [step, setStep] = useState(0);
   const [data, setData] = useState<FormData>({ name: "", email: "", services: [], message: "" });
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
-  // Auto-focus input on step change
+  // Auto-focus input on step change (skip initial mount to avoid
+  // stealing focus when the page loads)
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
     const timeout = setTimeout(() => inputRef.current?.focus(), 400);
     return () => clearTimeout(timeout);
   }, [step]);

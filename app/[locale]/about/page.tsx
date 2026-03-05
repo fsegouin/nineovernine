@@ -1,19 +1,37 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { FadeIn } from "@/components/FadeIn";
 import { TextReveal } from "@/components/TextReveal";
-import content from "@/lib/content.json";
+import { getContent, isValidLocale } from "@/lib/content";
 
-const { heading, founder, vision, values } = content.about;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isValidLocale(locale)) return {};
+  const content = getContent(locale);
+  return {
+    title: content.about.heading,
+    description: content.about.vision.paragraphs[0],
+    openGraph: {
+      type: "website",
+    },
+  };
+}
 
-export const metadata: Metadata = {
-  title: "About",
-  description: content.about.vision.paragraphs[0],
-  openGraph: {
-    type: "website",
-  },
-};
+export default async function AboutPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  if (!isValidLocale(locale)) notFound();
 
-export default function AboutPage() {
+  const content = getContent(locale);
+  const { heading, founder, vision, values } = content.about;
+
   return (
     <>
       {/* Hero */}

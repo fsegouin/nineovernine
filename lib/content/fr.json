@@ -1,0 +1,416 @@
+{
+  "meta": {
+    "title": "Nine Over Nine",
+    "description": "Une agence digitale guidée par l'humain, conçue pour le monde de l'IA."
+  },
+  "nav": {
+    "links": [
+      {
+        "label": "Projets",
+        "href": "/#work",
+        "hash": "#work"
+      },
+      {
+        "label": "À propos",
+        "href": "/about"
+      },
+      {
+        "label": "Contact",
+        "href": "/#contact",
+        "hash": "#contact"
+      }
+    ]
+  },
+  "hero": {
+    "headline": [
+      "Créer des expériences",
+      "digitales pour l'ère",
+      "de l'intelligence."
+    ],
+    "description": "Une agence digitale guidée par l'humain, où le savoir-faire rencontre l'intelligence.",
+    "scrollLabel": "Défiler"
+  },
+  "services": {
+    "overline": "Expertises",
+    "heading": "Services",
+    "items": [
+      {
+        "number": "01",
+        "title": "Stratégie & Conseil",
+        "description": "Nous cartographions les points de rencontre entre votre activité et le paysage mouvant de l'IA et du digital. Du positionnement produit aux feuilles de route techniques, nous vous aidons à prendre des décisions qui portent leurs fruits dans le temps."
+      },
+      {
+        "number": "02",
+        "title": "Intégration IA",
+        "description": "Une implémentation pratique et réfléchie de l'IA dans vos produits et processus. Pas de gadget pour le plaisir. Nous identifions les leviers où l'intelligence crée une valeur réelle et mesurable."
+      },
+      {
+        "number": "03",
+        "title": "Développement & Ingénierie",
+        "description": "Applications web haute performance, installations interactives et plateformes construites avec des outils modernes et une attention obsessionnelle aux détails. Le code comme artisanat."
+      },
+      {
+        "number": "04",
+        "title": "Contenu & Expérience",
+        "description": "Des expériences digitales immersives qui captent l'attention. Du storytelling éditorial aux campagnes interactives, nous créons des œuvres avec lesquelles les gens choisissent de passer du temps."
+      }
+    ]
+  },
+  "work": {
+    "overline": "Travaux sélectionnés",
+    "heading": "Projets",
+    "subtitle": "Réalisés avant la fondation de Nine Over Nine"
+  },
+  "philosophy": {
+    "quote": "Nous croyons que les meilleures expériences digitales naissent à l'intersection de l'intuition humaine et de l'intelligence artificielle.",
+    "label": "Notre Approche",
+    "paragraphs": [
+      "La technologie avance vite. Le goût, non. Nous allions une maîtrise technique profonde avec l'instinct de design qui ne s'acquiert qu'après des années à construire les choses à la main. Chaque projet commence par une question : à quoi cela ressemblerait-il si nous refusions de faire des compromis ?",
+      "Le résultat est un travail qui semble réfléchi, pas généré. Le jugement humain guidant des outils intelligents, et non l'inverse."
+    ]
+  },
+  "contact": {
+    "overline": "Nous contacter",
+    "heading": "Construisons quelque chose\nensemble.",
+    "email": "hello@nineovernine.com",
+    "location": "Paris / Monde entier",
+    "form": {
+      "steps": [
+        {
+          "question": "Comment vous appelez-vous ?",
+          "field": "name",
+          "type": "text",
+          "placeholder": "Votre nom"
+        },
+        {
+          "question": "Quel est votre email ?",
+          "field": "email",
+          "type": "email",
+          "placeholder": "vous@exemple.com"
+        },
+        {
+          "question": "Comment pouvons-nous vous aider ?",
+          "field": "services",
+          "type": "chips",
+          "options": [
+            "Stratégie",
+            "Développement",
+            "Intégration IA",
+            "Contenu",
+            "Autre"
+          ]
+        },
+        {
+          "question": "Parlez-nous de votre projet.",
+          "field": "message",
+          "type": "textarea",
+          "placeholder": "Quelques mots sur ce que vous recherchez..."
+        }
+      ],
+      "nextLabel": "Continuer",
+      "submitLabel": "Envoyer le message",
+      "successHeading": "Merci, {name}.",
+      "successMessage": "Nous vous recontacterons bientôt.",
+      "errorMessage": "Une erreur est survenue. Veuillez réessayer.",
+      "orEmailLabel": "Ou écrivez-nous directement"
+    }
+  },
+  "footer": {
+    "tagline": "Une agence digitale guidée par l'humain\nconçue pour le monde de l'IA.",
+    "navLabel": "Navigation",
+    "navLinks": [
+      {
+        "label": "Accueil",
+        "href": "/"
+      },
+      {
+        "label": "À propos",
+        "href": "/about"
+      }
+    ],
+    "contactLabel": "Contact",
+    "copyright": "Nine Over Nine. Tous droits réservés."
+  },
+  "about": {
+    "heading": "À propos",
+    "founder": {
+      "overline": "Le Fondateur",
+      "name": "Florent Segouin",
+      "role": "Fondateur & Directeur",
+      "paragraphs": [
+        "Nine Over Nine est né d'une décennie passée à diriger la technologie créative dans des studios comme AKQA et des entreprises produit comme ARRIVAL. Installations interactives, expériences web immersives, produits digitaux pour des marques soucieuses du détail.",
+        "L'agence a été fondée sur une conviction simple : le meilleur travail digital a encore besoin d'une main humaine aux commandes. L'IA change ce qui est possible, mais le savoir-faire, le goût et le jugement sont ce qui sépare l'oubliable du remarquable.",
+        "Aujourd'hui, nous collaborons avec un nombre restreint de clients qui partagent cette conviction. Des entreprises qui veulent un travail dont elles peuvent être fières, réalisé par des personnes qui refusent de se contenter du suffisant."
+      ]
+    },
+    "vision": {
+      "quote": "L'artisanat à l'ère des algorithmes.",
+      "paragraphs": [
+        "Nous avons créé Nine Over Nine parce que nous avons vu un manque. Des agences qui poursuivent la croissance au détriment de la qualité. Des outils d'IA plaqués sans réflexion. Nous croyons qu'il existe une meilleure voie : des équipes plus petites, un focus plus affûté, et un engagement envers le travail lui-même.",
+        "Notre vision est simple. Être l'agence que vous engageriez si vous vous souciez davantage du résultat que du document de processus. Utiliser tous les outils disponibles, y compris l'IA, mais ne jamais laisser les outils penser à notre place."
+      ]
+    },
+    "values": {
+      "overline": "Ce qui nous anime",
+      "heading": "Valeurs",
+      "items": [
+        {
+          "number": "01",
+          "title": "Savoir-faire",
+          "description": "Chaque détail est une décision. Nous peaufinons les marges, les transitions, les temps de chargement. La différence entre bon et excellent réside dans les choses que la plupart des gens ne remarquent jamais."
+        },
+        {
+          "number": "02",
+          "title": "Clarté",
+          "description": "La complexité est facile. La simplicité demande du travail. Nous éliminons le superflu jusqu'à ce que ce qui reste semble évident — dans nos designs, notre code et notre communication."
+        },
+        {
+          "number": "03",
+          "title": "Conviction",
+          "description": "Nous avons des opinions et nous les assumons. Les clients nous engagent pour notre jugement, pas seulement notre exécution. Quand quelque chose ne va pas, nous le disons."
+        }
+      ]
+    }
+  },
+  "projectDetail": {
+    "backLabel": "Retour aux projets",
+    "yearLabel": "Année",
+    "roleLabel": "Rôle",
+    "agencyLabel": "Agence",
+    "clientLabel": "Client",
+    "overviewLabel": "Aperçu",
+    "nextLabel": "Projet suivant",
+    "visitLabel": "Voir le projet"
+  },
+  "projects": [
+    {
+      "slug": "volvo-penta-ips",
+      "title": "The All-New Volvo Penta IPS Experience",
+      "category": "Installation interactive",
+      "year": "2024",
+      "description": "Une installation interactive de pointe conçue pour présenter la plateforme de propulsion Volvo Penta IPS 40. À l'aide de matériel Volvo Penta réel — y compris la poignée de commande — les visiteurs pouvaient explorer la transmission à double entrée à travers une expérience 3D immersive : rotation autour du groupe motopropulseur, superpositions techniques et visualisation des données de performance en temps réel. Conçue pour les expositions et le siège de Volvo, l'installation fonctionnait sur du matériel haute performance pilotant des projecteurs 4K ou des écrans LED. Une expérience compagnon sur tablette offrait des visualisations de données supplémentaires et des informations produit en lecture seule.",
+      "aspectClass": "aspect-video",
+      "bgClass": "bg-neutral-800",
+      "heroImage": "/projects/volvo-penta-ips/f31e356230f6.webp",
+      "gallery": [
+        {
+          "type": "video",
+          "mp4": "/projects/volvo-penta-ips/2b5b8e154345.mp4",
+          "webm": "/projects/volvo-penta-ips/2b5b8e154345.webm",
+          "layout": "full",
+          "poster": "/projects/volvo-penta-ips/2b5b8e154345-poster.webp"
+        },
+        {
+          "type": "image",
+          "src": "/projects/volvo-penta-ips/f1c0b5b306a8.webp",
+          "layout": "half",
+          "position": "center",
+          "blurDataURL": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAACwAQCdASoKAAYABUB8JZwAAlrswYGgAPlgsZqPwz4+yFQ39ZZ0fmXJG9GVBidg6EAAAA=="
+        },
+        {
+          "type": "image",
+          "src": "/projects/volvo-penta-ips/a6da11ed2b78.webp",
+          "layout": "half",
+          "position": "left",
+          "blurDataURL": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoKAAYABUB8JQBOgCIGhIZGqAAA/qYAGMwmAhZ+Feh9eKmK0QitzFdNbQZEG98AAAA="
+        }
+      ],
+      "role": "Directeur Développement Créatif",
+      "agency": "AKQA",
+      "client": "Volvo Penta",
+      "credit": "Images avec l'aimable autorisation de AKQA et Volvo Penta",
+      "clientUrl": "https://www.volvopenta.com/marine/the-all-new-volvo-penta-ips-experience/",
+      "heroBlur": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADQAQCdASoKAAYABUB8JQBOgCBqMcY+AAD+SQpThIz2wejKQVphz5DBYGriXF8SF4AsXAIA"
+    },
+    {
+      "slug": "safety-in-mind",
+      "title": "Safety in Mind",
+      "category": "Expérience interactive",
+      "year": "2023",
+      "description": "Une expérience web immersive pour la campagne « For Life » de Volvo Cars, explorant comment la vie affecte votre conduite. Dans le cadre d'une initiative plus large visant à comprendre le rôle de la sécurité psychologique au volant, le site guidait les utilisateurs à travers un sondage audio-visuel méditatif — des dégradés animés subtils, des transitions fluides et des signaux audio soigneusement conçus créaient une atmosphère calme et contemplative. Les utilisateurs répondaient à des questions sur leurs habitudes de conduite et leurs émotions en sélectionnant parmi des options de réponse animées et flottantes. À la fin, des résultats personnalisés comparaient vos réponses à celles des autres participants et offraient des conseils pratiques sur la pleine conscience et la sécurité au volant, avec une carte partageable pour les réseaux sociaux.",
+      "aspectClass": "aspect-video",
+      "bgClass": "bg-neutral-900",
+      "cardVideo": {
+        "mp4": "/projects/safety-in-mind/479253e302a8.mp4",
+        "webm": "/projects/safety-in-mind/479253e302a8.webm",
+        "poster": "/projects/safety-in-mind/479253e302a8-poster.webp"
+      },
+      "heroVideo": {
+        "mp4": "/projects/safety-in-mind/479253e302a8.mp4",
+        "webm": "/projects/safety-in-mind/479253e302a8.webm",
+        "poster": "/projects/safety-in-mind/479253e302a8-poster.webp"
+      },
+      "gallery": [
+        {
+          "type": "video",
+          "mp4": "/projects/safety-in-mind/143e71436db6.mp4",
+          "webm": "/projects/safety-in-mind/143e71436db6.webm",
+          "layout": "full",
+          "poster": "/projects/safety-in-mind/143e71436db6-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/safety-in-mind/dbc90d1ebc4a.mp4",
+          "webm": "/projects/safety-in-mind/dbc90d1ebc4a.webm",
+          "layout": "half",
+          "poster": "/projects/safety-in-mind/dbc90d1ebc4a-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/safety-in-mind/cf0593cf1223.mp4",
+          "webm": "/projects/safety-in-mind/cf0593cf1223.webm",
+          "layout": "half",
+          "poster": "/projects/safety-in-mind/cf0593cf1223-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/safety-in-mind/bb13a7077dd4.mp4",
+          "webm": "/projects/safety-in-mind/bb13a7077dd4.webm",
+          "layout": "full",
+          "poster": "/projects/safety-in-mind/bb13a7077dd4-poster.webp"
+        }
+      ],
+      "role": "Directeur Développement Créatif",
+      "agency": "AKQA",
+      "client": "Volvo Cars",
+      "credit": "Images avec l'aimable autorisation de AKQA et Volvo Cars",
+      "clientUrl": "https://www.akqa.com/work/volvo-cars/for-life/"
+    },
+    {
+      "slug": "ambassadors-of-pride",
+      "title": "Ambassadors of Pride",
+      "category": "Site de campagne",
+      "year": "2022",
+      "description": "Un site web construit de zéro pour la campagne Ambassadors of Pride de West Pride, donnant une plateforme à six réfugiés LGBTQ+ anonymes qui partageaient leurs histoires pour questionner le processus d'asile suédois. Le site combinait storytelling et plaidoyer — après la couverture médiatique de la Journée mondiale des réfugiés, le ministre suédois Mikael Damberg a accepté d'examiner personnellement les demandes de changements dans le processus d'asile LGBTQ+, et West Pride a commencé à offrir des conseils juridiques gratuits aux ambassadeurs. La campagne a été reconnue par MUSE by Clio, Ad Age et Little Black Book.",
+      "aspectClass": "aspect-video",
+      "bgClass": "bg-neutral-900",
+      "heroImage": "/projects/ambassadors-of-pride/945f4f97b224.webp",
+      "gallery": [
+        {
+          "type": "image",
+          "src": "/projects/ambassadors-of-pride/1500deb3d847.webp",
+          "layout": "full",
+          "blurDataURL": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADQAQCdASoKAAYABUB8JZACdIExETZ8YAD9rsv2jEPMLXiwVxjaMC5V6CsV9fEb3Eo0fOlzV5BmS4tx3vq7wAAA"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/ambassadors-of-pride/fb495eea82ff.mp4",
+          "webm": "/projects/ambassadors-of-pride/fb495eea82ff.webm",
+          "layout": "half",
+          "poster": "/projects/ambassadors-of-pride/fb495eea82ff-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/ambassadors-of-pride/d886a18f9a7d.mp4",
+          "webm": "/projects/ambassadors-of-pride/d886a18f9a7d.webm",
+          "layout": "half",
+          "poster": "/projects/ambassadors-of-pride/d886a18f9a7d-poster.webp"
+        }
+      ],
+      "role": "Directeur Développement Créatif",
+      "agency": "AKQA",
+      "client": "West Pride",
+      "credit": "Images avec l'aimable autorisation de AKQA et West Pride",
+      "clientUrl": "https://www.westpride.se/",
+      "heroBlur": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADwAQCdASoKAAYABUB8JZgCdAEQFHx/FegA/oIZ/b0jDrn5ndXjVB5XaFIsy4BGs94fAAXc+6G3jNaqIJGZcnLSQAA="
+    },
+    {
+      "slug": "fuzed",
+      "title": "FUZED",
+      "category": "Application mobile & Plateforme",
+      "year": "2025",
+      "description": "Une refonte complète de l'application mobile et de l'architecture technique de FUZED, réécrivant la plateforme de zéro pour s'intégrer parfaitement à leur écosystème d'arènes — gestion du temps d'ordinateur, suivi de l'activité physique et comptes utilisateurs. FUZED récompense les enfants pour leur activité physique avec du temps de jeu, des récompenses virtuelles et des prix réels débloqués dans les arènes. Avec le lancement de FUZED Trophy à l'été 2025, nous avons construit une fonctionnalité complète de tournoi en ligne et hors ligne : les enfants rejoignent des compétitions via l'app, suivent la progression en direct et rapportent les scores des matchs en temps réel, le tout soutenu par un système d'administration pour le personnel. La plateforme a aidé FUZED à obtenir des sponsorisations de Nike, Stadium, LEGO et EA Sports, et touche 6 à 8 fois plus de jeunes que les programmes de loisirs traditionnels.",
+      "aspectClass": "aspect-video",
+      "bgClass": "bg-neutral-900",
+      "heroImage": "/projects/fuzed/241b47012a1f.webp",
+      "gallery": [
+        {
+          "type": "image",
+          "src": "/projects/fuzed/35c56ab72900.webp",
+          "layout": "full",
+          "blurDataURL": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADQAQCdASoKAAcABUB8JaACdH8AE1qvAAD+IxZsA8ygNnI7GJXovjTHXTyC3VN7DEzFsAw4AAA="
+        },
+        {
+          "type": "image",
+          "src": "/projects/fuzed/92bf0917899d.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADQAQCdASoFAAoABUB8JZAAAxZgktucAAD+7EWCSYKv14jawWoE8H9cZONtPez+RY0AAAAA"
+        },
+        {
+          "type": "image",
+          "src": "/projects/fuzed/88741d637ebb.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADQAQCdASoFAAoABUB8JaAAAp2ZeJI7gAD+6U9WXAGgipSqSaLiMsTu+kHLG59nlkxUYHYAAAA="
+        },
+        {
+          "type": "image",
+          "src": "/projects/fuzed/1c91d6c79dc8.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADQAQCdASoKAAcABUB8JYwCdADzXjqOAAD+wHVlm3l8/dgDsb/gfnLWz/vQJuQkJ2EtowPJZE8UAAAA"
+        },
+        {
+          "type": "image",
+          "src": "/projects/fuzed/e5a9771a28df.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAACwAQCdASoKAAcABUB8JagCdADZSCUoAP7clxaEVzqB/of3uGCnzbpwvUa90L8Pfk0j1MehyltfisUL8GmAAA=="
+        }
+      ],
+      "role": "Directeur Développement Créatif",
+      "agency": "AKQA",
+      "client": "FUZED",
+      "credit": "Images avec l'aimable autorisation de FUZED",
+      "clientUrl": "https://www.fuzed.com/en/fuzed-app",
+      "heroBlur": "data:image/webp;base64,UklGRqIAAABXRUJQVlA4WAoAAAAQAAAACQAABQAAQUxQSDgAAAABYBvZVqr+GwO+u7tc0he9GC0iIuIyBkww0LL99qVPvz2/YQwTjNEi+/OtH+Jq6+v/yi8Yw2QMAFZQOCBEAAAA8AEAnQEqCgAGAAVAfCWwAuwA9JbK/kIAAP6Fyq4EbgDhMhu6qZktVcNwMgrqiiHcYTPW63aFXmbPyZzxEhE2f0IAAAA="
+    },
+    {
+      "slug": "arrival",
+      "title": "ARRIVAL",
+      "category": "UX automobile & Prototypage",
+      "year": "2021",
+      "description": "En tant que responsable de l'équipe technique au sein du département UX d'ARRIVAL, j'ai dirigé tout le prototypage UI à travers les expériences web et VR pour le constructeur britannique de véhicules électriques. Le travail couvrait l'ensemble de la gamme — fourgon, bus et voiture — incluant le prototypage HMI et infotainment embarqué, les revues de design intérieur et extérieur en VR, et les expériences interactives utilisées pour valider les décisions de design avant la production. Les prototypes web et VR sont devenus un élément central du pipeline de design, permettant une itération rapide entre les équipes UX, design et ingénierie.",
+      "aspectClass": "aspect-video",
+      "bgClass": "bg-neutral-900",
+      "heroImage": "/projects/arrival/98587e6328e2.webp",
+      "gallery": [
+        {
+          "type": "video",
+          "mp4": "/projects/arrival/cd1236bcd6da.mp4",
+          "webm": "/projects/arrival/cd1236bcd6da.webm",
+          "layout": "full",
+          "poster": "/projects/arrival/cd1236bcd6da-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/arrival/99b476175347.mp4",
+          "webm": "/projects/arrival/99b476175347.webm",
+          "layout": "half",
+          "poster": "/projects/arrival/99b476175347-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/arrival/ae45ac1525dc.mp4",
+          "webm": "/projects/arrival/ae45ac1525dc.webm",
+          "layout": "half",
+          "poster": "/projects/arrival/ae45ac1525dc-poster.webp"
+        },
+        {
+          "type": "image",
+          "src": "/projects/arrival/113a438f6a02.webp",
+          "layout": "half",
+          "position": "right",
+          "blurDataURL": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACwAQCdASoKAAUABUB8JZwAAuUv/xgAAP6mua87S7tK9Dg+znYudqqBQAA="
+        },
+        {
+          "type": "image",
+          "src": "/projects/arrival/56843e4cc0c4.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRjQAAABXRUJQVlA4ICgAAADQAQCdASoKAAYABUB8JZQCw7EfUORKQAD+3LEQ7CFa95tLdhFuBuAA"
+        }
+      ],
+      "role": "Responsable technique, Département UX",
+      "client": "ARRIVAL",
+      "credit": "Images avec l'aimable autorisation d'ARRIVAL",
+      "heroBlur": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAAAwAQCdASoKAAUABUB8JZwAA3AA/u9fNH58N3reyJIAAA=="
+    }
+  ]
+}

@@ -3,11 +3,12 @@
 import { motion } from "motion/react";
 import { TextReveal } from "./TextReveal";
 import { DitherField } from "./DitherField";
-import content from "@/lib/content.json";
-
-const { headline, description, scrollLabel } = content.hero;
+import { useLocale } from "./LocaleProvider";
+import { getContent } from "@/lib/content";
 
 export function HeroSection() {
+  const locale = useLocale();
+  const { headline, description, scrollLabel } = getContent(locale).hero;
   return (
     <section className="relative flex min-h-[90vh] items-end overflow-hidden px-6 pb-24 pt-32 lg:px-12">
       <DitherField />

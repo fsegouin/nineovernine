@@ -6,11 +6,14 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Magnetic } from "./Magnetic";
 import { useLenis } from "./SmoothScroll";
-import content from "@/lib/content.json";
-
-const { links } = content.nav;
+import { useLocale } from "./LocaleProvider";
+import { getContent } from "@/lib/content";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Navigation() {
+  const locale = useLocale();
+  const content = getContent(locale);
+  const { links } = content.nav;
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoMorphed, setLogoMorphed] = useState(false);
   const clickCount = useRef(0);
@@ -30,10 +33,12 @@ export function Navigation() {
     }
   }, [logoMorphed]);
 
+  const localePath = `/${locale}`;
+
   const handleAnchorClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, hash?: string) => {
       // Only smooth-scroll when already on the home page
-      if (!hash || pathname !== "/") return;
+      if (!hash || pathname !== localePath) return;
 
       const target = document.querySelector(hash);
       if (target && lenisRef.current) {
@@ -41,7 +46,7 @@ export function Navigation() {
         lenisRef.current.scrollTo(target as HTMLElement, { offset: -64 });
       }
     },
-    [pathname, lenisRef]
+    [pathname, lenisRef, localePath]
   );
 
   return (
@@ -49,7 +54,7 @@ export function Navigation() {
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-12">
         <Magnetic strength={0.2}>
           <Link
-            href="/"
+            href={localePath}
             className="relative font-display text-lg font-bold tracking-tight"
             onClick={handleLogoClick}
             data-party-logo
@@ -86,7 +91,7 @@ export function Navigation() {
           {links.map((link) => (
             <Magnetic key={link.href}>
               <Link
-                href={link.href}
+                href={`${localePath}${link.href}`}
                 onClick={(e) => handleAnchorClick(e, link.hash)}
                 className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
               >
@@ -94,6 +99,9 @@ export function Navigation() {
               </Link>
             </Magnetic>
           ))}
+          <Magnetic strength={0.3}>
+            <LanguageSwitcher />
+          </Magnetic>
         </div>
 
         {/* Mobile hamburger */}
@@ -122,13 +130,14 @@ export function Navigation() {
             {links.map((link) => (
               <Link
                 key={link.href}
-                href={link.href}
+                href={`${localePath}${link.href}`}
                 onClick={(e) => { setMenuOpen(false); handleAnchorClick(e, link.hash); }}
                 className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
               >
                 {link.label}
               </Link>
             ))}
+            <LanguageSwitcher />
           </div>
         </div>
       )}

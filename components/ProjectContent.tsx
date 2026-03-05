@@ -6,10 +6,10 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import type { Project, GalleryItem } from "@/lib/projects";
 import { useProjectTransition } from "@/components/ProjectTransition";
-import content from "@/lib/content.json";
+import { useLocale } from "./LocaleProvider";
+import { getContent } from "@/lib/content";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-const { backLabel, yearLabel, roleLabel, agencyLabel, clientLabel, overviewLabel, nextLabel, visitLabel } = content.projectDetail;
 
 export function ProjectContent({
   project,
@@ -18,6 +18,8 @@ export function ProjectContent({
   project: Project;
   nextProject: Project;
 }) {
+  const locale = useLocale();
+  const { backLabel, yearLabel, roleLabel, agencyLabel, clientLabel, overviewLabel, nextLabel, visitLabel } = getContent(locale).projectDetail;
   const router = useRouter();
   const nextRef = useRef<HTMLDivElement>(null);
   const [exiting, setExiting] = useState(false);
@@ -60,6 +62,7 @@ export function ProjectContent({
               loop
               muted
               playsInline
+              poster={project.heroVideo.poster}
             >
               <source src={project.heroVideo.webm} type="video/webm" />
               <source src={project.heroVideo.mp4} type="video/mp4" />
@@ -73,6 +76,7 @@ export function ProjectContent({
                 priority
                 sizes="100vw"
                 className="object-cover"
+                {...(project.heroBlur ? { placeholder: "blur" as const, blurDataURL: project.heroBlur } : {})}
               />
             </div>
           ) : (
@@ -220,6 +224,7 @@ export function ProjectContent({
                     loop
                     muted
                     playsInline
+                    poster={(nextProject.cardVideo ?? nextProject.heroVideo)!.poster}
                   >
                     <source src={(nextProject.cardVideo ?? nextProject.heroVideo)!.webm} type="video/webm" />
                     <source src={(nextProject.cardVideo ?? nextProject.heroVideo)!.mp4} type="video/mp4" />
@@ -231,6 +236,7 @@ export function ProjectContent({
                     fill
                     sizes="100vw"
                     className="object-cover"
+                    {...(nextProject.heroBlur ? { placeholder: "blur" as const, blurDataURL: nextProject.heroBlur } : {})}
                   />
                 ) : null}
               </div>
@@ -327,7 +333,7 @@ function GalleryMedia({
 }) {
   if (item.type === "video") {
     return (
-      <video className={`${className} bg-muted/10`} autoPlay loop muted playsInline>
+      <video className={`${className} bg-muted/10`} autoPlay loop muted playsInline poster={item.poster}>
         <source src={item.webm} type="video/webm" />
         <source src={item.mp4} type="video/mp4" />
       </video>
@@ -346,6 +352,7 @@ function GalleryMedia({
         fill
         sizes={sizes}
         className={`object-cover ${posClass}`}
+        {...(item.blurDataURL ? { placeholder: "blur" as const, blurDataURL: item.blurDataURL } : {})}
       />
     </div>
   );

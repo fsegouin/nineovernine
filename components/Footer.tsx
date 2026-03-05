@@ -3,12 +3,15 @@
 import Link from "next/link";
 import { useTheme } from "./ThemeProvider";
 import { Magnetic } from "./Magnetic";
-import content from "@/lib/content.json";
-
-const { tagline, navLabel, navLinks, contactLabel, copyright } = content.footer;
-const { email, location } = content.contact;
+import { useLocale } from "./LocaleProvider";
+import { getContent } from "@/lib/content";
 
 export function Footer() {
+  const locale = useLocale();
+  const content = getContent(locale);
+  const { tagline, navLabel, navLinks, contactLabel, copyright } = content.footer;
+  const { email, location } = content.contact;
+  const localePath = `/${locale}`;
   const { resolvedTheme, toggleTheme } = useTheme();
 
   return (
@@ -37,7 +40,7 @@ export function Footer() {
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
-                  href={link.href}
+                  href={`${localePath}${link.href}`}
                   className="font-sans text-sm text-background/60 transition-colors hover:text-background"
                 >
                   {link.label}

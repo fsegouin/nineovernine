@@ -4,13 +4,15 @@ import { useRef } from "react";
 import Image from "next/image";
 import { FadeIn } from "./FadeIn";
 import { useProjectTransition } from "./ProjectTransition";
-import { projects } from "@/lib/projects";
+import { getProjects } from "@/lib/projects";
 import type { Project } from "@/lib/projects";
-import content from "@/lib/content.json";
-
-const { overline, heading, subtitle } = content.work;
+import { useLocale } from "./LocaleProvider";
+import { getContent } from "@/lib/content";
 
 export function WorkSection() {
+  const locale = useLocale();
+  const { overline, heading, subtitle } = getContent(locale).work;
+  const projects = getProjects(locale);
   return (
     <section id="work" className="px-6 py-24 lg:px-12 lg:py-32">
       <div className="mx-auto max-w-7xl">
@@ -79,6 +81,7 @@ function ProjectCard({ project }: { project: Project }) {
             loop
             muted
             playsInline
+            poster={(project.cardVideo ?? project.heroVideo)!.poster}
           >
             <source src={(project.cardVideo ?? project.heroVideo)!.webm} type="video/webm" />
             <source src={(project.cardVideo ?? project.heroVideo)!.mp4} type="video/mp4" />
@@ -90,6 +93,7 @@ function ProjectCard({ project }: { project: Project }) {
             fill
             sizes="(min-width: 768px) 58vw, 100vw"
             className="object-cover"
+            {...(project.heroBlur ? { placeholder: "blur" as const, blurDataURL: project.heroBlur } : {})}
           />
         ) : null}
       </div>
