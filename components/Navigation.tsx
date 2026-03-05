@@ -52,6 +52,7 @@ export function Navigation() {
             href="/"
             className="relative font-display text-lg font-bold tracking-tight"
             onClick={handleLogoClick}
+            data-party-logo
           >
             <AnimatePresence mode="wait">
               {logoMorphed ? (

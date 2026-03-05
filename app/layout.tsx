@@ -10,6 +10,7 @@ import { SmoothScroll } from "@/components/SmoothScroll";
 import { Cursor } from "@/components/Cursor";
 import { GrainOverlay } from "@/components/GrainOverlay";
 import { ConsoleMessage } from "@/components/ConsoleMessage";
+import { PartyModeProvider } from "@/components/PartyMode";
 import { organizationJsonLd, webSiteJsonLd } from "@/lib/jsonld";
 import content from "@/lib/content.json";
 import "./globals.css";
@@ -85,14 +86,16 @@ export default function RootLayout({
         />
         <GrainOverlay />
         <ThemeProvider>
-          <SmoothScroll>
-            <ProjectTransitionProvider>
-              <Navigation />
-              <main>{children}</main>
-              <Footer />
-            </ProjectTransitionProvider>
-          </SmoothScroll>
-          <Cursor />
+          <PartyModeProvider>
+            <SmoothScroll>
+              <ProjectTransitionProvider>
+                <Navigation />
+                <main>{children}</main>
+                <Footer />
+              </ProjectTransitionProvider>
+            </SmoothScroll>
+            <Cursor />
+          </PartyModeProvider>
         </ThemeProvider>
         <ConsoleMessage />
         <Analytics />
