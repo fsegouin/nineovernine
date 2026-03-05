@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import { FadeIn } from "@/components/FadeIn";
 import { TextReveal } from "@/components/TextReveal";
 import content from "@/lib/content.json";
 
 const { heading, founder, vision, values } = content.about;
+
+export const metadata: Metadata = {
+  title: "About",
+  description: content.about.vision.paragraphs[0],
+  openGraph: {
+    type: "website",
+  },
+};
 
 export default function AboutPage() {
   return (

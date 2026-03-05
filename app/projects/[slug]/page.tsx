@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getProject, getNextProject, projects } from "@/lib/projects";
+import { projectJsonLd } from "@/lib/jsonld";
 import { ProjectContent } from "@/components/ProjectContent";
 
 export function generateStaticParams() {
@@ -15,8 +16,13 @@ export async function generateMetadata({
   const project = getProject(slug);
   if (!project) return {};
   return {
-    title: `${project.title} — Nine Over Nine`,
+    title: project.title,
     description: project.description,
+    openGraph: {
+      type: "article",
+      title: project.title,
+      description: project.description,
+    },
   };
 }
 
@@ -31,5 +37,15 @@ export default async function ProjectPage({
 
   const nextProject = getNextProject(slug);
 
-  return <ProjectContent project={project} nextProject={nextProject} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(projectJsonLd(project)),
+        }}
+      />
+      <ProjectContent project={project} nextProject={nextProject} />
+    </>
+  );
 }
