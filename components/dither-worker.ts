@@ -186,7 +186,6 @@ function animate(time: number) {
   lastTime = time;
 
   const { w: cw, h: ch } = dims;
-  ctx.clearRect(0, 0, cw, ch);
 
   const { r, g, b } = color;
 
@@ -278,7 +277,9 @@ function animate(time: number) {
   }
   needsRender = false;
 
-  // Render pass
+  // Render pass — clear only when we're actually going to draw,
+  // so skipped frames keep the previous image visible.
+  ctx.clearRect(0, 0, cw, ch);
   ctx.fillStyle = `rgb(${r},${g},${b})`;
 
   for (let i = 0; i < dots.length; i++) {
