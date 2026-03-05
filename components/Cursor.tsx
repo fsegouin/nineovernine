@@ -1,8 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, useMotionValue, useSpring } from "motion/react";
+
+const TRAIL_COUNT = 6;
+const VELOCITY_THRESHOLD = 30;
+
+interface TrailDot {
+  x: number;
+  y: number;
+  opacity: number;
+}
 
 export function Cursor() {
   const [visible, setVisible] = useState(false);
@@ -18,25 +27,98 @@ export function Cursor() {
   const springY = useSpring(mouseY, { damping: 25, stiffness: 250, mass: 0.5 });
   const springScale = useSpring(scale, { damping: 20, stiffness: 300 });
 
+  // Trail state
+  const trailRef = useRef<TrailDot[]>([]);
+  const trailCanvasRef = useRef<HTMLCanvasElement>(null);
+  const lastPos = useRef({ x: 0, y: 0 });
+  const rafId = useRef(0);
+
   // Reset cursor scale on route change
   useEffect(() => {
     scale.set(1);
   }, [pathname, scale]);
 
+  const renderTrail = useCallback(() => {
+    const canvas = trailCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const dpr = window.devicePixelRatio || 1;
+
+    let hasVisible = false;
+    for (let i = trailRef.current.length - 1; i >= 0; i--) {
+      const dot = trailRef.current[i];
+      dot.opacity -= 0.04;
+      if (dot.opacity <= 0) {
+        trailRef.current.splice(i, 1);
+        continue;
+      }
+      hasVisible = true;
+      const size = (dot.opacity * 5) * dpr;
+      ctx.globalAlpha = dot.opacity;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(dot.x * dpr, dot.y * dpr, size / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (hasVisible) {
+      rafId.current = requestAnimationFrame(renderTrail);
+    } else {
+      rafId.current = 0;
+    }
+  }, []);
+
   useEffect(() => {
     // Only show on devices with a precise pointer (mouse)
     if (!window.matchMedia("(pointer: fine)").matches) return;
 
+    const canvas = trailCanvasRef.current;
+    if (canvas) {
+      const resize = () => {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        canvas.style.width = `${window.innerWidth}px`;
+        canvas.style.height = `${window.innerHeight}px`;
+      };
+      resize();
+      window.addEventListener("resize", resize);
+      return () => window.removeEventListener("resize", resize);
+    }
+  }, [visible]);
+
+  useEffect(() => {
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+
     const move = (e: MouseEvent) => {
       if (!hasMoved.current) {
-        // Jump to initial position instantly (no spring from 0,0)
         hasMoved.current = true;
         springX.jump(e.clientX);
         springY.jump(e.clientY);
+        lastPos.current = { x: e.clientX, y: e.clientY };
         setVisible(true);
       }
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
+
+      // Velocity check for trail
+      const dx = e.clientX - lastPos.current.x;
+      const dy = e.clientY - lastPos.current.y;
+      const velocity = Math.sqrt(dx * dx + dy * dy);
+      lastPos.current = { x: e.clientX, y: e.clientY };
+
+      if (velocity > VELOCITY_THRESHOLD) {
+        trailRef.current.push({ x: e.clientX, y: e.clientY, opacity: 0.6 });
+        if (trailRef.current.length > TRAIL_COUNT * 3) {
+          trailRef.current = trailRef.current.slice(-TRAIL_COUNT * 2);
+        }
+        if (!rafId.current) {
+          rafId.current = requestAnimationFrame(renderTrail);
+        }
+      }
     };
 
     const over = (e: MouseEvent) => {
@@ -61,15 +143,23 @@ export function Cursor() {
       window.removeEventListener("mousemove", move);
       document.removeEventListener("mouseover", over);
       document.removeEventListener("mouseout", out);
+      if (rafId.current) cancelAnimationFrame(rafId.current);
     };
-  }, [mouseX, mouseY, scale]);
+  }, [mouseX, mouseY, scale, renderTrail]);
 
   if (!visible) return null;
 
   return (
-    <motion.div
-      className="pointer-events-none fixed left-0 top-0 z-[99] h-3 w-3 -ml-1.5 -mt-1.5 rounded-full bg-white mix-blend-difference"
-      style={{ x: springX, y: springY, scale: springScale }}
-    />
+    <>
+      <canvas
+        ref={trailCanvasRef}
+        className="pointer-events-none fixed inset-0 z-[98] mix-blend-difference"
+        aria-hidden="true"
+      />
+      <motion.div
+        className="pointer-events-none fixed left-0 top-0 z-[99] h-3 w-3 -ml-1.5 -mt-1.5 rounded-full bg-white mix-blend-difference"
+        style={{ x: springX, y: springY, scale: springScale }}
+      />
+    </>
   );
 }
