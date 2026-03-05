@@ -165,13 +165,22 @@ let visible = true;
 let lastTime = 0;
 let noiseFrame = 0;
 let running = false;
+let scrolling = false;
+let scrollTimeout: ReturnType<typeof setTimeout>;
+let needsRender = true; // true when visual state has changed
 
 // --- Animation loop ---
 
 function animate(time: number) {
   if (!visible || !running) return;
 
-  // No frame skipping needed — worker runs off main thread
+  // During scroll, pause rendering entirely — the existing canvas image
+  // stays composited without competing with the scroll compositor thread.
+  if (scrolling) {
+    lastTime = 0;
+    scheduleFrame();
+    return;
+  }
 
   const dt = lastTime ? time - lastTime : 16;
   lastTime = time;
@@ -245,7 +254,9 @@ function animate(time: number) {
 
   // Noise update pass — every 4th frame
   noiseFrame++;
-  if (noiseFrame % 4 === 1) {
+  const isNoiseFrame = noiseFrame % 4 === 1;
+  if (isNoiseFrame) {
+    needsRender = true;
     for (let i = 0; i < dots.length; i++) {
       const dot = dots[i];
       const n1 = fbm2(dot.nx + nt, dot.ny + nt * 0.6);
@@ -258,6 +269,14 @@ function animate(time: number) {
       dot.drawSize = Math.max(2, Math.round(dot.size * (0.5 + (sn + 1) * 0.4)) * 2);
     }
   }
+
+  // Skip render if nothing visual has changed:
+  // no noise update, no cursor nearby, no active glow/energy decay, no dissipation
+  if (!needsRender && !interacting && energy < 0.01 && !dissipation.active) {
+    scheduleFrame();
+    return;
+  }
+  needsRender = false;
 
   // Render pass
   ctx.fillStyle = `rgb(${r},${g},${b})`;
@@ -340,15 +359,21 @@ let idleTimeout: ReturnType<typeof setTimeout>;
 
 function markInteracting() {
   interacting = true;
+  needsRender = true;
   clearTimeout(idleTimeout);
   idleTimeout = setTimeout(() => { interacting = false; }, 200);
 }
 
 function scheduleFrame() {
   if (hasRAF) {
-    requestAnimationFrame(animate);
+    // Throttle to ~20fps when idle to reduce compositor contention
+    if (interacting) {
+      requestAnimationFrame(animate);
+    } else {
+      setTimeout(() => requestAnimationFrame(animate), 33);
+    }
   } else {
-    const interval = interacting ? 16 : 33;
+    const interval = interacting ? 16 : 50;
     setTimeout(() => animate(performance.now()), interval);
   }
 }
@@ -425,6 +450,7 @@ self.onmessage = (e: MessageEvent) => {
       dissipation.y = msg.y;
       dissipation.elapsed = 0;
       dissipation.radius0 = spread;
+      needsRender = true;
       break;
 
     case "visibility": {
@@ -436,6 +462,16 @@ self.onmessage = (e: MessageEvent) => {
       }
       break;
     }
+
+    case "scroll":
+      scrolling = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        scrolling = false;
+        needsRender = true;
+        lastTime = 0;
+      }, 150);
+      break;
 
     case "theme":
       color = msg.color;

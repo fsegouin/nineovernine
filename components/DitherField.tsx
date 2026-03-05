@@ -32,6 +32,7 @@ export function DitherField() {
     const canvas = document.createElement("canvas");
     canvas.setAttribute("aria-hidden", "true");
     canvas.className = "pointer-events-none absolute inset-0 h-full w-full";
+    canvas.style.willChange = "transform"; // promote to compositor layer
     container.appendChild(canvas);
 
     // OffscreenCanvas required for worker rendering
@@ -70,12 +71,23 @@ export function DitherField() {
     // Updated on resize and scroll.
     let cachedRect = rect;
 
+    // Throttle mousemove to one message per animation frame
+    let pendingMouse: { x: number; y: number } | null = null;
+    let mouseRafId = 0;
     const onMouseMove = (e: MouseEvent) => {
-      worker.postMessage({
-        type: "mouse",
+      pendingMouse = {
         x: e.clientX - cachedRect.left,
         y: e.clientY - cachedRect.top,
-      });
+      };
+      if (!mouseRafId) {
+        mouseRafId = requestAnimationFrame(() => {
+          if (pendingMouse) {
+            worker.postMessage({ type: "mouse", ...pendingMouse });
+            pendingMouse = null;
+          }
+          mouseRafId = 0;
+        });
+      }
     };
 
     const onTouchStart = (e: TouchEvent) => {
@@ -100,9 +112,16 @@ export function DitherField() {
       worker.postMessage({ type: "touchend" });
     };
 
-    // Update cached rect on scroll (debounced to avoid thrashing)
+    // Update cached rect on scroll and notify worker to pause rendering
     let scrollRafId = 0;
+    let scrollNotified = false;
     const onScroll = () => {
+      // Only send scroll message once per burst (worker handles its own timeout)
+      if (!scrollNotified) {
+        worker.postMessage({ type: "scroll" });
+        scrollNotified = true;
+        setTimeout(() => { scrollNotified = false; }, 100);
+      }
       if (!scrollRafId) {
         scrollRafId = requestAnimationFrame(() => {
           cachedRect = container.getBoundingClientRect();
@@ -181,6 +200,7 @@ export function DitherField() {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onScroll);
       if (scrollRafId) cancelAnimationFrame(scrollRafId);
+      if (mouseRafId) cancelAnimationFrame(mouseRafId);
       clearTimeout(resizeTimer);
       themeObs.disconnect();
       intersectionObs.disconnect();
