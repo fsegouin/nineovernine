@@ -74,20 +74,18 @@ export default async function LocaleLayout({
           __html: `document.documentElement.lang="${typedLocale}"`,
         }}
       />
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationJsonLd(typedLocale)),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(webSiteJsonLd(typedLocale)),
-          }}
-        />
-      </head>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationJsonLd(typedLocale)),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(webSiteJsonLd(typedLocale)),
+        }}
+      />
       <GrainOverlay />
       <ThemeProvider>
         <PartyModeProvider>

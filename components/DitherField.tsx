@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 
 function getForegroundColor(): string {
   return getComputedStyle(document.documentElement)
@@ -18,7 +18,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   };
 }
 
-export function DitherField() {
+export const DitherField = memo(function DitherField() {
   const containerRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
 
@@ -215,4 +215,4 @@ export function DitherField() {
       className="absolute inset-0"
     />
   );
-}
+});
