@@ -58,7 +58,21 @@
     "overline": "Get in Touch",
     "heading": "Let's build something\ntogether.",
     "email": "hello@nineovernine.com",
-    "location": "Paris / Worldwide"
+    "location": "Paris / Worldwide",
+    "form": {
+      "steps": [
+        { "question": "What's your name?", "field": "name", "type": "text", "placeholder": "Your name" },
+        { "question": "What's your email?", "field": "email", "type": "email", "placeholder": "you@example.com" },
+        { "question": "What can we help with?", "field": "services", "type": "chips", "options": ["Strategy", "Development", "AI Integration", "Content", "Other"] },
+        { "question": "Tell us about your project.", "field": "message", "type": "textarea", "placeholder": "A few words about what you're looking for..." }
+      ],
+      "nextLabel": "Continue",
+      "submitLabel": "Send message",
+      "successHeading": "Thanks, {name}.",
+      "successMessage": "We'll be in touch soon.",
+      "errorMessage": "Something went wrong. Please try again.",
+      "orEmailLabel": "Or email us directly"
+    }
   },
   "footer": {
     "tagline": "A human-led digital agency\nbuilt for the AI world.",

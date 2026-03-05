@@ -1,8 +1,9 @@
 import { FadeIn } from "./FadeIn";
 import { Magnetic } from "./Magnetic";
+import { ContactForm } from "./ContactForm";
 import content from "@/lib/content.json";
 
-const { overline, heading, email, location } = content.contact;
+const { overline, heading, email, location, form } = content.contact;
 
 export function ContactSection() {
   return (
@@ -23,18 +24,25 @@ export function ContactSection() {
         </FadeIn>
 
         <FadeIn delay={0.2}>
-          <Magnetic strength={0.15} className="mt-10 inline-block">
+          <ContactForm />
+        </FadeIn>
+
+        <FadeIn delay={0.4}>
+          <p className="mt-10 font-sans text-xs text-muted">
+            {form.orEmailLabel}
+          </p>
+          <Magnetic strength={0.15} className="mt-2 inline-block">
             <a
               href={`mailto:${email}`}
-              className="inline-block font-sans text-xl text-muted underline decoration-border underline-offset-8 transition-colors hover:text-foreground hover:decoration-foreground md:text-2xl"
+              className="inline-block font-sans text-base text-muted underline decoration-border underline-offset-8 transition-colors hover:text-foreground hover:decoration-foreground md:text-lg"
             >
               {email}
             </a>
           </Magnetic>
         </FadeIn>
 
-        <FadeIn delay={0.3}>
-          <p className="mt-8 font-sans text-sm text-muted">
+        <FadeIn delay={0.5}>
+          <p className="mt-6 font-sans text-sm text-muted">
             {location}
           </p>
         </FadeIn>
