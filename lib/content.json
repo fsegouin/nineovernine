@@ -5,13 +5,28 @@
   },
   "nav": {
     "links": [
-      { "label": "Work", "href": "/#work", "hash": "#work" },
-      { "label": "About", "href": "/about" },
-      { "label": "Contact", "href": "/#contact", "hash": "#contact" }
+      {
+        "label": "Work",
+        "href": "/#work",
+        "hash": "#work"
+      },
+      {
+        "label": "About",
+        "href": "/about"
+      },
+      {
+        "label": "Contact",
+        "href": "/#contact",
+        "hash": "#contact"
+      }
     ]
   },
   "hero": {
-    "headline": ["Crafting digital", "experiences for the", "age of intelligence."],
+    "headline": [
+      "Crafting digital",
+      "experiences for the",
+      "age of intelligence."
+    ],
     "description": "A human-led digital agency where craft meets intelligence.",
     "scrollLabel": "Scroll"
   },
@@ -61,10 +76,36 @@
     "location": "Paris / Worldwide",
     "form": {
       "steps": [
-        { "question": "What's your name?", "field": "name", "type": "text", "placeholder": "Your name" },
-        { "question": "What's your email?", "field": "email", "type": "email", "placeholder": "you@example.com" },
-        { "question": "What can we help with?", "field": "services", "type": "chips", "options": ["Strategy", "Development", "AI Integration", "Content", "Other"] },
-        { "question": "Tell us about your project.", "field": "message", "type": "textarea", "placeholder": "A few words about what you're looking for..." }
+        {
+          "question": "What's your name?",
+          "field": "name",
+          "type": "text",
+          "placeholder": "Your name"
+        },
+        {
+          "question": "What's your email?",
+          "field": "email",
+          "type": "email",
+          "placeholder": "you@example.com"
+        },
+        {
+          "question": "What can we help with?",
+          "field": "services",
+          "type": "chips",
+          "options": [
+            "Strategy",
+            "Development",
+            "AI Integration",
+            "Content",
+            "Other"
+          ]
+        },
+        {
+          "question": "Tell us about your project.",
+          "field": "message",
+          "type": "textarea",
+          "placeholder": "A few words about what you're looking for..."
+        }
       ],
       "nextLabel": "Continue",
       "submitLabel": "Send message",
@@ -78,8 +119,14 @@
     "tagline": "A human-led digital agency\nbuilt for the AI world.",
     "navLabel": "Navigation",
     "navLinks": [
-      { "label": "Home", "href": "/" },
-      { "label": "About", "href": "/about" }
+      {
+        "label": "Home",
+        "href": "/"
+      },
+      {
+        "label": "About",
+        "href": "/about"
+      }
     ],
     "contactLabel": "Contact",
     "copyright": "Nine Over Nine. All rights reserved."
@@ -146,15 +193,34 @@
       "bgClass": "bg-neutral-800",
       "heroImage": "/projects/volvo-penta-ips/f31e356230f6.webp",
       "gallery": [
-        { "type": "video", "mp4": "/projects/volvo-penta-ips/2b5b8e154345.mp4", "webm": "/projects/volvo-penta-ips/2b5b8e154345.webm", "layout": "full" },
-        { "type": "image", "src": "/projects/volvo-penta-ips/f1c0b5b306a8.webp", "layout": "half", "position": "center" },
-        { "type": "image", "src": "/projects/volvo-penta-ips/a6da11ed2b78.webp", "layout": "half", "position": "left" }
+        {
+          "type": "video",
+          "mp4": "/projects/volvo-penta-ips/2b5b8e154345.mp4",
+          "webm": "/projects/volvo-penta-ips/2b5b8e154345.webm",
+          "layout": "full",
+          "poster": "/projects/volvo-penta-ips/2b5b8e154345-poster.webp"
+        },
+        {
+          "type": "image",
+          "src": "/projects/volvo-penta-ips/f1c0b5b306a8.webp",
+          "layout": "half",
+          "position": "center",
+          "blurDataURL": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAACwAQCdASoKAAYABUB8JZwAAlrswYGgAPlgsZqPwz4+yFQ39ZZ0fmXJG9GVBidg6EAAAA=="
+        },
+        {
+          "type": "image",
+          "src": "/projects/volvo-penta-ips/a6da11ed2b78.webp",
+          "layout": "half",
+          "position": "left",
+          "blurDataURL": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoKAAYABUB8JQBOgCIGhIZGqAAA/qYAGMwmAhZ+Feh9eKmK0QitzFdNbQZEG98AAAA="
+        }
       ],
       "role": "Creative Development Director",
       "agency": "AKQA",
       "client": "Volvo Penta",
       "credit": "Imagery courtesy of AKQA and Volvo Penta",
-      "clientUrl": "https://www.volvopenta.com/marine/the-all-new-volvo-penta-ips-experience/"
+      "clientUrl": "https://www.volvopenta.com/marine/the-all-new-volvo-penta-ips-experience/",
+      "heroBlur": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADQAQCdASoKAAYABUB8JQBOgCBqMcY+AAD+SQpThIz2wejKQVphz5DBYGriXF8SF4AsXAIA"
     },
     {
       "slug": "safety-in-mind",
@@ -166,17 +232,43 @@
       "bgClass": "bg-neutral-900",
       "cardVideo": {
         "mp4": "/projects/safety-in-mind/479253e302a8.mp4",
-        "webm": "/projects/safety-in-mind/479253e302a8.webm"
+        "webm": "/projects/safety-in-mind/479253e302a8.webm",
+        "poster": "/projects/safety-in-mind/479253e302a8-poster.webp"
       },
       "heroVideo": {
         "mp4": "/projects/safety-in-mind/479253e302a8.mp4",
-        "webm": "/projects/safety-in-mind/479253e302a8.webm"
+        "webm": "/projects/safety-in-mind/479253e302a8.webm",
+        "poster": "/projects/safety-in-mind/479253e302a8-poster.webp"
       },
       "gallery": [
-        { "type": "video", "mp4": "/projects/safety-in-mind/143e71436db6.mp4", "webm": "/projects/safety-in-mind/143e71436db6.webm", "layout": "full" },
-        { "type": "video", "mp4": "/projects/safety-in-mind/dbc90d1ebc4a.mp4", "webm": "/projects/safety-in-mind/dbc90d1ebc4a.webm", "layout": "half" },
-        { "type": "video", "mp4": "/projects/safety-in-mind/cf0593cf1223.mp4", "webm": "/projects/safety-in-mind/cf0593cf1223.webm", "layout": "half" },
-        { "type": "video", "mp4": "/projects/safety-in-mind/bb13a7077dd4.mp4", "webm": "/projects/safety-in-mind/bb13a7077dd4.webm", "layout": "full" }
+        {
+          "type": "video",
+          "mp4": "/projects/safety-in-mind/143e71436db6.mp4",
+          "webm": "/projects/safety-in-mind/143e71436db6.webm",
+          "layout": "full",
+          "poster": "/projects/safety-in-mind/143e71436db6-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/safety-in-mind/dbc90d1ebc4a.mp4",
+          "webm": "/projects/safety-in-mind/dbc90d1ebc4a.webm",
+          "layout": "half",
+          "poster": "/projects/safety-in-mind/dbc90d1ebc4a-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/safety-in-mind/cf0593cf1223.mp4",
+          "webm": "/projects/safety-in-mind/cf0593cf1223.webm",
+          "layout": "half",
+          "poster": "/projects/safety-in-mind/cf0593cf1223-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/safety-in-mind/bb13a7077dd4.mp4",
+          "webm": "/projects/safety-in-mind/bb13a7077dd4.webm",
+          "layout": "full",
+          "poster": "/projects/safety-in-mind/bb13a7077dd4-poster.webp"
+        }
       ],
       "role": "Creative Development Director",
       "agency": "AKQA",
@@ -194,15 +286,33 @@
       "bgClass": "bg-neutral-900",
       "heroImage": "/projects/ambassadors-of-pride/945f4f97b224.webp",
       "gallery": [
-        { "type": "image", "src": "/projects/ambassadors-of-pride/1500deb3d847.webp", "layout": "full" },
-        { "type": "video", "mp4": "/projects/ambassadors-of-pride/fb495eea82ff.mp4", "webm": "/projects/ambassadors-of-pride/fb495eea82ff.webm", "layout": "half" },
-        { "type": "video", "mp4": "/projects/ambassadors-of-pride/d886a18f9a7d.mp4", "webm": "/projects/ambassadors-of-pride/d886a18f9a7d.webm", "layout": "half" }
+        {
+          "type": "image",
+          "src": "/projects/ambassadors-of-pride/1500deb3d847.webp",
+          "layout": "full",
+          "blurDataURL": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADQAQCdASoKAAYABUB8JZACdIExETZ8YAD9rsv2jEPMLXiwVxjaMC5V6CsV9fEb3Eo0fOlzV5BmS4tx3vq7wAAA"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/ambassadors-of-pride/fb495eea82ff.mp4",
+          "webm": "/projects/ambassadors-of-pride/fb495eea82ff.webm",
+          "layout": "half",
+          "poster": "/projects/ambassadors-of-pride/fb495eea82ff-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/ambassadors-of-pride/d886a18f9a7d.mp4",
+          "webm": "/projects/ambassadors-of-pride/d886a18f9a7d.webm",
+          "layout": "half",
+          "poster": "/projects/ambassadors-of-pride/d886a18f9a7d-poster.webp"
+        }
       ],
       "role": "Creative Development Director",
       "agency": "AKQA",
       "client": "West Pride",
       "credit": "Imagery courtesy of AKQA and West Pride",
-      "clientUrl": "https://www.westpride.se/"
+      "clientUrl": "https://www.westpride.se/",
+      "heroBlur": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADwAQCdASoKAAYABUB8JZgCdAEQFHx/FegA/oIZ/b0jDrn5ndXjVB5XaFIsy4BGs94fAAXc+6G3jNaqIJGZcnLSQAA="
     },
     {
       "slug": "fuzed",
@@ -214,17 +324,43 @@
       "bgClass": "bg-neutral-900",
       "heroImage": "/projects/fuzed/241b47012a1f.webp",
       "gallery": [
-        { "type": "image", "src": "/projects/fuzed/35c56ab72900.png", "layout": "full" },
-        { "type": "image", "src": "/projects/fuzed/92bf0917899d.jpg", "layout": "half" },
-        { "type": "image", "src": "/projects/fuzed/88741d637ebb.jpg", "layout": "half" },
-        { "type": "image", "src": "/projects/fuzed/1c91d6c79dc8.webp", "layout": "half" },
-        { "type": "image", "src": "/projects/fuzed/e5a9771a28df.webp", "layout": "half" }
+        {
+          "type": "image",
+          "src": "/projects/fuzed/35c56ab72900.webp",
+          "layout": "full",
+          "blurDataURL": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADQAQCdASoKAAcABUB8JaACdH8AE1qvAAD+IxZsA8ygNnI7GJXovjTHXTyC3VN7DEzFsAw4AAA="
+        },
+        {
+          "type": "image",
+          "src": "/projects/fuzed/92bf0917899d.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADQAQCdASoFAAoABUB8JZAAAxZgktucAAD+7EWCSYKv14jawWoE8H9cZONtPez+RY0AAAAA"
+        },
+        {
+          "type": "image",
+          "src": "/projects/fuzed/88741d637ebb.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADQAQCdASoFAAoABUB8JaAAAp2ZeJI7gAD+6U9WXAGgipSqSaLiMsTu+kHLG59nlkxUYHYAAAA="
+        },
+        {
+          "type": "image",
+          "src": "/projects/fuzed/1c91d6c79dc8.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADQAQCdASoKAAcABUB8JYwCdADzXjqOAAD+wHVlm3l8/dgDsb/gfnLWz/vQJuQkJ2EtowPJZE8UAAAA"
+        },
+        {
+          "type": "image",
+          "src": "/projects/fuzed/e5a9771a28df.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAACwAQCdASoKAAcABUB8JagCdADZSCUoAP7clxaEVzqB/of3uGCnzbpwvUa90L8Pfk0j1MehyltfisUL8GmAAA=="
+        }
       ],
       "role": "Creative Development Director",
       "agency": "AKQA",
       "client": "FUZED",
       "credit": "Imagery courtesy of FUZED",
-      "clientUrl": "https://www.fuzed.com/en/fuzed-app"
+      "clientUrl": "https://www.fuzed.com/en/fuzed-app",
+      "heroBlur": "data:image/webp;base64,UklGRqIAAABXRUJQVlA4WAoAAAAQAAAACQAABQAAQUxQSDgAAAABYBvZVqr+GwO+u7tc0he9GC0iIuIyBkww0LL99qVPvz2/YQwTjNEi+/OtH+Jq6+v/yi8Yw2QMAFZQOCBEAAAA8AEAnQEqCgAGAAVAfCWwAuwA9JbK/kIAAP6Fyq4EbgDhMhu6qZktVcNwMgrqiiHcYTPW63aFXmbPyZzxEhE2f0IAAAA="
     },
     {
       "slug": "arrival",
@@ -236,15 +372,45 @@
       "bgClass": "bg-neutral-900",
       "heroImage": "/projects/arrival/98587e6328e2.webp",
       "gallery": [
-        { "type": "video", "mp4": "/projects/arrival/cd1236bcd6da.mp4", "webm": "/projects/arrival/cd1236bcd6da.webm", "layout": "full" },
-        { "type": "video", "mp4": "/projects/arrival/99b476175347.mp4", "webm": "/projects/arrival/99b476175347.webm", "layout": "half" },
-        { "type": "video", "mp4": "/projects/arrival/ae45ac1525dc.mp4", "webm": "/projects/arrival/ae45ac1525dc.webm", "layout": "half" },
-        { "type": "image", "src": "/projects/arrival/113a438f6a02.webp", "layout": "half", "position": "right" },
-        { "type": "image", "src": "/projects/arrival/56843e4cc0c4.webp", "layout": "half" }
+        {
+          "type": "video",
+          "mp4": "/projects/arrival/cd1236bcd6da.mp4",
+          "webm": "/projects/arrival/cd1236bcd6da.webm",
+          "layout": "full",
+          "poster": "/projects/arrival/cd1236bcd6da-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/arrival/99b476175347.mp4",
+          "webm": "/projects/arrival/99b476175347.webm",
+          "layout": "half",
+          "poster": "/projects/arrival/99b476175347-poster.webp"
+        },
+        {
+          "type": "video",
+          "mp4": "/projects/arrival/ae45ac1525dc.mp4",
+          "webm": "/projects/arrival/ae45ac1525dc.webm",
+          "layout": "half",
+          "poster": "/projects/arrival/ae45ac1525dc-poster.webp"
+        },
+        {
+          "type": "image",
+          "src": "/projects/arrival/113a438f6a02.webp",
+          "layout": "half",
+          "position": "right",
+          "blurDataURL": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACwAQCdASoKAAUABUB8JZwAAuUv/xgAAP6mua87S7tK9Dg+znYudqqBQAA="
+        },
+        {
+          "type": "image",
+          "src": "/projects/arrival/56843e4cc0c4.webp",
+          "layout": "half",
+          "blurDataURL": "data:image/webp;base64,UklGRjQAAABXRUJQVlA4ICgAAADQAQCdASoKAAYABUB8JZQCw7EfUORKQAD+3LEQ7CFa95tLdhFuBuAA"
+        }
       ],
       "role": "Head of Tech, UX Department",
       "client": "ARRIVAL",
-      "credit": "Imagery courtesy of ARRIVAL"
+      "credit": "Imagery courtesy of ARRIVAL",
+      "heroBlur": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAAAwAQCdASoKAAUABUB8JZwAA3AA/u9fNH58N3reyJIAAA=="
     }
   ]
 }
