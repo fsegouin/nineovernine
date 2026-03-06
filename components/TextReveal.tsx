@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView } from "motion/react";
+import { motion, useInView, useReducedMotion } from "motion/react";
 import { memo, useEffect, useRef } from "react";
 
 const CHAR_DELAY = 0.04; // seconds between each character
@@ -19,6 +19,8 @@ interface TextRevealProps {
    *  Useful to hand off the cursor to the next TextReveal.
    *  Defaults to end-of-streaming + CURSOR_LINGER. */
   cursorUntil?: number;
+  /** When false, defers animation start until set to true. Defaults to true. */
+  active?: boolean;
 }
 
 /** Individual character — memoized so it never re-renders after mount. */
@@ -26,11 +28,16 @@ const Char = memo(function Char({
   char,
   shouldAnimate,
   delay,
+  reducedMotion,
 }: {
   char: string;
   shouldAnimate: boolean;
   delay: number;
+  reducedMotion: boolean;
 }) {
+  if (reducedMotion) {
+    return <span>{char}</span>;
+  }
   return (
     <motion.span
       initial={{ opacity: 0 }}
@@ -49,6 +56,7 @@ export function TextReveal({
   trigger = "mount",
   cursor = true,
   cursorUntil,
+  active = true,
 }: TextRevealProps) {
   const chars = children.split("");
   const totalStreamTime = chars.length * CHAR_DELAY;
@@ -61,7 +69,8 @@ export function TextReveal({
   const cursorRef = useRef<HTMLSpanElement>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
-  const shouldAnimate = trigger === "mount" || isInView;
+  const prefersReducedMotion = useReducedMotion();
+  const shouldAnimate = (trigger === "mount" || isInView) && active && !prefersReducedMotion;
 
   // Direct DOM manipulation for cursor — no state, no re-renders
   useEffect(() => {
@@ -122,11 +131,12 @@ export function TextReveal({
             char={char}
             shouldAnimate={shouldAnimate}
             delay={delay + i * CHAR_DELAY}
+            reducedMotion={!!prefersReducedMotion}
           />
         </span>
       ))}
       {/* Single cursor element — moved via DOM, never triggers re-renders */}
-      {cursor && (
+      {cursor && !prefersReducedMotion && (
         <span
           ref={cursorRef}
           className="absolute w-[0.07em] bg-current"
