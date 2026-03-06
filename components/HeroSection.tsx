@@ -38,7 +38,7 @@ export function HeroSection() {
       <div className="mx-auto w-full max-w-7xl">
         <div className="grid grid-cols-12">
           <div className="col-span-12 lg:col-span-10">
-            <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
+            <h1 data-entrance-el className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
               <TextReveal delay={d + 0} trigger="mount" cursorUntil={d + 1.0} active={textActive}>{headline[0]}</TextReveal>
               <br />
               <TextReveal delay={d + 1.0} trigger="mount" cursorUntil={d + 2.1} active={textActive}>{headline[1]}</TextReveal>

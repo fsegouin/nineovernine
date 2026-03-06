@@ -39,6 +39,12 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark"){document.documentElement.classList.add(t);var m=document.querySelectorAll('meta[name="theme-color"]');for(var i=0;i<m.length;i++)m[i].remove();var n=document.createElement("meta");n.name="theme-color";n.content=t==="dark"?"#0a0a0a":"#fafafa";document.head.appendChild(n)}}catch(e){}})()`,
           }}
         />
+        {/* First-visit entrance: hide elements before body content paints */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(!sessionStorage.getItem('9o9-visited')&&!window.matchMedia('(prefers-reduced-motion:reduce)').matches){document.documentElement.dataset.entrance='pending'}}catch(e){}`,
+          }}
+        />
         {children}
         <ConsoleMessage />
         <Analytics />
