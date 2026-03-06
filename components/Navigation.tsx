@@ -106,7 +106,9 @@ export function Navigation() {
                   exit={{ scale: 0.5, rotate: -180, opacity: 0 }}
                   transition={entranceActive
                     ? { duration: 0.8, delay: 1.2, ease: EASE }
-                    : { duration: 0.3, ease: EASE }
+                    : entranceWaiting
+                      ? { duration: 0 }
+                      : { duration: 0.3, ease: EASE }
                   }
                   className="inline-block"
                 >

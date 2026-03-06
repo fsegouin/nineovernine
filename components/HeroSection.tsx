@@ -54,11 +54,10 @@ export function HeroSection() {
                 ? { opacity: 0, y: 20 }
                 : { opacity: 1, y: 0 }
               }
-              transition={{
-                duration: 0.7,
-                delay: entranceWaiting ? 0 : d + 3.8,
-                ease: EASE,
-              }}
+              transition={entranceWaiting
+                ? { duration: 0 }
+                : { duration: 0.7, delay: d + 3.8, ease: EASE }
+              }
             >
               {description}
             </motion.p>
@@ -74,10 +73,10 @@ export function HeroSection() {
             ? { opacity: 0 }
             : { opacity: 1 }
           }
-          transition={{
-            duration: 0.6,
-            delay: entranceWaiting ? 0 : d + 4.2,
-          }}
+          transition={entranceWaiting
+            ? { duration: 0 }
+            : { duration: 0.6, delay: d + 4.2 }
+          }
         >
           <div className="flex flex-col items-center gap-2">
             <span className="font-sans text-[10px] uppercase tracking-[0.2em] text-muted">
