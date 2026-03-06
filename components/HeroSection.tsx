@@ -21,7 +21,7 @@ export function HeroSection() {
 
   // On first visit, shift all delays so hero starts after nav entrance.
   // These delays are relative to when textActive becomes true.
-  const d = isFirstVisit ? 2.8 : 0;
+  const d = isFirstVisit ? 3.0 : 0;
 
   // entranceWaiting: first visit, not ready yet → description/indicator hidden
   const entranceWaiting = isFirstVisit && !ready;

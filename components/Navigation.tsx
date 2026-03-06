@@ -61,7 +61,19 @@ export function Navigation() {
   );
 
   return (
-    <header className="bg-grain sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+    <motion.header
+      data-entrance-el
+      className="bg-grain sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md"
+      initial={false}
+      animate={entranceWaiting
+        ? { y: "-100%", opacity: 0 }
+        : { y: 0, opacity: 1 }
+      }
+      transition={entranceActive
+        ? { duration: 0.8, delay: 0.3, ease: EASE }
+        : { duration: 0 }
+      }
+    >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-12">
         <Magnetic strength={0.2}>
           <Link
@@ -93,7 +105,7 @@ export function Navigation() {
                   }
                   exit={{ scale: 0.5, rotate: -180, opacity: 0 }}
                   transition={entranceActive
-                    ? { duration: 1.0, delay: 0.8, ease: EASE }
+                    ? { duration: 0.8, delay: 1.2, ease: EASE }
                     : { duration: 0.3, ease: EASE }
                   }
                   className="inline-block"
@@ -117,7 +129,7 @@ export function Navigation() {
                   : { opacity: 1, y: 0 }
                 }
                 transition={entranceActive
-                  ? { duration: 0.5, delay: 2.0 + i * 0.15, ease: EASE }
+                  ? { duration: 0.5, delay: 2.2 + i * 0.15, ease: EASE }
                   : { duration: 0 }
                 }
               >
@@ -140,7 +152,7 @@ export function Navigation() {
                 : { opacity: 1, y: 0 }
               }
               transition={entranceActive
-                ? { duration: 0.5, delay: 2.0 + links.length * 0.15, ease: EASE }
+                ? { duration: 0.5, delay: 2.2 + links.length * 0.15, ease: EASE }
                 : { duration: 0 }
               }
             >
@@ -186,6 +198,6 @@ export function Navigation() {
           </div>
         </div>
       )}
-    </header>
+    </motion.header>
   );
 }
