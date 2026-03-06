@@ -166,6 +166,7 @@ let lastTime = 0;
 let noiseFrame = 0;
 let running = false;
 let scrolling = false;
+let scrollFrame = 0;
 let scrollTimeout: ReturnType<typeof setTimeout>;
 let needsRender = true; // true when visual state has changed
 
@@ -174,12 +175,14 @@ let needsRender = true; // true when visual state has changed
 function animate(time: number) {
   if (!visible || !running) return;
 
-  // During scroll, pause rendering entirely — the existing canvas image
-  // stays composited without competing with the scroll compositor thread.
+  // During scroll, render every 4th frame (~15fps) to reduce compositor
+  // contention while keeping the animation visually alive.
   if (scrolling) {
-    lastTime = 0;
-    scheduleFrame();
-    return;
+    scrollFrame++;
+    if (scrollFrame % 4 !== 0) {
+      scheduleFrame();
+      return;
+    }
   }
 
   const dt = lastTime ? time - lastTime : 16;
@@ -352,7 +355,7 @@ function animate(time: number) {
 
 // --- Frame scheduling ---
 // Use requestAnimationFrame when available in worker (Chrome 105+),
-// fall back to setTimeout. Throttle to ~30fps when not interacting.
+// fall back to setTimeout at ~60fps.
 
 const hasRAF = typeof requestAnimationFrame === "function";
 let interacting = false;
@@ -367,15 +370,9 @@ function markInteracting() {
 
 function scheduleFrame() {
   if (hasRAF) {
-    // Throttle to ~20fps when idle to reduce compositor contention
-    if (interacting) {
-      requestAnimationFrame(animate);
-    } else {
-      setTimeout(() => requestAnimationFrame(animate), 33);
-    }
+    requestAnimationFrame(animate);
   } else {
-    const interval = interacting ? 16 : 50;
-    setTimeout(() => animate(performance.now()), interval);
+    setTimeout(() => animate(performance.now()), 16);
   }
 }
 
@@ -469,8 +466,8 @@ self.onmessage = (e: MessageEvent) => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         scrolling = false;
+        scrollFrame = 0;
         needsRender = true;
-        lastTime = 0;
       }, 150);
       break;
 
