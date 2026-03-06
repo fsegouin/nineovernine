@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Magnetic } from "./Magnetic";
 import { useLocale } from "./LocaleProvider";
@@ -42,17 +42,10 @@ export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
-  // Auto-focus input on step change (skip initial mount to avoid
-  // stealing focus when the page loads)
-  const hasMounted = useRef(false);
-  useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      return;
-    }
+  const focusInput = useCallback(() => {
     const timeout = setTimeout(() => inputRef.current?.focus(), 400);
     return () => clearTimeout(timeout);
-  }, [step]);
+  }, []);
 
   const advance = useCallback(() => {
     const err = validateStep(step, data);
@@ -63,6 +56,7 @@ export function ContactForm() {
     setError(null);
     if (step < TOTAL_STEPS - 1) {
       setStep(step + 1);
+      focusInput();
     } else {
       submit();
     }
@@ -290,7 +284,7 @@ export function ContactForm() {
       {step > 0 && status !== "submitting" && (
         <motion.button
           type="button"
-          onClick={() => { setStep(step - 1); setError(null); }}
+          onClick={() => { setStep(step - 1); setError(null); focusInput(); }}
           className="mt-4 font-sans text-xs text-muted underline underline-offset-4 transition-colors hover:text-foreground"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
