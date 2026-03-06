@@ -1,11 +1,11 @@
 import { FadeIn } from "./FadeIn";
 import { Magnetic } from "./Magnetic";
 import { ContactForm } from "./ContactForm";
-import content from "@/lib/content.json";
+import { getContent } from "@/lib/content";
+import type { Locale } from "@/lib/content";
 
-const { overline, heading, email, location, form } = content.contact;
-
-export function ContactSection() {
+export function ContactSection({ locale }: { locale: Locale }) {
+  const { overline, heading, email, location, form } = getContent(locale).contact;
   return (
     <section id="contact" className="border-t border-border px-6 py-24 lg:px-12 lg:py-32">
       <div className="mx-auto max-w-7xl text-center">

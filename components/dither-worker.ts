@@ -165,19 +165,30 @@ let visible = true;
 let lastTime = 0;
 let noiseFrame = 0;
 let running = false;
+let scrolling = false;
+let scrollFrame = 0;
+let scrollTimeout: ReturnType<typeof setTimeout>;
+let needsRender = true; // true when visual state has changed
 
 // --- Animation loop ---
 
 function animate(time: number) {
   if (!visible || !running) return;
 
-  // No frame skipping needed — worker runs off main thread
+  // During scroll, render every 4th frame (~15fps) to reduce compositor
+  // contention while keeping the animation visually alive.
+  if (scrolling) {
+    scrollFrame++;
+    if (scrollFrame % 4 !== 0) {
+      scheduleFrame();
+      return;
+    }
+  }
 
   const dt = lastTime ? time - lastTime : 16;
   lastTime = time;
 
   const { w: cw, h: ch } = dims;
-  ctx.clearRect(0, 0, cw, ch);
 
   const { r, g, b } = color;
 
@@ -245,7 +256,9 @@ function animate(time: number) {
 
   // Noise update pass — every 4th frame
   noiseFrame++;
-  if (noiseFrame % 4 === 1) {
+  const isNoiseFrame = noiseFrame % 4 === 1;
+  if (isNoiseFrame) {
+    needsRender = true;
     for (let i = 0; i < dots.length; i++) {
       const dot = dots[i];
       const n1 = fbm2(dot.nx + nt, dot.ny + nt * 0.6);
@@ -259,7 +272,17 @@ function animate(time: number) {
     }
   }
 
-  // Render pass
+  // Skip render if nothing visual has changed:
+  // no noise update, no cursor nearby, no active glow/energy decay, no dissipation
+  if (!needsRender && !interacting && energy < 0.01 && !dissipation.active) {
+    scheduleFrame();
+    return;
+  }
+  needsRender = false;
+
+  // Render pass — clear only when we're actually going to draw,
+  // so skipped frames keep the previous image visible.
+  ctx.clearRect(0, 0, cw, ch);
   ctx.fillStyle = `rgb(${r},${g},${b})`;
 
   for (let i = 0; i < dots.length; i++) {
@@ -332,7 +355,7 @@ function animate(time: number) {
 
 // --- Frame scheduling ---
 // Use requestAnimationFrame when available in worker (Chrome 105+),
-// fall back to setTimeout. Throttle to ~30fps when not interacting.
+// fall back to setTimeout at ~60fps.
 
 const hasRAF = typeof requestAnimationFrame === "function";
 let interacting = false;
@@ -340,6 +363,7 @@ let idleTimeout: ReturnType<typeof setTimeout>;
 
 function markInteracting() {
   interacting = true;
+  needsRender = true;
   clearTimeout(idleTimeout);
   idleTimeout = setTimeout(() => { interacting = false; }, 200);
 }
@@ -348,8 +372,7 @@ function scheduleFrame() {
   if (hasRAF) {
     requestAnimationFrame(animate);
   } else {
-    const interval = interacting ? 16 : 33;
-    setTimeout(() => animate(performance.now()), interval);
+    setTimeout(() => animate(performance.now()), 16);
   }
 }
 
@@ -425,6 +448,7 @@ self.onmessage = (e: MessageEvent) => {
       dissipation.y = msg.y;
       dissipation.elapsed = 0;
       dissipation.radius0 = spread;
+      needsRender = true;
       break;
 
     case "visibility": {
@@ -436,6 +460,16 @@ self.onmessage = (e: MessageEvent) => {
       }
       break;
     }
+
+    case "scroll":
+      scrolling = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        scrolling = false;
+        scrollFrame = 0;
+        needsRender = true;
+      }, 150);
+      break;
 
     case "theme":
       color = msg.color;

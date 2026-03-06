@@ -1,9 +1,9 @@
 import { FadeIn } from "./FadeIn";
-import content from "@/lib/content.json";
+import { getContent } from "@/lib/content";
+import type { Locale } from "@/lib/content";
 
-const { quote, label, paragraphs } = content.philosophy;
-
-export function PhilosophySection() {
+export function PhilosophySection({ locale }: { locale: Locale }) {
+  const { quote, label, paragraphs } = getContent(locale).philosophy;
   return (
     <section className="bg-grain bg-foreground px-6 py-24 text-background lg:px-12 lg:py-32">
       <div className="mx-auto max-w-7xl">

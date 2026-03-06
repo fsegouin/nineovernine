@@ -1,9 +1,11 @@
 import type { Project } from "./projects";
-import content from "./content.json";
+import { getContent, defaultLocale } from "./content";
+import type { Locale } from "./content";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nineovernine.com";
 
-export function organizationJsonLd() {
+export function organizationJsonLd(locale: Locale = defaultLocale) {
+  const content = getContent(locale);
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -18,7 +20,8 @@ export function organizationJsonLd() {
   };
 }
 
-export function webSiteJsonLd() {
+export function webSiteJsonLd(locale: Locale = defaultLocale) {
+  const content = getContent(locale);
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -27,14 +30,15 @@ export function webSiteJsonLd() {
   };
 }
 
-export function projectJsonLd(project: Project) {
+export function projectJsonLd(project: Project, locale: Locale = defaultLocale) {
+  const content = getContent(locale);
   return {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
     name: project.title,
     description: project.description,
     datePublished: project.year,
-    url: `${siteUrl}/projects/${project.slug}`,
+    url: `${siteUrl}/${locale}/projects/${project.slug}`,
     creator: {
       "@type": "Organization",
       name: content.meta.title,

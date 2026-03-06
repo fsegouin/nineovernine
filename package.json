@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate": "tsx scripts/generate-placeholders.ts && tsx scripts/generate-posters.ts",
+    "generate:blur": "tsx scripts/generate-placeholders.ts",
+    "generate:posters": "tsx scripts/generate-posters.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
@@ -17,7 +20,8 @@
     "motion": "^12.34.3",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "resend": "^6.9.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -26,7 +30,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

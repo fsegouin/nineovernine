@@ -1,9 +1,9 @@
 import { FadeIn } from "./FadeIn";
-import content from "@/lib/content.json";
+import { getContent } from "@/lib/content";
+import type { Locale } from "@/lib/content";
 
-const { overline, heading, items } = content.services;
-
-export function ServicesSection() {
+export function ServicesSection({ locale }: { locale: Locale }) {
+  const { overline, heading, items } = getContent(locale).services;
   return (
     <section className="border-t border-border px-6 py-24 lg:px-12 lg:py-32">
       <div className="mx-auto max-w-7xl">

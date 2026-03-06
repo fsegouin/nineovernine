@@ -62,6 +62,11 @@ body {
   50% { opacity: 0; }
 }
 
+/* First-visit entrance: hide elements before React hydrates */
+[data-entrance="pending"] [data-entrance-el] {
+  opacity: 0 !important;
+}
+
 ::selection {
   background: var(--foreground);
   color: var(--background);

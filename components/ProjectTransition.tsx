@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useLenis } from "@/components/SmoothScroll";
+import { useLocale } from "./LocaleProvider";
 
 interface Rect {
   top: number;
@@ -84,6 +85,7 @@ export function ProjectTransitionProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const lenisRef = useLenis();
   const [state, setState] = useState<TransitionState | null>(null);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
@@ -127,17 +129,17 @@ export function ProjectTransitionProvider({
 
       setTimeout(() => {
         window.scrollTo({ top: 0 });
-        router.push(`/projects/${slug}`);
+        router.push(`/${locale}/projects/${slug}`);
       }, 50);
     },
-    [router]
+    [router, locale]
   );
 
   const navigateBack = useCallback(
     (_slug: string, _bgClass: string) => {
-      router.push("/#work");
+      router.push(`/${locale}/#work`);
     },
-    [router]
+    [router, locale]
   );
 
   return (

@@ -6,17 +6,31 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Magnetic } from "./Magnetic";
 import { useLenis } from "./SmoothScroll";
-import content from "@/lib/content.json";
+import { useLocale } from "./LocaleProvider";
+import { useEntrance } from "./EntranceProvider";
+import { getContent } from "@/lib/content";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
-const { links } = content.nav;
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function Navigation() {
+  const locale = useLocale();
+  const content = getContent(locale);
+  const { links } = content.nav;
+  const { isFirstVisit, ready } = useEntrance();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoMorphed, setLogoMorphed] = useState(false);
   const clickCount = useRef(0);
   const clickTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const lenisRef = useLenis();
   const pathname = usePathname();
+
+  // Entrance states:
+  // - entranceWaiting: first visit, fonts not ready → elements should be hidden
+  // - entranceActive: first visit, fonts ready → elements should animate in
+  // - neither: return visit → elements visible immediately, no animation
+  const entranceWaiting = isFirstVisit && !ready;
+  const entranceActive = isFirstVisit && ready;
 
   const handleLogoClick = useCallback(() => {
     if (logoMorphed) return;
@@ -30,10 +44,12 @@ export function Navigation() {
     }
   }, [logoMorphed]);
 
+  const localePath = `/${locale}`;
+
   const handleAnchorClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, hash?: string) => {
       // Only smooth-scroll when already on the home page
-      if (!hash || pathname !== "/") return;
+      if (!hash || pathname !== localePath) return;
 
       const target = document.querySelector(hash);
       if (target && lenisRef.current) {
@@ -41,15 +57,27 @@ export function Navigation() {
         lenisRef.current.scrollTo(target as HTMLElement, { offset: -64 });
       }
     },
-    [pathname, lenisRef]
+    [pathname, lenisRef, localePath]
   );
 
   return (
-    <header className="bg-grain sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+    <motion.header
+      data-entrance-el
+      className="bg-grain sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md"
+      initial={false}
+      animate={entranceWaiting
+        ? { y: "-100%", opacity: 0 }
+        : { y: 0, opacity: 1 }
+      }
+      transition={entranceActive
+        ? { duration: 0.8, delay: 0.3, ease: EASE }
+        : { duration: 0 }
+      }
+    >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-12">
         <Magnetic strength={0.2}>
           <Link
-            href="/"
+            href={localePath}
             className="relative font-display text-lg font-bold tracking-tight"
             onClick={handleLogoClick}
             data-party-logo
@@ -69,9 +97,19 @@ export function Navigation() {
               ) : (
                 <motion.span
                   key="logo"
-                  initial={{ scale: 1, opacity: 1 }}
+                  data-entrance-el
+                  initial={false}
+                  animate={entranceWaiting
+                    ? { scale: 0.95, opacity: 0 }
+                    : { scale: 1, opacity: 1 }
+                  }
                   exit={{ scale: 0.5, rotate: -180, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  transition={entranceActive
+                    ? { duration: 0.8, delay: 1.2, ease: EASE }
+                    : entranceWaiting
+                      ? { duration: 0 }
+                      : { duration: 0.3, ease: EASE }
+                  }
                   className="inline-block"
                 >
                   9<span className="text-muted">/</span>9
@@ -83,17 +121,46 @@ export function Navigation() {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-10 sm:flex">
-          {links.map((link) => (
+          {links.map((link, i) => (
             <Magnetic key={link.href}>
-              <Link
-                href={link.href}
-                onClick={(e) => handleAnchorClick(e, link.hash)}
-                className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
+              <motion.div
+                data-entrance-el
+                initial={false}
+                animate={entranceWaiting
+                  ? { opacity: 0, y: -8 }
+                  : { opacity: 1, y: 0 }
+                }
+                transition={entranceActive
+                  ? { duration: 0.5, delay: 2.2 + i * 0.15, ease: EASE }
+                  : { duration: 0 }
+                }
               >
-                {link.label}
-              </Link>
+                <Link
+                  href={`${localePath}${link.href}`}
+                  onClick={(e) => handleAnchorClick(e, link.hash)}
+                  className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              </motion.div>
             </Magnetic>
           ))}
+          <Magnetic strength={0.3}>
+            <motion.div
+              data-entrance-el
+              initial={false}
+              animate={entranceWaiting
+                ? { opacity: 0, y: -8 }
+                : { opacity: 1, y: 0 }
+              }
+              transition={entranceActive
+                ? { duration: 0.5, delay: 2.2 + links.length * 0.15, ease: EASE }
+                : { duration: 0 }
+              }
+            >
+              <LanguageSwitcher />
+            </motion.div>
+          </Magnetic>
         </div>
 
         {/* Mobile hamburger */}
@@ -122,16 +189,17 @@ export function Navigation() {
             {links.map((link) => (
               <Link
                 key={link.href}
-                href={link.href}
+                href={`${localePath}${link.href}`}
                 onClick={(e) => { setMenuOpen(false); handleAnchorClick(e, link.hash); }}
                 className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
               >
                 {link.label}
               </Link>
             ))}
+            <LanguageSwitcher />
           </div>
         </div>
       )}
-    </header>
+    </motion.header>
   );
 }
