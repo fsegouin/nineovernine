@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM_EMAIL = "Nine Over Nine <hello@contact.nineovernine.com>";
+const TO_EMAIL = "hello@nineovernine.com";
 
 // Simple in-memory rate limiter (IP-based, 3 submissions per hour)
 const submissions = new Map<string, number[]>();
@@ -61,10 +66,38 @@ export async function POST(req: NextRequest) {
   timestamps.push(now);
   submissions.set(ip, timestamps);
 
-  // TODO: Integrate Resend or another email provider here.
-  // For now, log the submission. Replace with actual email sending
-  // once RESEND_API_KEY is configured.
-  console.log("[Contact Form]", { name: name.trim(), email, services, message: message.trim(), ip });
+  const trimmedName = name.trim();
+  const trimmedMessage = message.trim();
+
+  const { error: sendError } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: TO_EMAIL,
+    replyTo: email,
+    subject: `New inquiry from ${trimmedName}`,
+    text: [
+      `Name: ${trimmedName}`,
+      `Email: ${email}`,
+      `Services: ${services.join(", ")}`,
+      "",
+      "Message:",
+      trimmedMessage,
+    ].join("\n"),
+    html: `
+      <h2>New contact form submission</h2>
+      <p><strong>Name:</strong> ${trimmedName}</p>
+      <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+      <p><strong>Services:</strong> ${services.join(", ")}</p>
+      <h3>Message</h3>
+      <p>${trimmedMessage.replace(/\n/g, "<br>")}</p>
+      <hr>
+      <p style="color: #999; font-size: 12px;">Sent via nineovernine.com contact form</p>
+    `,
+  });
+
+  if (sendError) {
+    console.error("[Contact Form] Resend error:", sendError);
+    return NextResponse.json({ error: "Failed to send message. Please try again." }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }
