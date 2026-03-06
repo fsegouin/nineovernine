@@ -243,7 +243,7 @@ export function ContactForm() {
 
             {/* Action button */}
             <div className="mt-6">
-              <Magnetic strength={0.2}>
+              <Magnetic strength={0.2} className="inline-block">
                 <motion.button
                   type="button"
                   onClick={advance}
