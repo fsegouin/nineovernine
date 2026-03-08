@@ -1,11 +1,39 @@
 "use client";
 
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 
-const CHAR_DELAY = 0.04; // seconds between each character
+const CHAR_DELAY = 0.04; // average seconds between each character
+const CHAR_JITTER = 0.025; // ±random variance per character
 const CURSOR_LINGER = 5; // how long cursor stays after last char
 const BLINK_CYCLE = 1; // matches cursor-blink animation duration
+
+/** Deterministic pseudo-random from seed so timings are stable across renders. */
+function seededRandom(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+/** Build cumulative delay array with per-character jitter. */
+function buildCharTimings(count: number, baseDelay: number, seed: number) {
+  const rng = seededRandom(seed);
+  const timings: number[] = [];
+  let t = baseDelay;
+  for (let i = 0; i < count; i++) {
+    timings.push(t);
+    const jitter = (rng() * 2 - 1) * CHAR_JITTER;
+    t += Math.max(0.012, CHAR_DELAY + jitter); // floor prevents negative gaps
+  }
+  return { timings, totalTime: t - baseDelay };
+}
+
+/** Estimate the time the last character appears (for chaining delays). */
+export function estimateStreamDuration(text: string) {
+  return (text.length - 1) * CHAR_DELAY;
+}
 
 interface TextRevealProps {
   children: string;
@@ -42,7 +70,7 @@ const Char = memo(function Char({
     <motion.span
       initial={{ opacity: 0 }}
       {...(shouldAnimate ? { animate: { opacity: 1 } } : {})}
-      transition={{ duration: 0.15, delay }}
+      transition={{ duration: 0.03, delay }}
     >
       {char}
     </motion.span>
@@ -59,8 +87,18 @@ export function TextReveal({
   active = true,
 }: TextRevealProps) {
   const chars = children.split("");
-  const totalStreamTime = chars.length * CHAR_DELAY;
-  const rawHideTime = cursorUntil ?? delay + totalStreamTime + CURSOR_LINGER;
+
+  // Stable seed from the text content so timings don't shift on re-render
+  const seed = useMemo(
+    () => children.split("").reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 7),
+    [children],
+  );
+  const { timings, totalTime } = useMemo(
+    () => buildCharTimings(chars.length, delay, seed),
+    [chars.length, delay, seed],
+  );
+
+  const rawHideTime = cursorUntil ?? delay + totalTime + CURSOR_LINGER;
   const cursorHideTime = cursorUntil != null
     ? rawHideTime
     : Math.ceil(rawHideTime / BLINK_CYCLE) * BLINK_CYCLE;
@@ -79,6 +117,7 @@ export function TextReveal({
     const cursorEl = cursorRef.current;
     if (!cursorEl) return;
 
+    const charTimings = timings;
     const mountTime = performance.now();
     let prevIdx = -1;
     let rafId: number;
@@ -96,17 +135,17 @@ export function TextReveal({
         return;
       }
 
-      const idx = Math.min(
-        Math.floor((elapsed - delay) / CHAR_DELAY),
-        chars.length - 1,
-      );
+      // Binary-search-ish: find the last character whose timing has passed
+      let idx = prevIdx;
+      while (idx + 1 < chars.length && charTimings[idx + 1] <= elapsed) {
+        idx++;
+      }
+      idx = Math.max(0, idx);
 
-      // Only touch the DOM when the index actually changes
       if (idx !== prevIdx) {
         prevIdx = idx;
         const charEl = charRefs.current[idx];
         if (charEl) {
-          // Re-parent cursor into the active character span
           charEl.appendChild(cursorEl);
           cursorEl.style.display = "";
         }
@@ -117,7 +156,7 @@ export function TextReveal({
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [shouldAnimate, cursor, delay, chars.length, cursorHideTime]);
+  }, [shouldAnimate, cursor, delay, chars.length, cursorHideTime, timings]);
 
   return (
     <span ref={ref} className={className}>
@@ -130,7 +169,7 @@ export function TextReveal({
           <Char
             char={char}
             shouldAnimate={shouldAnimate}
-            delay={delay + i * CHAR_DELAY}
+            delay={timings[i]}
             reducedMotion={!!prefersReducedMotion}
           />
         </span>

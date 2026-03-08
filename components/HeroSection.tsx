@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { TextReveal } from "./TextReveal";
+import { TextReveal, estimateStreamDuration } from "./TextReveal";
 import { DitherField } from "./DitherField";
 import { useLocale } from "./LocaleProvider";
 import { useEntrance } from "./EntranceProvider";
@@ -23,6 +23,14 @@ export function HeroSection() {
   // These delays are relative to when textActive becomes true.
   const d = isFirstVisit ? 3.0 : 0;
 
+  // Compute line start times based on actual text length + a short "newline" pause
+  const LINE_PAUSE = 0; // no artificial gap — lines flow continuously
+  const line1Start = d;
+  const line1End = line1Start + estimateStreamDuration(headline[0]);
+  const line2Start = line1End + LINE_PAUSE;
+  const line2End = line2Start + estimateStreamDuration(headline[1]);
+  const line3Start = line2End + LINE_PAUSE;
+
   // entranceWaiting: first visit, not ready yet → description/indicator hidden
   const entranceWaiting = isFirstVisit && !ready;
 
@@ -39,11 +47,11 @@ export function HeroSection() {
         <div className="grid grid-cols-12">
           <div className="col-span-12 lg:col-span-10">
             <h1 data-entrance-el className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-              <TextReveal delay={d + 0} trigger="mount" cursorUntil={d + 1.0} active={textActive}>{headline[0]}</TextReveal>
+              <TextReveal delay={line1Start} trigger="mount" cursorUntil={line2Start} active={textActive}>{headline[0]}</TextReveal>
               <br />
-              <TextReveal delay={d + 1.0} trigger="mount" cursorUntil={d + 2.1} active={textActive}>{headline[1]}</TextReveal>
+              <TextReveal delay={line2Start} trigger="mount" cursorUntil={line3Start} active={textActive}>{headline[1]}</TextReveal>
               <br />
-              <TextReveal delay={d + 2.1} trigger="mount" active={textActive}>{headline[2]}</TextReveal>
+              <TextReveal delay={line3Start} trigger="mount" active={textActive}>{headline[2]}</TextReveal>
             </h1>
 
             <motion.p
@@ -56,7 +64,7 @@ export function HeroSection() {
               }
               transition={entranceWaiting
                 ? { duration: 0 }
-                : { duration: 0.7, delay: d + 3.8, ease: EASE }
+                : { duration: 0.7, delay: line3Start + estimateStreamDuration(headline[2]) + 0.4, ease: EASE }
               }
             >
               {description}
@@ -75,7 +83,7 @@ export function HeroSection() {
           }
           transition={entranceWaiting
             ? { duration: 0 }
-            : { duration: 0.6, delay: d + 4.2 }
+            : { duration: 0.6, delay: line3Start + estimateStreamDuration(headline[2]) + 0.8 }
           }
         >
           <div className="flex flex-col items-center gap-2">
