@@ -3,8 +3,7 @@
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { memo, useEffect, useMemo, useRef } from "react";
 
-const CHAR_DELAY = 0.04; // average seconds between each character
-const CHAR_JITTER = 0.025; // ±random variance per character
+const CHAR_DELAY = 0.07; // base seconds between characters (~115 WPM)
 const CURSOR_LINGER = 5; // how long cursor stays after last char
 const BLINK_CYCLE = 1; // matches cursor-blink animation duration
 
@@ -17,16 +16,35 @@ function seededRandom(seed: number) {
   };
 }
 
-/** Build cumulative delay array with per-character jitter. */
-function buildCharTimings(count: number, baseDelay: number, seed: number) {
+/** Build cumulative delay array that mimics human typing rhythm. */
+function buildCharTimings(
+  chars: string[],
+  baseDelay: number,
+  seed: number,
+) {
   const rng = seededRandom(seed);
   const timings: number[] = [];
   let t = baseDelay;
-  for (let i = 0; i < count; i++) {
+
+  for (let i = 0; i < chars.length; i++) {
     timings.push(t);
-    const jitter = (rng() * 2 - 1) * CHAR_JITTER;
-    t += Math.max(0.012, CHAR_DELAY + jitter); // floor prevents negative gaps
+
+    // Base interval with human-like variance (±20% of base)
+    let interval = CHAR_DELAY * (0.8 + rng() * 0.4);
+
+    // Slight pause at word boundaries — natural rhythm between words
+    if (chars[i] === " " || chars[i + 1] === " ") {
+      interval += rng() * 0.03;
+    }
+
+    // Occasional micro-hesitation (~15% chance)
+    if (rng() < 0.15) {
+      interval += 0.02 + rng() * 0.04;
+    }
+
+    t += Math.max(0.012, interval);
   }
+
   return { timings, totalTime: t - baseDelay };
 }
 
@@ -94,7 +112,7 @@ export function TextReveal({
     [children],
   );
   const { timings, totalTime } = useMemo(
-    () => buildCharTimings(chars.length, delay, seed),
+    () => buildCharTimings(chars, delay, seed),
     [chars.length, delay, seed],
   );
 
@@ -110,14 +128,13 @@ export function TextReveal({
   const prefersReducedMotion = useReducedMotion();
   const shouldAnimate = (trigger === "mount" || isInView) && active && !prefersReducedMotion;
 
-  // Direct DOM manipulation for cursor — no state, no re-renders
+  // Cursor follows the last visible character by polling actual opacity
   useEffect(() => {
     if (!shouldAnimate || !cursor) return;
 
     const cursorEl = cursorRef.current;
     if (!cursorEl) return;
 
-    const charTimings = timings;
     const mountTime = performance.now();
     let prevIdx = -1;
     let rafId: number;
@@ -130,21 +147,19 @@ export function TextReveal({
         return;
       }
 
-      if (elapsed < delay) {
-        rafId = requestAnimationFrame(tick);
-        return;
+      // Find the last character that's actually visible
+      let lastVisible = -1;
+      for (let i = charRefs.current.length - 1; i >= 0; i--) {
+        const span = charRefs.current[i]?.firstElementChild as HTMLElement | null;
+        if (span && parseFloat(getComputedStyle(span).opacity) > 0.5) {
+          lastVisible = i;
+          break;
+        }
       }
 
-      // Binary-search-ish: find the last character whose timing has passed
-      let idx = prevIdx;
-      while (idx + 1 < chars.length && charTimings[idx + 1] <= elapsed) {
-        idx++;
-      }
-      idx = Math.max(0, idx);
-
-      if (idx !== prevIdx) {
-        prevIdx = idx;
-        const charEl = charRefs.current[idx];
+      if (lastVisible >= 0 && lastVisible !== prevIdx) {
+        prevIdx = lastVisible;
+        const charEl = charRefs.current[lastVisible];
         if (charEl) {
           charEl.appendChild(cursorEl);
           cursorEl.style.display = "";
@@ -156,7 +171,7 @@ export function TextReveal({
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [shouldAnimate, cursor, delay, chars.length, cursorHideTime, timings]);
+  }, [shouldAnimate, cursor, cursorHideTime]);
 
   return (
     <span ref={ref} className={className}>
@@ -178,7 +193,7 @@ export function TextReveal({
       {cursor && !prefersReducedMotion && (
         <span
           ref={cursorRef}
-          className="absolute w-[0.07em] bg-current"
+          className="absolute w-[0.3em] bg-current"
           style={{
             left: "100%",
             top: "0.1em",

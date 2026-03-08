@@ -24,7 +24,7 @@ export function HeroSection() {
   const d = isFirstVisit ? 3.0 : 0;
 
   // Compute line start times based on actual text length + a short "newline" pause
-  const LINE_PAUSE = 0; // no artificial gap — lines flow continuously
+  const LINE_PAUSE = 0.25; // brief pause for "hitting Enter"
   const line1Start = d;
   const line1End = line1Start + estimateStreamDuration(headline[0]);
   const line2Start = line1End + LINE_PAUSE;
