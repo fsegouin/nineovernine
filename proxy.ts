@@ -19,7 +19,7 @@ function negotiateLocale(acceptLanguage: string | null): string {
   return defaultLocale;
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip internal Next.js paths, static files, API routes, and the /9 easter egg
