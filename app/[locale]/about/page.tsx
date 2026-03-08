@@ -49,11 +49,7 @@ export default async function AboutPage({
       <section className="border-t border-border px-6 py-24 lg:px-12 lg:py-32">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-            <FadeIn className="lg:col-span-5">
-              <div className="aspect-[3/4] w-full bg-muted/20" />
-            </FadeIn>
-
-            <FadeIn className="lg:col-span-7" delay={0.15}>
+            <FadeIn className="lg:col-span-7">
               <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">
                 {founder.overline}
               </p>
