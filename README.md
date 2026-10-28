@@ -5,10 +5,10 @@ Portfolio and agency website for a human-led digital agency. Built with Next.js 
 ## Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router), React 19
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/) — CSS-based config via `@theme inline`, no `tailwind.config`
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/): CSS-based config via `@theme inline`, no `tailwind.config`
 - **Animation**: [Motion](https://motion.dev/) (formerly Framer Motion)
 - **Smooth scroll**: [Lenis](https://lenis.darkroom.engineering/)
-- **Fonts**: Jost Variable (headings), Inter Variable (body) — self-hosted
+- **Fonts**: Jost Variable (headings), Inter Variable (body), self-hosted
 - **Package manager**: pnpm
 
 ## Getting Started
@@ -27,6 +27,8 @@ pnpm build    # Production build
 pnpm start    # Start production server
 pnpm lint     # Run ESLint
 pnpm generate # Regenerate image blur placeholders and video posters in lib/content/*.json
+pnpm generate:blur # Regenerate image blur placeholders only
+pnpm generate:posters # Regenerate video posters only
 ```
 
 ## Project Structure
@@ -127,4 +129,4 @@ Defined in `globals.css` on `:root`, toggled via `.light`/`.dark` classes:
 
 ## License
 
-Private — all rights reserved.
+Private. All rights reserved.

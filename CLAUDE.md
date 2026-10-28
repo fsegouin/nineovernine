@@ -8,10 +8,10 @@ Portfolio/agency website for a human-led digital agency. Built with Next.js 16, 
 
 - **Framework**: Next.js 16 (App Router), React 19
 - **Package manager**: pnpm
-- **Styling**: Tailwind CSS 4 — no `tailwind.config`, all config in `globals.css` via `@theme inline`
+- **Styling**: Tailwind CSS 4, no `tailwind.config`, all config in `globals.css` via `@theme inline`
 - **Animation**: Motion (`motion/react`, formerly Framer Motion)
 - **Smooth scroll**: Lenis (`lerp: 0.1`, `smoothWheel: true`)
-- **Fonts**: Jost Variable (display/headings, `font-display`), Inter Variable (body, `font-sans`) — self-hosted in `public/fonts/`, loaded via `next/font/local`
+- **Fonts**: Jost Variable (display/headings, `font-display`), Inter Variable (body, `font-sans`), self-hosted in `public/fonts/`, loaded via `next/font/local`
 
 ## Git
 
@@ -136,7 +136,7 @@ Three-layer system to prevent FOUC:
 
 - **Custom cursor**: white dot with `mix-blend-difference`, drawn at its 60px hover size and scaled to 0.2 (12px) at rest so the hover state stays sharp; grows to full size over `a`/`button`/`[data-cursor]`, only on `pointer: fine` devices outside forced-colors mode. The native cursor stays until the first mouse move, and text fields keep the native I-beam with the dot hidden
 - **Grain**: `GrainOverlay` draws a noise tile on a canvas in the foreground colour and sets it as `--grain-url`; `globals.css` applies it as a background image on `body` and `.bg-grain`. It regenerates when the theme changes
-- **Project transitions**: Shared-element animation — card expands to full-width hero position, page navigates mid-animation. Chainable between project pages via "next project" section
+- **Project transitions**: Shared-element animation: card expands to full-width hero position, page navigates mid-animation. Chainable between project pages via "next project" section
 - **`robots.ts`**: Currently disallows all crawlers (site is pre-launch)
 - **i18n**: `en` and `fr` under `app/[locale]/`. `proxy.ts` redirects unprefixed paths using the `NEXT_LOCALE` cookie, then `Accept-Language`. `/9` and `/api` are excluded from the redirect
 - **Contact form**: `ContactForm` posts JSON to `app/api/contact/route.ts`, which sends mail through Resend and needs `RESEND_API_KEY`. Each payload carries a `submissionId` the route passes to Resend as an idempotency key, so a retry after a timed-out send never mails twice. Rejections are logged by reason only, never with the visitor's input
@@ -157,3 +157,4 @@ Three-layer system to prevent FOUC:
 | Project transition overlay | `z-40` |
 | Custom cursor (trail canvas `98`) | `z-[99]` |
 | Party mode toast | `z-[200]` |
+| Skip link (on focus) | `z-[300]` |
