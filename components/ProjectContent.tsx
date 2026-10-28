@@ -2,14 +2,15 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "motion/react";
-import { useRouter } from "next/navigation";
 import type { Project, GalleryItem } from "@/lib/projects";
 import { useProjectTransition } from "@/components/ProjectTransition";
 import { useLocale } from "./LocaleProvider";
 import { getContent } from "@/lib/content";
-
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+import { EASE } from "@/lib/motion";
+import { LoopingVideo } from "./LoopingVideo";
+import { trackEvent } from "@/lib/analytics";
 
 export function ProjectContent({
   project,
@@ -20,21 +21,26 @@ export function ProjectContent({
 }) {
   const locale = useLocale();
   const { backLabel, yearLabel, roleLabel, agencyLabel, clientLabel, overviewLabel, nextLabel, visitLabel } = getContent(locale).projectDetail;
-  const router = useRouter();
   const nextRef = useRef<HTMLDivElement>(null);
   const [exiting, setExiting] = useState(false);
   const { navigateToProject, navigateBack, activeSlug, snapshot, clearSnapshot } = useProjectTransition();
-  const directLand = !activeSlug;
+  // Whether this page was reached without the card transition is fixed at mount;
+  // activeSlug clears mid-crossfade and must not flip it.
+  const [directLand] = useState(() => !activeSlug);
 
   const handleBack = () => {
     setExiting(true);
     setTimeout(() => {
-      navigateBack(project.slug, project.bgClass);
+      navigateBack();
     }, 300);
   };
 
-  const handleNext = () => {
+  const handleNext = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    trackEvent("project_opened", { slug: nextProject.slug, source: "next" });
+    // Modified clicks (new tab, new window) keep the link's default behaviour
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     if (nextRef.current) {
+      e.preventDefault();
       navigateToProject(
         nextProject.slug,
         nextProject.bgClass,
@@ -48,7 +54,6 @@ export function ProjectContent({
       animate={exiting ? { opacity: 0, y: -20 } : {}}
       transition={{ duration: 0.3, ease: EASE }}
     >
-      {/* Hero — constrained to content width */}
       <div className="relative mx-auto max-w-7xl px-6 pt-6 lg:px-12 lg:pt-12">
         <motion.div
           initial={directLand ? { clipPath: "inset(0 0 100% 0)" } : false}
@@ -56,17 +61,12 @@ export function ProjectContent({
           transition={directLand ? { duration: 0.8, ease: EASE } : undefined}
         >
           {project.heroVideo ? (
-            <video
+            <LoopingVideo
               className="aspect-video w-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
               poster={project.heroVideo.poster}
-            >
-              <source src={project.heroVideo.webm} type="video/webm" />
-              <source src={project.heroVideo.mp4} type="video/mp4" />
-            </video>
+              webm={project.heroVideo.webm}
+              mp4={project.heroVideo.mp4}
+            />
           ) : project.heroImage ? (
             <div className="relative aspect-video w-full">
               <Image
@@ -105,15 +105,14 @@ export function ProjectContent({
         transition={{ duration: 0.7, delay: directLand ? 0.5 : 0.4, ease: EASE }}
       >
         <div className="mx-auto max-w-7xl px-6 py-16 lg:px-12 lg:py-24">
-          {/* Back */}
           <button
+            type="button"
             onClick={handleBack}
             className="font-sans text-sm text-muted transition-colors hover:text-foreground"
           >
-            &larr; {backLabel}
+            <span aria-hidden="true">&larr;</span> {backLabel}
           </button>
 
-          {/* Project info */}
           <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-7">
               <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">
@@ -169,7 +168,6 @@ export function ProjectContent({
             </div>
           </div>
 
-          {/* Gallery */}
           {project.gallery && project.gallery.length > 0 ? (
             <Gallery items={project.gallery} title={project.title} />
           ) : (
@@ -182,7 +180,6 @@ export function ProjectContent({
             </div>
           )}
 
-          {/* Exhibition plaque — credit & client link */}
           {(project.credit || project.clientUrl) && (
             <div className="mt-24 max-w-xs">
               <div className="mb-4 h-8 w-8 border border-border" />
@@ -197,38 +194,37 @@ export function ProjectContent({
                     href={project.clientUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackEvent("client_link_clicked", { slug: project.slug })}
                     className="inline-block font-sans text-xs text-muted underline decoration-border underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground"
                   >
-                    {visitLabel} &rsaquo;
+                    {visitLabel} <span aria-hidden="true">&rsaquo;</span>
                   </a>
                 )}
               </div>
             </div>
           )}
 
-          {/* Next project */}
-
           <div className="mt-24 border-t border-border pt-12">
             <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">
               {nextLabel}
             </p>
-            <div onClick={handleNext} className="group mt-8 cursor-pointer">
+            <Link
+              href={`/${locale}/projects/${nextProject.slug}`}
+              onClick={handleNext}
+              className="group mt-8 block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+            >
               <div
                 ref={nextRef}
                 className={`relative ${nextProject.bgClass} aspect-video w-full overflow-hidden transition-transform duration-500 group-hover:scale-[1.01]`}
               >
                 {(nextProject.cardVideo || nextProject.heroVideo) ? (
-                  <video
+                  <LoopingVideo
+                    aria-hidden="true"
                     className="absolute inset-0 h-full w-full object-cover"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
                     poster={(nextProject.cardVideo ?? nextProject.heroVideo)!.poster}
-                  >
-                    <source src={(nextProject.cardVideo ?? nextProject.heroVideo)!.webm} type="video/webm" />
-                    <source src={(nextProject.cardVideo ?? nextProject.heroVideo)!.mp4} type="video/mp4" />
-                  </video>
+                    webm={(nextProject.cardVideo ?? nextProject.heroVideo)!.webm}
+                    mp4={(nextProject.cardVideo ?? nextProject.heroVideo)!.mp4}
+                  />
                 ) : nextProject.heroImage ? (
                   <Image
                     src={nextProject.heroImage}
@@ -248,7 +244,7 @@ export function ProjectContent({
                   {nextProject.category}
                 </p>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </motion.div>
@@ -257,7 +253,6 @@ export function ProjectContent({
 }
 
 function Gallery({ items, title }: { items: GalleryItem[]; title: string }) {
-  const fullItems: GalleryItem[] = [];
   const halfPairs: GalleryItem[][] = [];
   let halfBuffer: GalleryItem[] = [];
 
@@ -267,7 +262,6 @@ function Gallery({ items, title }: { items: GalleryItem[]; title: string }) {
         halfPairs.push(halfBuffer);
         halfBuffer = [];
       }
-      fullItems.push(item);
     } else {
       halfBuffer.push(item);
       if (halfBuffer.length === 2) {
@@ -286,17 +280,15 @@ function Gallery({ items, title }: { items: GalleryItem[]; title: string }) {
 
   for (const item of items) {
     if (item.layout === "full") {
-      if (fullIdx === 0 || rows.every((r) => r !== `full-${fullIdx}`)) {
-        rows.push(
-          <GalleryMedia
-            key={`full-${fullIdx}`}
-            item={item}
-            alt={`${title} — detail ${++detailNum}`}
-            className="aspect-video w-full object-cover"
-            sizes="100vw"
-          />
-        );
-      }
+      rows.push(
+        <GalleryMedia
+          key={`full-${fullIdx}`}
+          item={item}
+          alt={`${title} — detail ${++detailNum}`}
+          className="aspect-video w-full object-cover"
+          sizes="100vw"
+        />
+      );
       fullIdx++;
     } else if (item === halfPairs[halfIdx]?.[0]) {
       const pair = halfPairs[halfIdx];
@@ -333,10 +325,12 @@ function GalleryMedia({
 }) {
   if (item.type === "video") {
     return (
-      <video className={`${className} bg-muted/10`} autoPlay loop muted playsInline poster={item.poster}>
-        <source src={item.webm} type="video/webm" />
-        <source src={item.mp4} type="video/mp4" />
-      </video>
+      <LoopingVideo
+        className={`${className} bg-muted/10`}
+        poster={item.poster}
+        webm={item.webm}
+        mp4={item.mp4}
+      />
     );
   }
 

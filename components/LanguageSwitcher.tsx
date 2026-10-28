@@ -4,6 +4,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
 import { supportedLocales } from "@/lib/content";
 import type { Locale } from "@/lib/content";
+import { trackEvent } from "@/lib/analytics";
+
+// One year: the proxy reads this cookie to remember the choice on later visits
+const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+function persistLocale(locale: Locale) {
+  document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=${LOCALE_COOKIE_MAX_AGE}`;
+}
 
 const localeLabels: Record<Locale, string> = {
   en: "EN",
@@ -18,10 +26,9 @@ export function LanguageSwitcher() {
   const switchLocale = (newLocale: Locale) => {
     if (newLocale === locale) return;
 
-    // Set cookie for middleware to remember preference
-    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=${60 * 60 * 24 * 365}`;
+    persistLocale(newLocale);
+    trackEvent("language_switched", { to: newLocale });
 
-    // Replace current locale in pathname
     const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
     router.push(newPath);
   };
@@ -30,8 +37,11 @@ export function LanguageSwitcher() {
     <div className="flex items-center gap-1 font-sans text-xs tracking-wide">
       {supportedLocales.map((l, i) => (
         <span key={l} className="flex items-center gap-1">
-          {i > 0 && <span className="text-muted">/</span>}
+          {i > 0 && <span className="text-muted" aria-hidden="true">/</span>}
           <button
+            type="button"
+            lang={l}
+            aria-current={l === locale ? "true" : undefined}
             onClick={() => switchLocale(l)}
             className={`transition-colors ${
               l === locale

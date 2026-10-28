@@ -1,6 +1,7 @@
 import { FadeIn } from "./FadeIn";
 import { Magnetic } from "./Magnetic";
 import { ContactForm } from "./ContactForm";
+import { EmailLink } from "./EmailLink";
 import { getContent } from "@/lib/content";
 import type { Locale } from "@/lib/content";
 
@@ -32,12 +33,11 @@ export function ContactSection({ locale }: { locale: Locale }) {
             {form.orEmailLabel}
           </p>
           <Magnetic strength={0.15} className="mt-2 inline-block">
-            <a
-              href={`mailto:${email}`}
+            <EmailLink
+              email={email}
+              location="contact"
               className="inline-block font-sans text-base text-muted underline decoration-border underline-offset-8 transition-colors hover:text-foreground hover:decoration-foreground md:text-lg"
-            >
-              {email}
-            </a>
+            />
           </Magnetic>
         </FadeIn>
 

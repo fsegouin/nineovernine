@@ -2,12 +2,15 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { FadeIn } from "./FadeIn";
 import { useProjectTransition } from "./ProjectTransition";
 import { getProjects } from "@/lib/projects";
 import type { Project } from "@/lib/projects";
 import { useLocale } from "./LocaleProvider";
 import { getContent } from "@/lib/content";
+import { LoopingVideo } from "./LoopingVideo";
+import { trackEvent } from "@/lib/analytics";
 
 export function WorkSection() {
   const locale = useLocale();
@@ -31,7 +34,6 @@ export function WorkSection() {
         </FadeIn>
 
         <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-12">
-          {/* Row 1: large left, small right */}
           <FadeIn className="md:col-span-7" delay={0.1}>
             <ProjectCard project={projects[0]} />
           </FadeIn>
@@ -39,7 +41,6 @@ export function WorkSection() {
             <ProjectCard project={projects[1]} />
           </FadeIn>
 
-          {/* Row 2: small left, large right */}
           <FadeIn className="md:col-span-5" delay={0.1}>
             <ProjectCard project={projects[2]} />
           </FadeIn>
@@ -47,7 +48,6 @@ export function WorkSection() {
             <ProjectCard project={projects[3]} />
           </FadeIn>
 
-          {/* Row 3: full-width */}
           <FadeIn className="md:col-span-12" delay={0.1}>
             <ProjectCard project={projects[4]} />
           </FadeIn>
@@ -58,34 +58,35 @@ export function WorkSection() {
 }
 
 function ProjectCard({ project }: { project: Project }) {
+  const locale = useLocale();
   const imageRef = useRef<HTMLDivElement>(null);
   const { navigateToProject, activeSlug } = useProjectTransition();
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    trackEvent("project_opened", { slug: project.slug, source: "work" });
+    // Modified clicks (new tab, new window) keep the link's default behaviour
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     if (imageRef.current) {
+      e.preventDefault();
       navigateToProject(project.slug, project.bgClass, imageRef.current);
     }
   };
 
   return (
-    <div className="group cursor-pointer" onClick={handleClick}>
+    <Link href={`/${locale}/projects/${project.slug}`} className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground" onClick={handleClick}>
       <div
         ref={imageRef}
         className={`relative ${project.aspectClass} ${project.bgClass} w-full overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]`}
         style={activeSlug === project.slug ? { opacity: 0 } : undefined}
       >
         {(project.cardVideo || project.heroVideo) ? (
-          <video
+          <LoopingVideo
+            aria-hidden="true"
             className="absolute inset-0 h-full w-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
             poster={(project.cardVideo ?? project.heroVideo)!.poster}
-          >
-            <source src={(project.cardVideo ?? project.heroVideo)!.webm} type="video/webm" />
-            <source src={(project.cardVideo ?? project.heroVideo)!.mp4} type="video/mp4" />
-          </video>
+            webm={(project.cardVideo ?? project.heroVideo)!.webm}
+            mp4={(project.cardVideo ?? project.heroVideo)!.mp4}
+          />
         ) : project.heroImage ? (
           <Image
             src={project.heroImage}
@@ -103,6 +104,6 @@ function ProjectCard({ project }: { project: Project }) {
         </h3>
         <p className="mt-1 font-sans text-sm text-muted">{project.category}</p>
       </div>
-    </div>
+    </Link>
   );
 }
