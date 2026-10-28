@@ -56,7 +56,7 @@ export function HeroSection() {
                 flow as one balanced paragraph; from lg each line is its own row. The
                 lg/xl sizes and column span are the largest that fit the longest French
                 line on one row. */}
-            <h1 data-entrance-el className="text-balance font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl xl:text-8xl">
+            <h1 data-entrance-el className="text-balance font-display text-[min(3rem,calc((100vw-3rem)/7.6))] font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl xl:text-8xl">
               <span className="lg:block">
                 <TextReveal delay={line1Start} trigger="mount" onType={pulseDitherAt} cursorUntil={line2Start} active={textActive}>{headline[0]}</TextReveal>
               </span>{" "}
