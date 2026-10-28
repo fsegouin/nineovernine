@@ -51,7 +51,10 @@ components/
   Magnetic.tsx        # Magnetic hover effect wrapper
   FadeIn.tsx          # Scroll-triggered fade+translate animation
   TextReveal.tsx      # Character-by-character streaming text
-  DitherField.tsx     # Interactive dither canvas, rendered in dither-worker.ts
+  DitherField.tsx     # Interactive dither canvas, rendered off the main thread in dither-worker.ts
+  dither-worker.ts    # Dither simulation; draws with dither-gl.ts, or Canvas 2D without WebGL2
+  dither-gl.ts        # WebGL2 renderer: per-dot state pass + instanced dot pass
+  dither-config.ts    # Dither tuning shared by both renderers
   ProjectTransition.tsx # Shared-element page transition
   ProjectContent.tsx  # Project detail page content
   HeroSection.tsx     # Home hero with streaming headline + dither field
@@ -131,7 +134,7 @@ Three-layer system to prevent FOUC:
 
 ## Special Features
 
-- **Custom cursor**: 12px white dot with `mix-blend-difference`, scales 5× on hover over `a`/`button`/`[data-cursor]`, only on `pointer: fine` devices
+- **Custom cursor**: white dot with `mix-blend-difference`, drawn at its 60px hover size and scaled to 0.2 (12px) at rest so the hover state stays sharp; grows to full size over `a`/`button`/`[data-cursor]`, only on `pointer: fine` devices outside forced-colors mode
 - **Grain**: `GrainOverlay` draws a noise tile on a canvas in the foreground colour and sets it as `--grain-url`; `globals.css` applies it as a background image on `body` and `.bg-grain`. It regenerates when the theme changes
 - **Project transitions**: Shared-element animation — card expands to full-width hero position, page navigates mid-animation. Chainable between project pages via "next project" section
 - **`robots.ts`**: Currently disallows all crawlers (site is pre-launch)
@@ -140,6 +143,7 @@ Three-layer system to prevent FOUC:
 - **Rate limiting**: the Vercel Firewall custom rule "Rate limit contact form" allows 10 `POST /api/contact` per hour per IP and returns 429 after that (managed with `vercel firewall rules`, not in the repo). The route's in-memory limiter is a per-instance backstop
 - **Analytics**: Vercel Web Analytics page views plus custom events (Pro plan), all sent through `trackEvent` in `lib/analytics.ts`. Add new events to its `Events` type; never put visitor input or the email address in a property
 - **Easter eggs**: `/9` page, `PartyMode` (triggered by `useKonamiCode`), `ConsoleMessage`
+- **Hero dither field**: a grid of dots (8px cells) driven by Perlin noise, with a cursor flashlight, a scatter while the cursor moves, a ripple on click, and a pulse at each character the headline types (`TextReveal`'s `onType` calls `pulseDitherAt`). It renders in a worker on an OffscreenCanvas with WebGL2, capped at about 60fps (30fps when idle), paused off-screen and in hidden tabs; without WebGL2 it falls back to Canvas 2D in the same worker
 - **Reduced motion**: `MotionPreferences` wraps the app in `MotionConfig reducedMotion="user"`; Lenis, the cursor trail, the dither noise, looping videos and party-mode CSS also stand down when `prefers-reduced-motion: reduce`
 - **Root layouts**: `app/[locale]/layout.tsx` and `app/9/layout.tsx` are both root layouts (there is no `app/layout.tsx`), so `<html lang>` is server-rendered
 - **404s**: with no root layout there is no root `not-found.js`, and a `notFound()` thrown while rendering under `[locale]` errors instead of rendering one. So `[locale]` and `projects/[slug]` set `dynamicParams = false`, which makes unknown locales and slugs unmatched URLs, and every unmatched URL renders `app/global-not-found.tsx`. Prefer that over `notFound()` in new routes

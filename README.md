@@ -60,7 +60,10 @@ components/
   Magnetic.tsx        # Magnetic hover effect wrapper
   FadeIn.tsx          # Scroll-triggered fade+translate animation
   TextReveal.tsx      # Character-by-character streaming text
-  DitherField.tsx     # Interactive dither canvas, rendered in dither-worker.ts
+  DitherField.tsx     # Interactive dither canvas, rendered off the main thread in dither-worker.ts
+  dither-worker.ts    # Dither simulation; draws with dither-gl.ts, or Canvas 2D without WebGL2
+  dither-gl.ts        # WebGL2 renderer: per-dot state pass + instanced dot pass
+  dither-config.ts    # Dither tuning shared by both renderers
   ProjectTransition.tsx # Shared-element page transition
   ProjectContent.tsx  # Project detail page content
   HeroSection.tsx     # Home hero with streaming headline + dither field
