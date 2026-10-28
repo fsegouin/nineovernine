@@ -10,7 +10,7 @@ import { trackEvent } from "@/lib/analytics";
 const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 function persistLocale(locale: Locale) {
-  document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=${LOCALE_COOKIE_MAX_AGE}`;
+  document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=${LOCALE_COOKIE_MAX_AGE};samesite=lax`;
 }
 
 const localeLabels: Record<Locale, string> = {
