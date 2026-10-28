@@ -1,22 +1,31 @@
 import { ImageResponse } from "next/og";
+import { notFound } from "next/navigation";
+import { loadJostBold } from "@/lib/og-font";
+import { defaultLocale, getContent, isValidLocale } from "@/lib/content";
 
-export const alt = "About — Nine Over Nine";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+const size = { width: 1200, height: 630 };
 
-async function loadFont() {
-  const res = await fetch(
-    "https://fonts.googleapis.com/css2?family=Jost:wght@700&display=swap"
-  );
-  const css = await res.text();
-  const match = css.match(/src: url\((.+?)\)/);
-  if (!match?.[1]) throw new Error("Failed to resolve font URL");
-  const fontRes = await fetch(match[1]);
-  return fontRes.arrayBuffer();
+const contentFor = (locale: string) => getContent(isValidLocale(locale) ? locale : defaultLocale);
+
+// A static `alt` export cannot vary by locale; generateImageMetadata can
+export function generateImageMetadata({ params }: { params: { locale: string } }) {
+  const content = contentFor(params.locale);
+  return [
+    {
+      id: "default",
+      alt: `${content.about.heading} | ${content.meta.title}`,
+      size,
+      contentType: "image/png",
+    },
+  ];
 }
 
-export default async function Image() {
-  const fontData = await loadFont();
+export default async function Image({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  // Rendered on demand: an unknown locale 404s like the page
+  if (!isValidLocale(locale)) notFound();
+  const content = getContent(locale);
+  const fontData = await loadJostBold();
 
   return new ImageResponse(
     (
@@ -40,7 +49,7 @@ export default async function Image() {
             letterSpacing: "-0.02em",
           }}
         >
-          About
+          {content.about.heading}
         </div>
         <div
           style={{
@@ -51,7 +60,7 @@ export default async function Image() {
             textTransform: "uppercase" as const,
           }}
         >
-          Nine Over Nine
+          {content.meta.title}
         </div>
       </div>
     ),

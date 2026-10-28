@@ -1,33 +1,41 @@
 import { ImageResponse } from "next/og";
-import { getProject, projects } from "@/lib/projects";
+import { notFound } from "next/navigation";
+import { getProject } from "@/lib/projects";
+import { defaultLocale, getContent, isValidLocale } from "@/lib/content";
+import { loadJostBold } from "@/lib/og-font";
 
-export const alt = "Project — Nine Over Nine";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+const size = { width: 1200, height: 630 };
 
-export function generateStaticParams() {
-  return projects.map((p) => ({ slug: p.slug }));
-}
+// No generateStaticParams here: with generateImageMetadata, Next generates the
+// route's own (one per image id), and a second export would collide with it.
 
-async function loadFont() {
-  const res = await fetch(
-    "https://fonts.googleapis.com/css2?family=Jost:wght@700&display=swap"
-  );
-  const css = await res.text();
-  const match = css.match(/src: url\((.+?)\)/);
-  if (!match?.[1]) throw new Error("Failed to resolve font URL");
-  const fontRes = await fetch(match[1]);
-  return fontRes.arrayBuffer();
+// A static `alt` export cannot name the project; generateImageMetadata can
+export function generateImageMetadata({ params }: { params: { locale: string; slug: string } }) {
+  const locale = isValidLocale(params.locale) ? params.locale : defaultLocale;
+  const project = getProject(params.slug, locale);
+  // No metadata for an unknown slug: Next then 404s the image route itself
+  if (!project) return [];
+  return [
+    {
+      id: "default",
+      alt: `${project.title} | ${getContent(locale).meta.title}`,
+      size,
+      contentType: "image/png",
+    },
+  ];
 }
 
 export default async function Image({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
-  const project = getProject(slug);
-  const fontData = await loadFont();
+  const { locale, slug } = await params;
+  // Unknown locales and slugs 404 like the project page
+  if (!isValidLocale(locale)) notFound();
+  const project = getProject(slug, locale);
+  if (!project) notFound();
+  const fontData = await loadJostBold();
 
   return new ImageResponse(
     (
@@ -54,7 +62,7 @@ export default async function Image({
             marginBottom: 16,
           }}
         >
-          {`${project?.category ?? "Project"} — ${project?.year ?? ""}`}
+          {`${project.category} — ${project.year}`}
         </div>
         <div
           style={{
@@ -65,7 +73,7 @@ export default async function Image({
             lineHeight: 1.1,
           }}
         >
-          {project?.title ?? slug}
+          {project.title}
         </div>
         <div
           style={{

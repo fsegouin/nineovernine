@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FadeIn } from "@/components/FadeIn";
 import { TextReveal } from "@/components/TextReveal";
-import { getContent, isValidLocale } from "@/lib/content";
+import { getContent, isValidLocale, supportedLocales } from "@/lib/content";
 
 export async function generateMetadata({
   params,
@@ -12,11 +12,23 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!isValidLocale(locale)) return {};
   const content = getContent(locale);
+  const description = content.about.vision.paragraphs[0];
   return {
     title: content.about.heading,
-    description: content.about.vision.paragraphs[0],
+    description,
+    // openGraph and alternates replace the layout's values wholesale, so
+    // restate the layout's fields and point hreflang at this page.
     openGraph: {
       type: "website",
+      locale: locale === "fr" ? "fr_FR" : "en_US",
+      siteName: content.meta.title,
+      title: content.about.heading,
+      description,
+    },
+    alternates: {
+      languages: Object.fromEntries(
+        supportedLocales.map((l) => [l, `/${l}/about`])
+      ),
     },
   };
 }
@@ -48,27 +60,25 @@ export default async function AboutPage({
       {/* Founder */}
       <section className="border-t border-border px-6 py-24 lg:px-12 lg:py-32">
         <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-            <FadeIn className="lg:col-span-7">
-              <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">
-                {founder.overline}
-              </p>
-              <h2 className="mt-4 font-display text-3xl font-bold tracking-tight md:text-4xl">
-                {founder.name}
-              </h2>
-              <p className="mt-2 font-sans text-sm text-muted">
-                {founder.role}
-              </p>
+          <FadeIn className="lg:w-7/12">
+            <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">
+              {founder.overline}
+            </p>
+            <h2 className="mt-4 font-display text-3xl font-bold tracking-tight md:text-4xl">
+              {founder.name}
+            </h2>
+            <p className="mt-2 font-sans text-sm text-muted">
+              {founder.role}
+            </p>
 
-              <div className="mt-8 space-y-5">
-                {founder.paragraphs.map((text, i) => (
-                  <p key={i} className="font-sans text-base leading-relaxed text-muted">
-                    {text}
-                  </p>
-                ))}
-              </div>
-            </FadeIn>
-          </div>
+            <div className="mt-8 space-y-5">
+              {founder.paragraphs.map((text, i) => (
+                <p key={i} className="font-sans text-base leading-relaxed text-muted">
+                  {text}
+                </p>
+              ))}
+            </div>
+          </FadeIn>
         </div>
       </section>
 
