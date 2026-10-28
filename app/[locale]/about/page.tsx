@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { FadeIn } from "@/components/FadeIn";
 import { TextReveal } from "@/components/TextReveal";
 import { getContent, isValidLocale, supportedLocales } from "@/lib/content";
+import founderPhoto from "@/public/about/founder.webp";
 
 export async function generateMetadata({
   params,
@@ -59,8 +61,8 @@ export default async function AboutPage({
 
       {/* Founder */}
       <section className="border-t border-border px-6 py-24 lg:px-12 lg:py-32">
-        <div className="mx-auto max-w-7xl">
-          <FadeIn className="lg:w-7/12">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-12 lg:gap-16">
+          <FadeIn className="md:col-span-7">
             <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">
               {founder.overline}
             </p>
@@ -78,6 +80,16 @@ export default async function AboutPage({
                 </p>
               ))}
             </div>
+          </FadeIn>
+
+          <FadeIn className="md:col-span-5 lg:col-span-4 lg:col-start-9" delay={0.15}>
+            <Image
+              src={founderPhoto}
+              alt={founder.photoAlt}
+              placeholder="blur"
+              sizes="(min-width: 1024px) 30vw, (min-width: 768px) 40vw, 24rem"
+              className="aspect-square w-full max-w-sm bg-muted/10 object-cover md:max-w-none"
+            />
           </FadeIn>
         </div>
       </section>
