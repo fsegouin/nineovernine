@@ -16,6 +16,9 @@ import {
 import { EASE } from "@/lib/motion";
 import { trackEvent } from "@/lib/analytics";
 
+// Long enough for a slow mail provider; the idempotency key makes a retry after it safe
+const SUBMIT_TIMEOUT_MS = 20_000;
+
 type ContactFormData = {
   name: string;
   email: string;
@@ -51,6 +54,9 @@ export function ContactForm() {
   // Set when a step change should move focus. The next step only mounts once the
   // previous one has animated out, so focus is applied by the new control's ref.
   const pendingFocus = useRef(false);
+  // One key per submitted payload: a retry of the same message reuses it, so the route
+  // can ask Resend not to send it twice when the first attempt was delivered but timed out
+  const submission = useRef<{ payload: string; key: string | undefined } | null>(null);
 
   const focusOnMount = (el: HTMLElement | null) => {
     if (el && pendingFocus.current) {
@@ -70,14 +76,22 @@ export function ContactForm() {
     // Stays null when the request never got a response (offline, blocked)
     let httpStatus: number | null = null;
     try {
+      const payload = JSON.stringify(data);
+      if (submission.current?.payload !== payload) {
+        // randomUUID needs a secure context; over plain http (a LAN dev server) the send goes without a key
+        const key = typeof crypto.randomUUID === "function" ? crypto.randomUUID() : undefined;
+        submission.current = { payload, key };
+      }
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, _honey: honey }),
+        body: JSON.stringify({ ...data, _honey: honey, submissionId: submission.current.key }),
+        signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
       });
       httpStatus = res.status;
       if (!res.ok) throw new Error("Failed");
-      trackEvent("contact_submitted", { services: data.services.length });
+      // The route accepts spam-trap submissions silently; they are not conversions
+      if (!honey) trackEvent("contact_submitted", { services: data.services.length });
       pendingFocus.current = true;
       setStatus("success");
     } catch {
@@ -168,7 +182,7 @@ export function ContactForm() {
           tabIndex={-1}
           className="font-display text-2xl font-bold outline-none md:text-3xl"
         >
-          {successHeading.replace("{name}", data.name.trim().split(/\s+/)[0])}
+          {successHeading.replace("{name}", () => data.name.trim().split(/\s+/)[0])}
         </h3>
         <p className="mt-2 font-sans text-muted">{successMessage}</p>
       </motion.div>

@@ -28,6 +28,8 @@ const RATE_LIMIT = 3;
 const RATE_WINDOW = 60 * 60 * 1000; // 1 hour
 // Past this many tracked IPs, expired entries are swept so the map stays bounded
 const MAX_TRACKED_IPS = 10_000;
+// The form sends a UUID; anything else is ignored rather than passed to Resend
+const SUBMISSION_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function liveTimestamps(ip: string, now: number): number[] {
   return submissions.get(ip)?.filter((t) => now - t < RATE_WINDOW) ?? [];
@@ -70,10 +72,43 @@ function singleLine(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
-const tooManyRequests = () =>
-  NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
-const invalidRequest = (status = 400) =>
-  NextResponse.json({ error: "Invalid request." }, { status });
+/** Reads the body as text, or returns null once it passes MAX_BODY_BYTES, so a chunked request is never buffered whole. */
+async function readCappedBody(req: NextRequest): Promise<string | null> {
+  if (!req.body) return "";
+  const reader = req.body.getReader();
+  const decoder = new TextDecoder();
+  let size = 0;
+  let text = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_BODY_BYTES) {
+      await reader.cancel();
+      return null;
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+  return text + decoder.decode();
+}
+
+/** Logs why a submission was refused. Only the reason is logged: never the visitor's input or address. */
+function logRejected(reason: string) {
+  console.warn(`[Contact Form] Rejected: ${reason}`);
+}
+
+const tooManyRequests = () => {
+  logRejected("rate limited");
+  return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+};
+const invalidRequest = (status = 400) => {
+  logRejected(`invalid request (${status})`);
+  return NextResponse.json({ error: "Invalid request." }, { status });
+};
+const invalidField = (error: string) => {
+  logRejected(`validation: ${error}`);
+  return NextResponse.json({ error }, { status: 400 });
+};
 const sendFailed = () =>
   NextResponse.json({ error: "Failed to send message. Please try again." }, { status: 500 });
 
@@ -87,14 +122,14 @@ export async function POST(req: NextRequest) {
   if (!contentType.toLowerCase().startsWith("application/json")) return invalidRequest(415);
   if (Number(req.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) return invalidRequest(413);
 
-  // A chunked request carries no Content-Length, so measure the body itself too
-  let raw: string;
+  // A chunked request carries no Content-Length, so the read itself stops at the cap
+  let raw: string | null;
   try {
-    raw = await req.text();
+    raw = await readCappedBody(req);
   } catch {
     return invalidRequest();
   }
-  if (new TextEncoder().encode(raw).byteLength > MAX_BODY_BYTES) return invalidRequest(413);
+  if (raw === null) return invalidRequest(413);
 
   let body: unknown;
   try {
@@ -104,34 +139,35 @@ export async function POST(req: NextRequest) {
   }
   if (typeof body !== "object" || body === null || Array.isArray(body)) return invalidRequest();
 
-  const { name, email, services, message, _honey } = body as Record<string, unknown>;
+  const { name, email, services, message, _honey, submissionId } = body as Record<string, unknown>;
 
   if (_honey) {
     // Silently accept to not tip off bots
+    logRejected("honeypot");
     return NextResponse.json({ ok: true });
   }
 
   if (typeof name !== "string" || name.trim().length < MIN_NAME_LENGTH) {
-    return NextResponse.json({ error: "Name is required (min 2 characters)." }, { status: 400 });
+    return invalidField(`Name is required (min ${MIN_NAME_LENGTH} characters).`);
   }
   if (name.length > MAX_NAME_LENGTH) {
-    return NextResponse.json({ error: "Name is too long." }, { status: 400 });
+    return invalidField("Name is too long.");
   }
   if (typeof email !== "string" || email.length > MAX_EMAIL_LENGTH || !EMAIL_RE.test(email)) {
-    return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
+    return invalidField("A valid email is required.");
   }
   if (
     !Array.isArray(services) ||
     services.length === 0 ||
     !services.every((s): s is string => typeof s === "string" && SERVICE_OPTIONS.has(s))
   ) {
-    return NextResponse.json({ error: "Please select at least one service." }, { status: 400 });
+    return invalidField("Please select at least one service.");
   }
   if (typeof message !== "string" || message.trim().length < MIN_MESSAGE_LENGTH) {
-    return NextResponse.json({ error: "Message is required (min 10 characters)." }, { status: 400 });
+    return invalidField(`Message is required (min ${MIN_MESSAGE_LENGTH} characters).`);
   }
   if (message.length > MAX_MESSAGE_LENGTH) {
-    return NextResponse.json({ error: "Message is too long." }, { status: 400 });
+    return invalidField("Message is too long.");
   }
 
   if (!tryRecordSubmission(ip)) return tooManyRequests();
@@ -140,6 +176,10 @@ export async function POST(req: NextRequest) {
   const trimmedMessage = message.trim();
   // A crafted request can repeat a service; list each once
   const serviceList = Array.from(new Set(services)).join(", ");
+  const idempotencyKey =
+    typeof submissionId === "string" && SUBMISSION_ID_RE.test(submissionId)
+      ? `contact/${submissionId}`
+      : undefined;
 
   try {
     const { error: sendError } = await getResend().emails.send({
@@ -165,7 +205,7 @@ export async function POST(req: NextRequest) {
         <hr>
         <p style="color: #999; font-size: 12px;">Sent via nineovernine.com contact form</p>
       `,
-    });
+    }, { idempotencyKey });
 
     if (sendError) {
       console.error("[Contact Form] Resend error:", sendError);

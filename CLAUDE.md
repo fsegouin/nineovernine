@@ -139,7 +139,7 @@ Three-layer system to prevent FOUC:
 - **Project transitions**: Shared-element animation — card expands to full-width hero position, page navigates mid-animation. Chainable between project pages via "next project" section
 - **`robots.ts`**: Currently disallows all crawlers (site is pre-launch)
 - **i18n**: `en` and `fr` under `app/[locale]/`. `proxy.ts` redirects unprefixed paths using the `NEXT_LOCALE` cookie, then `Accept-Language`. `/9` and `/api` are excluded from the redirect
-- **Contact form**: `ContactForm` posts JSON to `app/api/contact/route.ts`, which sends mail through Resend and needs `RESEND_API_KEY`
+- **Contact form**: `ContactForm` posts JSON to `app/api/contact/route.ts`, which sends mail through Resend and needs `RESEND_API_KEY`. Each payload carries a `submissionId` the route passes to Resend as an idempotency key, so a retry after a timed-out send never mails twice. Rejections are logged by reason only, never with the visitor's input
 - **Rate limiting**: the Vercel Firewall custom rule "Rate limit contact form" allows 10 `POST /api/contact` per hour per IP and returns 429 after that (managed with `vercel firewall rules`, not in the repo). The route's in-memory limiter is a per-instance backstop
 - **Analytics**: Vercel Web Analytics page views plus custom events (Pro plan), all sent through `trackEvent` in `lib/analytics.ts`. Add new events to its `Events` type; never put visitor input or the email address in a property
 - **Easter eggs**: `/9` page, `PartyMode` (triggered by `useKonamiCode`), `ConsoleMessage`
