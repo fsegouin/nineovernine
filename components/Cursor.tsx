@@ -6,6 +6,7 @@ import { motion, useMotionValue, useSpring } from "motion/react";
 
 const TRAIL_COUNT = 6;
 const VELOCITY_THRESHOLD = 30;
+const REST_SCALE = 0.2;
 
 interface TrailDot {
   x: number;
@@ -19,7 +20,9 @@ export function Cursor() {
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const scale = useMotionValue(1);
+  // The dot is drawn at its hover size and scaled down at rest: the browser
+  // rasterises the layer at its CSS size, so scaling up from 12px would blur it.
+  const scale = useMotionValue(REST_SCALE);
 
   const pathname = usePathname();
 
@@ -33,11 +36,13 @@ export function Cursor() {
   const rafId = useRef(0);
 
   useEffect(() => {
-    scale.set(1);
+    scale.set(REST_SCALE);
   }, [pathname, scale]);
 
   useEffect(() => {
     if (!window.matchMedia("(pointer: fine)").matches) return;
+    // Forced colours can drop the white dot and its blend mode, leaving no pointer at all
+    if (window.matchMedia("(forced-colors: active)").matches) return;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // globals.css hides the native cursor only while this class is set
     const root = document.documentElement;
@@ -129,14 +134,14 @@ export function Cursor() {
     const over = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.closest("a, button, [data-cursor]")) {
-        scale.set(5);
+        scale.set(1);
       }
     };
 
     const out = (e: MouseEvent) => {
       const target = e.relatedTarget as HTMLElement | null;
       if (!target?.closest("a, button, [data-cursor]")) {
-        scale.set(1);
+        scale.set(REST_SCALE);
       }
     };
 
@@ -162,7 +167,7 @@ export function Cursor() {
   return (
     <motion.div
       aria-hidden="true"
-      className="pointer-events-none fixed left-0 top-0 z-[99] h-3 w-3 -ml-1.5 -mt-1.5 rounded-full bg-white mix-blend-difference"
+      className="pointer-events-none fixed left-0 top-0 z-[99] h-15 w-15 -ml-7.5 -mt-7.5 rounded-full bg-white mix-blend-difference"
       style={{ x: springX, y: springY, scale: springScale }}
     />
   );
