@@ -7,6 +7,9 @@ import { motion, useMotionValue, useSpring } from "motion/react";
 const TRAIL_COUNT = 6;
 const VELOCITY_THRESHOLD = 30;
 const REST_SCALE = 0.2;
+const TRAIL_START_OPACITY = 0.6;
+const TRAIL_FADE_STEP = 0.04;
+const TRAIL_DOT_SIZE = 5;
 // Text fields keep the native I-beam, which shows where a click will place the caret
 const TEXT_FIELD = 'input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="image"]), textarea, [contenteditable]:not([contenteditable="false"])';
 
@@ -91,13 +94,13 @@ export function Cursor() {
       let hasVisible = false;
       for (let i = trailRef.current.length - 1; i >= 0; i--) {
         const dot = trailRef.current[i];
-        dot.opacity -= 0.04;
+        dot.opacity -= TRAIL_FADE_STEP;
         if (dot.opacity <= 0) {
           trailRef.current.splice(i, 1);
           continue;
         }
         hasVisible = true;
-        const size = (dot.opacity * 5) * dpr;
+        const size = dot.opacity * TRAIL_DOT_SIZE * dpr;
         ctx.globalAlpha = dot.opacity;
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
@@ -132,7 +135,7 @@ export function Cursor() {
 
       if (velocity > VELOCITY_THRESHOLD && !reduceMotion) {
         ensureTrailCanvas();
-        trailRef.current.push({ x: e.clientX, y: e.clientY, opacity: 0.6 });
+        trailRef.current.push({ x: e.clientX, y: e.clientY, opacity: TRAIL_START_OPACITY });
         if (trailRef.current.length > TRAIL_COUNT * 3) {
           trailRef.current = trailRef.current.slice(-TRAIL_COUNT * 2);
         }

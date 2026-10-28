@@ -3,6 +3,9 @@ import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { CONTENT_PATHS, ROOT } from "./content-paths";
 
+const BLUR_SIZE = 10;
+const BLUR_QUALITY = 20;
+
 interface GalleryItem {
   type: "image" | "video";
   src?: string;
@@ -26,8 +29,8 @@ interface Content {
 async function generateBlurDataURL(imagePath: string): Promise<string> {
   const absolutePath = join(ROOT, "public", imagePath);
   const buffer = await sharp(absolutePath)
-    .resize(10, 10, { fit: "inside" })
-    .webp({ quality: 20 })
+    .resize(BLUR_SIZE, BLUR_SIZE, { fit: "inside" })
+    .webp({ quality: BLUR_QUALITY })
     .toBuffer();
   return `data:image/webp;base64,${buffer.toString("base64")}`;
 }

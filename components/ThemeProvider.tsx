@@ -41,9 +41,7 @@ function syncThemeColor(color: string) {
     .querySelectorAll('meta[name="theme-color"][media]')
     .forEach((meta) => meta.remove());
 
-  let meta = document.querySelector(
-    'meta[name="theme-color"]:not([media])'
-  ) as HTMLMetaElement | null;
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]:not([media])');
   if (!meta) {
     meta = document.createElement("meta");
     meta.name = "theme-color";

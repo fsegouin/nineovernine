@@ -12,7 +12,7 @@ const BLINK_CYCLE = 1; // matches cursor-blink animation duration
 function seededRandom(seed: number) {
   let s = seed;
   return () => {
-    s = (s * 16807 + 0) % 2147483647;
+    s = (s * 16807) % 2147483647;
     return (s - 1) / 2147483646;
   };
 }
@@ -33,7 +33,7 @@ function buildCharTimings(
     // Base interval with human-like variance (±20% of base)
     let interval = CHAR_DELAY * (0.8 + rng() * 0.4);
 
-    // Slight pause at word boundaries — natural rhythm between words
+    // Slight pause at word boundaries for a natural rhythm between words
     if (chars[i] === " " || chars[i + 1] === " ") {
       interval += rng() * 0.03;
     }
@@ -80,7 +80,7 @@ interface TextRevealProps {
   onType?: (charEl: HTMLElement) => void;
 }
 
-/** Individual character — memoized so it never re-renders after mount. */
+/** Individual character, memoized so it never re-renders after mount. */
 const Char = memo(function Char({
   char,
   shouldAnimate,

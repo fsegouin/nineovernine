@@ -3,6 +3,10 @@ import { readFileSync, writeFileSync, existsSync, statSync, rmSync } from "fs";
 import { join } from "path";
 import { CONTENT_PATHS, ROOT } from "./content-paths";
 
+const POSTER_MAX_WIDTH = 1280;
+const POSTER_QUALITY = "60";
+const POSTER_SEEK_SECONDS = "0.5";
+
 interface VideoRef {
   mp4?: string;
   webm?: string;
@@ -39,9 +43,9 @@ function extractFrame(input: string, output: string, seek?: string) {
       "-i", input,
       ...(seek ? ["-ss", seek] : []),
       "-frames:v", "1",
-      "-vf", "scale='min(1280,iw)':-2",
+      "-vf", `scale='min(${POSTER_MAX_WIDTH},iw)':-2`,
       "-c:v", "libwebp",
-      "-quality", "60",
+      "-quality", POSTER_QUALITY,
       output,
     ],
     { stdio: "pipe" }
@@ -70,7 +74,7 @@ function generatePoster(videoPath: string): string | null {
   }
 
   try {
-    extractFrame(absolutePath, absolutePosterPath, "0.5");
+    extractFrame(absolutePath, absolutePosterPath, POSTER_SEEK_SECONDS);
     console.log(`  poster: ${posterPath}`);
     return posterPath;
   } catch {

@@ -49,7 +49,7 @@ function initNoise() {
   for (let i = 0; i < 256; i++) p[i] = i;
   let seed = 42;
   for (let i = 255; i > 0; i--) {
-    seed = (seed * 16807 + 0) % 2147483647;
+    seed = (seed * 16807) % 2147483647;
     const j = seed % (i + 1);
     [p[i], p[j]] = [p[j], p[i]];
   }
@@ -98,6 +98,7 @@ const SCATTER_RADIUS_SQ = SCATTER_RADIUS * SCATTER_RADIUS;
 // globalAlpha once per level instead of once per dot. 48 levels step by about 0.0125.
 const ALPHA_LEVELS = 48;
 const MAX_DT_MS = 64;
+const NOISE_FRAME_INTERVAL = 4;
 
 // --- Helpers ---
 
@@ -322,9 +323,9 @@ function animate(time: number) {
   const maxInteractRadius = Math.max(cursorRadius, hasEnergy ? SCATTER_RADIUS : 0, maxDissipateRadius);
   const maxInteractRadiusSq = maxInteractRadius * maxInteractRadius;
 
-  // Noise update pass — every 4th frame
+  // Noise update pass, every NOISE_FRAME_INTERVAL frames
   noiseFrame++;
-  const isNoiseFrame = noiseFrame % 4 === 1 && (!reducedMotion || noiseFrame === 1);
+  const isNoiseFrame = noiseFrame % NOISE_FRAME_INTERVAL === 1 && (!reducedMotion || noiseFrame === 1);
   if (isNoiseFrame) {
     needsRender = true;
     for (let i = 0; i < dots.length; i++) {
@@ -348,7 +349,7 @@ function animate(time: number) {
   }
   needsRender = false;
 
-  // Render pass — clear only when we're actually going to draw,
+  // Render pass: clear only when we're actually going to draw,
   // so skipped frames keep the previous image visible.
   ctx.clearRect(0, 0, cw, ch);
   ctx.fillStyle = `rgb(${r},${g},${b})`;

@@ -68,7 +68,7 @@ body {
   }
 }
 
-/* Grain background — applies the canvas-generated noise tile */
+/* Grain background: applies the canvas-generated noise tile */
 .bg-grain {
   background-image: var(--grain-url, none);
 }

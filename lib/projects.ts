@@ -20,7 +20,6 @@ export interface Project {
   description: string;
   aspectClass: string;
   bgClass: string;
-  imageUrl?: string;
   heroImage?: string;
   heroBlur?: string;
   heroVideo?: { mp4: string; webm: string; poster?: string };

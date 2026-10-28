@@ -38,6 +38,7 @@ const GUTTER_DESKTOP = 48;
 const HERO_ASPECT = 9 / 16;
 const NAVIGATE_DELAY_MS = 50;
 const OVERLAY_CLEAR_DELAY_MS = 150;
+const SNAPSHOT_JPEG_QUALITY = 0.85;
 
 interface TransitionContextValue {
   navigateToProject: (
@@ -64,7 +65,6 @@ export const useProjectTransition = () => useContext(TransitionContext);
 /** Capture a snapshot of an element's visible content as a data URL. */
 function captureSnapshot(el: HTMLElement): string | null {
   try {
-    // Look for a video or image inside the element
     const video = el.querySelector("video");
     const img = el.querySelector("img");
 
@@ -76,17 +76,17 @@ function captureSnapshot(el: HTMLElement): string | null {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
-      return canvas.toDataURL("image/jpeg", 0.85);
+      return canvas.toDataURL("image/jpeg", SNAPSHOT_JPEG_QUALITY);
     }
 
     if (img && img.complete && img.naturalWidth > 0) {
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       ctx.drawImage(img, 0, 0);
-      return canvas.toDataURL("image/jpeg", 0.85);
+      return canvas.toDataURL("image/jpeg", SNAPSHOT_JPEG_QUALITY);
     }
   } catch {
-    // Cross-origin or other canvas errors — fall back to bgClass
+    // Cross-origin or other canvas errors: fall back to bgClass
   }
   return null;
 }

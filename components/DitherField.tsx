@@ -36,7 +36,7 @@ export const DitherField = memo(function DitherField() {
     const container = containerRef.current;
     if (!container) return;
 
-    // Create a fresh canvas each mount — transferControlToOffscreen
+    // Create a fresh canvas each mount: transferControlToOffscreen
     // can only be called once per canvas element, and React may reuse
     // DOM nodes across client-side navigations.
     const canvas = document.createElement("canvas");
@@ -61,7 +61,6 @@ export const DitherField = memo(function DitherField() {
     const rect = container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    // Initialize worker with canvas + initial state
     worker.postMessage(
       {
         type: "init",
