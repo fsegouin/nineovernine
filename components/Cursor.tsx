@@ -7,6 +7,8 @@ import { motion, useMotionValue, useSpring } from "motion/react";
 const TRAIL_COUNT = 6;
 const VELOCITY_THRESHOLD = 30;
 const REST_SCALE = 0.2;
+// Text fields keep the native I-beam, which shows where a click will place the caret
+const TEXT_FIELD = 'input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="image"]), textarea, [contenteditable]:not([contenteditable="false"])';
 
 interface TrailDot {
   x: number;
@@ -44,9 +46,17 @@ export function Cursor() {
     // Forced colours can drop the white dot and its blend mode, leaving no pointer at all
     if (window.matchMedia("(forced-colors: active)").matches) return;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // globals.css hides the native cursor only while this class is set
+    // globals.css hides the native cursor only while this class is set. The dot only
+    // appears on the first move, so the native cursor stays until then; hasMoved
+    // survives an effect re-run, when the dot is already showing.
     const root = document.documentElement;
-    root.classList.add("has-custom-cursor");
+    let nativeHidden = false;
+    const hideNativeCursor = () => {
+      if (nativeHidden) return;
+      nativeHidden = true;
+      root.classList.add("has-custom-cursor");
+    };
+    if (hasMoved.current) hideNativeCursor();
 
     // Created on demand: a permanent full-viewport canvas would cost compositing on every frame
     function ensureTrailCanvas() {
@@ -111,6 +121,7 @@ export function Cursor() {
         lastPos.current = { x: e.clientX, y: e.clientY };
         setVisible(true);
       }
+      hideNativeCursor();
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
 
@@ -133,7 +144,10 @@ export function Cursor() {
 
     const over = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (target.closest("a, button, [data-cursor]")) {
+      if (target.closest(TEXT_FIELD)) {
+        // The I-beam takes over; a dot on top of it would hide the caret position
+        scale.set(0);
+      } else if (target.closest("a, button, [data-cursor]")) {
         scale.set(1);
       }
     };

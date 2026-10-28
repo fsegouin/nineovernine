@@ -60,6 +60,11 @@ body {
   .has-custom-cursor * {
     cursor: none !important;
   }
+  /* Text fields keep the I-beam (Cursor.tsx hides the dot over them); must match its TEXT_FIELD,
+     plus editable descendants, since Cursor.tsx tests with closest() */
+  .has-custom-cursor :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="image"]), textarea, [contenteditable]:not([contenteditable="false"]), [contenteditable]:not([contenteditable="false"]) *) {
+    cursor: text !important;
+  }
 }
 
 /* Grain background — applies the canvas-generated noise tile */

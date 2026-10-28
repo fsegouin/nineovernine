@@ -134,7 +134,7 @@ Three-layer system to prevent FOUC:
 
 ## Special Features
 
-- **Custom cursor**: white dot with `mix-blend-difference`, drawn at its 60px hover size and scaled to 0.2 (12px) at rest so the hover state stays sharp; grows to full size over `a`/`button`/`[data-cursor]`, only on `pointer: fine` devices outside forced-colors mode
+- **Custom cursor**: white dot with `mix-blend-difference`, drawn at its 60px hover size and scaled to 0.2 (12px) at rest so the hover state stays sharp; grows to full size over `a`/`button`/`[data-cursor]`, only on `pointer: fine` devices outside forced-colors mode. The native cursor stays until the first mouse move, and text fields keep the native I-beam with the dot hidden
 - **Grain**: `GrainOverlay` draws a noise tile on a canvas in the foreground colour and sets it as `--grain-url`; `globals.css` applies it as a background image on `body` and `.bg-grain`. It regenerates when the theme changes
 - **Project transitions**: Shared-element animation — card expands to full-width hero position, page navigates mid-animation. Chainable between project pages via "next project" section
 - **`robots.ts`**: Currently disallows all crawlers (site is pre-launch)
