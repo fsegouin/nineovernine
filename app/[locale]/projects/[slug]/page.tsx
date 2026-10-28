@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation";
 import { getProject, getNextProject, projects } from "@/lib/projects";
-import { projectJsonLd } from "@/lib/jsonld";
+import { projectJsonLd, serializeJsonLd } from "@/lib/jsonld";
 import { ProjectContent } from "@/components/ProjectContent";
-import { isValidLocale } from "@/lib/content";
-import type { Locale } from "@/lib/content";
+import { defaultLocale, getContent, isValidLocale, supportedLocales } from "@/lib/content";
 
 export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
 }
+
+// Unknown slugs are unmatched URLs, so they get app/global-not-found.tsx
+export const dynamicParams = false;
 
 export async function generateMetadata({
   params,
@@ -15,16 +17,25 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const typedLocale = isValidLocale(locale) ? locale : "en";
-  const project = getProject(slug, typedLocale as Locale);
+  const typedLocale = isValidLocale(locale) ? locale : defaultLocale;
+  const project = getProject(slug, typedLocale);
   if (!project) return {};
   return {
     title: project.title,
     description: project.description,
+    // openGraph and alternates replace the layout's values wholesale, so
+    // restate the layout's fields and point hreflang at this page.
     openGraph: {
       type: "article",
+      locale: typedLocale === "fr" ? "fr_FR" : "en_US",
+      siteName: getContent(typedLocale).meta.title,
       title: project.title,
       description: project.description,
+    },
+    alternates: {
+      languages: Object.fromEntries(
+        supportedLocales.map((l) => [l, `/${l}/projects/${slug}`])
+      ),
     },
   };
 }
@@ -47,7 +58,7 @@ export default async function ProjectPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(projectJsonLd(project, locale)),
+          __html: serializeJsonLd(projectJsonLd(project, locale)),
         }}
       />
       <ProjectContent project={project} nextProject={nextProject} />
