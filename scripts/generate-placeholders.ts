@@ -1,11 +1,7 @@
 import sharp from "sharp";
 import { readFileSync, writeFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, "..");
-const CONTENT_PATH = join(ROOT, "lib", "content.json");
+import { join } from "path";
+import { CONTENT_PATHS, ROOT } from "./content-paths";
 
 interface GalleryItem {
   type: "image" | "video";
@@ -37,32 +33,42 @@ async function generateBlurDataURL(imagePath: string): Promise<string> {
 }
 
 async function main() {
-  const content: Content = JSON.parse(readFileSync(CONTENT_PATH, "utf-8"));
+  // Locales share images, so each placeholder is computed once
+  const blurCache = new Map<string, string>();
+  const blurFor = async (imagePath: string) => {
+    let blur = blurCache.get(imagePath);
+    if (!blur) {
+      blur = await generateBlurDataURL(imagePath);
+      blurCache.set(imagePath, blur);
+      console.log(`  blur: ${imagePath}`);
+    }
+    return blur;
+  };
   let count = 0;
 
-  for (const project of content.projects) {
-    // Hero image blur
-    if (project.heroImage) {
-      const blur = await generateBlurDataURL(project.heroImage);
-      project.heroBlur = blur;
-      count++;
-      console.log(`  blur: ${project.heroImage}`);
-    }
+  for (const contentPath of CONTENT_PATHS) {
+    const content: Content = JSON.parse(readFileSync(contentPath, "utf-8"));
 
-    // Gallery image blurs
-    if (project.gallery) {
-      for (const item of project.gallery) {
-        if (item.type === "image" && item.src) {
-          item.blurDataURL = await generateBlurDataURL(item.src);
-          count++;
-          console.log(`  blur: ${item.src}`);
+    for (const project of content.projects) {
+      if (project.heroImage) {
+        project.heroBlur = await blurFor(project.heroImage);
+        count++;
+      }
+
+      if (project.gallery) {
+        for (const item of project.gallery) {
+          if (item.type === "image" && item.src) {
+            item.blurDataURL = await blurFor(item.src);
+            count++;
+          }
         }
       }
     }
+
+    writeFileSync(contentPath, JSON.stringify(content, null, 2) + "\n");
   }
 
-  writeFileSync(CONTENT_PATH, JSON.stringify(content, null, 2) + "\n");
-  console.log(`\nGenerated ${count} blur placeholders.`);
+  console.log(`\nSet ${count} blur placeholders across ${CONTENT_PATHS.length} content files.`);
 }
 
 main().catch((err) => {

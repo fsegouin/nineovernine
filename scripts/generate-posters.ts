@@ -1,11 +1,7 @@
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, "..");
-const CONTENT_PATH = join(ROOT, "lib", "content.json");
+import { join } from "path";
+import { CONTENT_PATHS, ROOT } from "./content-paths";
 
 interface VideoRef {
   mp4?: string;
@@ -34,6 +30,24 @@ interface Content {
   [key: string]: unknown;
 }
 
+/** Runs ffmpeg with an argument list (no shell), so paths are never parsed as shell syntax. */
+function extractFrame(input: string, output: string, seek?: string) {
+  execFileSync(
+    "ffmpeg",
+    [
+      "-y",
+      "-i", input,
+      ...(seek ? ["-ss", seek] : []),
+      "-frames:v", "1",
+      "-vf", "scale='min(1280,iw)':-2",
+      "-c:v", "libwebp",
+      "-quality", "60",
+      output,
+    ],
+    { stdio: "pipe" }
+  );
+}
+
 function generatePoster(videoPath: string): string | null {
   const absolutePath = join(ROOT, "public", videoPath);
   if (!existsSync(absolutePath)) {
@@ -50,19 +64,13 @@ function generatePoster(videoPath: string): string | null {
   }
 
   try {
-    execSync(
-      `ffmpeg -y -i "${absolutePath}" -ss 0.5 -frames:v 1 -vf "scale='min(1280,iw)':-2" -c:v libwebp -quality 60 "${absolutePosterPath}"`,
-      { stdio: "pipe" }
-    );
+    extractFrame(absolutePath, absolutePosterPath, "0.5");
     console.log(`  poster: ${posterPath}`);
     return posterPath;
   } catch {
     // If seeking to 0.5s fails (video shorter), try 0s
     try {
-      execSync(
-        `ffmpeg -y -i "${absolutePath}" -frames:v 1 -vf "scale='min(1280,iw)':-2" -c:v libwebp -quality 60 "${absolutePosterPath}"`,
-        { stdio: "pipe" }
-      );
+      extractFrame(absolutePath, absolutePosterPath);
       console.log(`  poster (t=0): ${posterPath}`);
       return posterPath;
     } catch (err) {
@@ -73,48 +81,50 @@ function generatePoster(videoPath: string): string | null {
 }
 
 function main() {
-  const content: Content = JSON.parse(readFileSync(CONTENT_PATH, "utf-8"));
   let count = 0;
 
-  for (const project of content.projects) {
-    // Hero video poster
-    if (project.heroVideo?.mp4) {
-      const poster = generatePoster(project.heroVideo.mp4);
-      if (poster) {
-        project.heroVideo.poster = poster;
-        count++;
-      }
-    }
+  for (const contentPath of CONTENT_PATHS) {
+    const content: Content = JSON.parse(readFileSync(contentPath, "utf-8"));
 
-    // Card video poster (use same poster as hero if same video)
-    if (project.cardVideo?.mp4) {
-      if (project.cardVideo.mp4 === project.heroVideo?.mp4 && project.heroVideo?.poster) {
-        project.cardVideo.poster = project.heroVideo.poster;
-      } else {
-        const poster = generatePoster(project.cardVideo.mp4);
+    for (const project of content.projects) {
+      if (project.heroVideo?.mp4) {
+        const poster = generatePoster(project.heroVideo.mp4);
         if (poster) {
-          project.cardVideo.poster = poster;
+          project.heroVideo.poster = poster;
           count++;
         }
       }
-    }
 
-    // Gallery video posters
-    if (project.gallery) {
-      for (const item of project.gallery) {
-        if (item.type === "video" && item.mp4) {
-          const poster = generatePoster(item.mp4);
+      // Reuse the hero poster when the card plays the same video
+      if (project.cardVideo?.mp4) {
+        if (project.cardVideo.mp4 === project.heroVideo?.mp4 && project.heroVideo?.poster) {
+          project.cardVideo.poster = project.heroVideo.poster;
+        } else {
+          const poster = generatePoster(project.cardVideo.mp4);
           if (poster) {
-            item.poster = poster;
+            project.cardVideo.poster = poster;
             count++;
           }
         }
       }
+
+      if (project.gallery) {
+        for (const item of project.gallery) {
+          if (item.type === "video" && item.mp4) {
+            const poster = generatePoster(item.mp4);
+            if (poster) {
+              item.poster = poster;
+              count++;
+            }
+          }
+        }
+      }
     }
+
+    writeFileSync(contentPath, JSON.stringify(content, null, 2) + "\n");
   }
 
-  writeFileSync(CONTENT_PATH, JSON.stringify(content, null, 2) + "\n");
-  console.log(`\nGenerated ${count} video posters.`);
+  console.log(`\nSet ${count} video poster references across ${CONTENT_PATHS.length} content files.`);
 }
 
 main();

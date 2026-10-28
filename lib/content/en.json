@@ -19,7 +19,10 @@
         "href": "/#contact",
         "hash": "#contact"
       }
-    ]
+    ],
+    "menuLabel": "Toggle menu",
+    "skipLink": "Skip to content",
+    "logoLabel": "Nine Over Nine, home"
   },
   "hero": {
     "headline": [
@@ -112,7 +115,14 @@
       "successHeading": "Thanks, {name}.",
       "successMessage": "We'll be in touch soon.",
       "errorMessage": "Something went wrong. Please try again.",
-      "orEmailLabel": "Or email us directly"
+      "orEmailLabel": "Or email us directly",
+      "backLabel": "Back",
+      "errors": {
+        "name": "Please enter at least 2 characters.",
+        "email": "Please enter a valid email.",
+        "services": "Please select at least one service.",
+        "message": "Please write at least 10 characters."
+      }
     }
   },
   "footer": {
@@ -129,7 +139,11 @@
       }
     ],
     "contactLabel": "Contact",
-    "copyright": "Nine Over Nine. All rights reserved."
+    "copyright": "Nine Over Nine. All rights reserved.",
+    "themeToggle": {
+      "dark": "Dark",
+      "light": "Light"
+    }
   },
   "about": {
     "heading": "About",
@@ -412,5 +426,15 @@
       "credit": "Imagery courtesy of ARRIVAL",
       "heroBlur": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAAAwAQCdASoKAAUABUB8JZwAA3AA/u9fNH58N3reyJIAAA=="
     }
-  ]
+  ],
+  "easterEgg": {
+    "partyToast": "You found a secret"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "overline": "404",
+    "heading": "Page not found.",
+    "message": "The page you are looking for does not exist or has moved.",
+    "backLabel": "Back to home"
+  }
 }
