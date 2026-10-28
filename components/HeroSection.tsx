@@ -6,13 +6,19 @@ import { DitherField } from "./DitherField";
 import { useLocale } from "./LocaleProvider";
 import { useEntrance } from "./EntranceProvider";
 import { getContent } from "@/lib/content";
+import { EASE } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+// On a first visit the hero waits for the Navigation entrance sequence to finish
+const FIRST_VISIT_DELAY = 3.0;
+// Brief pause between headline lines, like hitting Enter
+const LINE_PAUSE = 0.25;
 
 export function HeroSection() {
   const locale = useLocale();
   const { headline, description, scrollLabel } = getContent(locale).hero;
   const { isFirstVisit, ready } = useEntrance();
+  const reduceMotion = usePrefersReducedMotion();
 
   // textActive gates TextReveal animation start.
   // For return visits (isFirstVisit=false): active from the start.
@@ -21,15 +27,15 @@ export function HeroSection() {
 
   // On first visit, shift all delays so hero starts after nav entrance.
   // These delays are relative to when textActive becomes true.
-  const d = isFirstVisit ? 3.0 : 0;
+  const d = isFirstVisit ? FIRST_VISIT_DELAY : 0;
 
   // Compute line start times based on actual text length + a short "newline" pause
-  const LINE_PAUSE = 0.25; // brief pause for "hitting Enter"
   const line1Start = d;
   const line1End = line1Start + estimateStreamDuration(headline[0]);
   const line2Start = line1End + LINE_PAUSE;
   const line2End = line2Start + estimateStreamDuration(headline[1]);
   const line3Start = line2End + LINE_PAUSE;
+  const line3End = line3Start + estimateStreamDuration(headline[2]);
 
   // entranceWaiting: first visit, not ready yet → description/indicator hidden
   const entranceWaiting = isFirstVisit && !ready;
@@ -45,13 +51,21 @@ export function HeroSection() {
       </div>
       <div className="mx-auto w-full max-w-7xl">
         <div className="grid grid-cols-12">
-          <div className="col-span-12 lg:col-span-10">
-            <h1 data-entrance-el className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-              <TextReveal delay={line1Start} trigger="mount" cursorUntil={line2Start} active={textActive}>{headline[0]}</TextReveal>
-              <br />
-              <TextReveal delay={line2Start} trigger="mount" cursorUntil={line3Start} active={textActive}>{headline[1]}</TextReveal>
-              <br />
-              <TextReveal delay={line3Start} trigger="mount" active={textActive}>{headline[2]}</TextReveal>
+          <div className="col-span-12 lg:col-span-11">
+            {/* Below lg no headline line fits on one line in both locales, so the lines
+                flow as one balanced paragraph; from lg each line is its own row. The
+                lg/xl sizes and column span are the largest that fit the longest French
+                line on one row. */}
+            <h1 data-entrance-el className="text-balance font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl xl:text-8xl">
+              <span className="lg:block">
+                <TextReveal delay={line1Start} trigger="mount" cursorUntil={line2Start} active={textActive}>{headline[0]}</TextReveal>
+              </span>{" "}
+              <span className="lg:block">
+                <TextReveal delay={line2Start} trigger="mount" cursorUntil={line3Start} active={textActive}>{headline[1]}</TextReveal>
+              </span>{" "}
+              <span className="lg:block">
+                <TextReveal delay={line3Start} trigger="mount" active={textActive}>{headline[2]}</TextReveal>
+              </span>
             </h1>
 
             <motion.p
@@ -64,7 +78,7 @@ export function HeroSection() {
               }
               transition={entranceWaiting
                 ? { duration: 0 }
-                : { duration: 0.7, delay: line3Start + estimateStreamDuration(headline[2]) + 0.4, ease: EASE }
+                : { duration: 0.7, delay: line3End + 0.4, ease: EASE }
               }
             >
               {description}
@@ -72,7 +86,6 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* Scroll indicator */}
         <motion.div
           data-entrance-el
           className="mt-20 flex justify-start"
@@ -83,7 +96,7 @@ export function HeroSection() {
           }
           transition={entranceWaiting
             ? { duration: 0 }
-            : { duration: 0.6, delay: line3Start + estimateStreamDuration(headline[2]) + 0.8 }
+            : { duration: 0.6, delay: line3End + 0.8 }
           }
         >
           <div className="flex flex-col items-center gap-2">
@@ -92,7 +105,7 @@ export function HeroSection() {
             </span>
             <motion.div
               className="h-8 w-px bg-muted"
-              animate={{ scaleY: [0, 1, 0] }}
+              animate={reduceMotion ? { scaleY: 1 } : { scaleY: [0, 1, 0] }}
               transition={{
                 duration: 2,
                 repeat: Infinity,
