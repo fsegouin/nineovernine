@@ -12,7 +12,7 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!isValidLocale(locale)) return {};
   const content = getContent(locale);
-  const description = content.about.vision.paragraphs[0];
+  const description = content.about.metaDescription;
   return {
     title: content.about.heading,
     description,

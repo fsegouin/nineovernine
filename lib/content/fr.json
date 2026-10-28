@@ -150,6 +150,7 @@
   },
   "about": {
     "heading": "À propos",
+    "metaDescription": "Pourquoi nous avons créé Nine Over Nine : des équipes plus petites, un focus plus affûté et un engagement envers le travail, loin de la course à la croissance.",
     "founder": {
       "overline": "Le Fondateur",
       "name": "Florent Segouin",
@@ -179,7 +180,7 @@
         {
           "number": "02",
           "title": "Clarté",
-          "description": "La complexité est facile. La simplicité demande du travail. Nous éliminons le superflu jusqu'à ce que ce qui reste semble évident — dans nos designs, notre code et notre communication."
+          "description": "La complexité est facile. La simplicité demande du travail. Nous éliminons le superflu jusqu'à ce que ce qui reste semble évident, dans nos designs, notre code et notre communication."
         },
         {
           "number": "03",
@@ -207,7 +208,7 @@
       "title": "The All-New Volvo Penta IPS Experience",
       "category": "Installation interactive",
       "year": "2024",
-      "description": "Une installation interactive de pointe conçue pour présenter la plateforme de propulsion Volvo Penta IPS 40. À l'aide de matériel Volvo Penta réel — y compris la poignée de commande — les visiteurs pouvaient explorer la transmission à double entrée à travers une expérience 3D immersive : rotation autour du groupe motopropulseur, superpositions techniques et visualisation des données de performance en temps réel. Conçue pour les expositions et le siège de Volvo, l'installation fonctionnait sur du matériel haute performance pilotant des projecteurs 4K ou des écrans LED. Une expérience compagnon sur tablette offrait des visualisations de données supplémentaires et des informations produit en lecture seule.",
+      "description": "Une installation interactive de pointe conçue pour présenter la plateforme de propulsion Volvo Penta IPS 40. À l'aide de matériel Volvo Penta réel (y compris la poignée de commande), les visiteurs pouvaient explorer la transmission à double entrée à travers une expérience 3D immersive : rotation autour du groupe motopropulseur, superpositions techniques et visualisation des données de performance en temps réel. Conçue pour les expositions et le siège de Volvo, l'installation fonctionnait sur du matériel haute performance pilotant des projecteurs 4K ou des écrans LED. Une expérience compagnon sur tablette offrait des visualisations de données supplémentaires et des informations produit en lecture seule.",
       "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-800",
       "heroImage": "/projects/volvo-penta-ips/f31e356230f6.webp",
@@ -246,7 +247,7 @@
       "title": "Safety in Mind",
       "category": "Expérience interactive",
       "year": "2023",
-      "description": "Une expérience web immersive pour la campagne « For Life » de Volvo Cars, explorant comment la vie affecte votre conduite. Dans le cadre d'une initiative plus large visant à comprendre le rôle de la sécurité psychologique au volant, le site guidait les utilisateurs à travers un sondage audio-visuel méditatif — des dégradés animés subtils, des transitions fluides et des signaux audio soigneusement conçus créaient une atmosphère calme et contemplative. Les utilisateurs répondaient à des questions sur leurs habitudes de conduite et leurs émotions en sélectionnant parmi des options de réponse animées et flottantes. À la fin, des résultats personnalisés comparaient vos réponses à celles des autres participants et offraient des conseils pratiques sur la pleine conscience et la sécurité au volant, avec une carte partageable pour les réseaux sociaux.",
+      "description": "Une expérience web immersive pour la campagne « For Life » de Volvo Cars, explorant comment la vie affecte votre conduite. Dans le cadre d'une initiative plus large visant à comprendre le rôle de la sécurité psychologique au volant, le site guidait les utilisateurs à travers un sondage audio-visuel méditatif : des dégradés animés subtils, des transitions fluides et des signaux audio soigneusement conçus créaient une atmosphère calme et contemplative. Les utilisateurs répondaient à des questions sur leurs habitudes de conduite et leurs émotions en sélectionnant parmi des options de réponse animées et flottantes. À la fin, des résultats personnalisés comparaient vos réponses à celles des autres participants et offraient des conseils pratiques sur la pleine conscience et la sécurité au volant, avec une carte partageable pour les réseaux sociaux.",
       "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-900",
       "cardVideo": {
@@ -300,7 +301,7 @@
       "title": "Ambassadors of Pride",
       "category": "Site de campagne",
       "year": "2022",
-      "description": "Un site web construit de zéro pour la campagne Ambassadors of Pride de West Pride, donnant une plateforme à six réfugiés LGBTQ+ anonymes qui partageaient leurs histoires pour questionner le processus d'asile suédois. Le site combinait storytelling et plaidoyer — après la couverture médiatique de la Journée mondiale des réfugiés, le ministre suédois Mikael Damberg a accepté d'examiner personnellement les demandes de changements dans le processus d'asile LGBTQ+, et West Pride a commencé à offrir des conseils juridiques gratuits aux ambassadeurs. La campagne a été reconnue par MUSE by Clio, Ad Age et Little Black Book.",
+      "description": "Un site web construit de zéro pour la campagne Ambassadors of Pride de West Pride, donnant une plateforme à six réfugiés LGBTQ+ anonymes qui partageaient leurs histoires pour questionner le processus d'asile suédois. Le site combinait storytelling et plaidoyer. Après la couverture médiatique de la Journée mondiale des réfugiés, le ministre suédois Mikael Damberg a accepté d'examiner personnellement les demandes de changements dans le processus d'asile LGBTQ+, et West Pride a commencé à offrir des conseils juridiques gratuits aux ambassadeurs. La campagne a été reconnue par MUSE by Clio, Ad Age et Little Black Book.",
       "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-900",
       "heroImage": "/projects/ambassadors-of-pride/945f4f97b224.webp",
@@ -338,7 +339,7 @@
       "title": "FUZED",
       "category": "Application mobile & Plateforme",
       "year": "2025",
-      "description": "Une refonte complète de l'application mobile et de l'architecture technique de FUZED, réécrivant la plateforme de zéro pour s'intégrer parfaitement à leur écosystème d'arènes — gestion du temps d'ordinateur, suivi de l'activité physique et comptes utilisateurs. FUZED récompense les enfants pour leur activité physique avec du temps de jeu, des récompenses virtuelles et des prix réels débloqués dans les arènes. Avec le lancement de FUZED Trophy à l'été 2025, nous avons construit une fonctionnalité complète de tournoi en ligne et hors ligne : les enfants rejoignent des compétitions via l'app, suivent la progression en direct et rapportent les scores des matchs en temps réel, le tout soutenu par un système d'administration pour le personnel. La plateforme a aidé FUZED à obtenir des sponsorisations de Nike, Stadium, LEGO et EA Sports, et touche 6 à 8 fois plus de jeunes que les programmes de loisirs traditionnels.",
+      "description": "Une refonte complète de l'application mobile et de l'architecture technique de FUZED, réécrivant la plateforme de zéro pour s'intégrer parfaitement à leur écosystème d'arènes : gestion du temps d'ordinateur, suivi de l'activité physique et comptes utilisateurs. FUZED récompense les enfants pour leur activité physique avec du temps de jeu, des récompenses virtuelles et des prix réels débloqués dans les arènes. Avec le lancement de FUZED Trophy à l'été 2025, nous avons construit une fonctionnalité complète de tournoi en ligne et hors ligne : les enfants rejoignent des compétitions via l'app, suivent la progression en direct et rapportent les scores des matchs en temps réel, le tout soutenu par un système d'administration pour le personnel. La plateforme a aidé FUZED à obtenir des sponsorisations de Nike, Stadium, LEGO et EA Sports, et touche 6 à 8 fois plus de jeunes que les programmes de loisirs traditionnels.",
       "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-900",
       "heroImage": "/projects/fuzed/241b47012a1f.webp",
@@ -386,7 +387,7 @@
       "title": "ARRIVAL",
       "category": "UX automobile & Prototypage",
       "year": "2021",
-      "description": "En tant que responsable de l'équipe technique au sein du département UX d'ARRIVAL, j'ai dirigé tout le prototypage UI à travers les expériences web et VR pour le constructeur britannique de véhicules électriques. Le travail couvrait l'ensemble de la gamme — fourgon, bus et voiture — incluant le prototypage HMI et infotainment embarqué, les revues de design intérieur et extérieur en VR, et les expériences interactives utilisées pour valider les décisions de design avant la production. Les prototypes web et VR sont devenus un élément central du pipeline de design, permettant une itération rapide entre les équipes UX, design et ingénierie.",
+      "description": "En tant que responsable de l'équipe technique au sein du département UX d'ARRIVAL, j'ai dirigé tout le prototypage UI à travers les expériences web et VR pour le constructeur britannique de véhicules électriques. Le travail couvrait l'ensemble de la gamme (fourgon, bus et voiture), incluant le prototypage HMI et infotainment embarqué, les revues de design intérieur et extérieur en VR, et les expériences interactives utilisées pour valider les décisions de design avant la production. Les prototypes web et VR sont devenus un élément central du pipeline de design, permettant une itération rapide entre les équipes UX, design et ingénierie.",
       "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-900",
       "heroImage": "/projects/arrival/98587e6328e2.webp",

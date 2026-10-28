@@ -150,6 +150,7 @@
   },
   "about": {
     "heading": "About",
+    "metaDescription": "Why we started Nine Over Nine: smaller teams, sharper focus and a commitment to the work itself, in an industry chasing scale and bolting on AI.",
     "founder": {
       "overline": "The Founder",
       "name": "Florent Segouin",
@@ -246,7 +247,7 @@
       "title": "Safety in Mind",
       "category": "Interactive Experience",
       "year": "2023",
-      "description": "An immersive web experience for Volvo Cars' \"For Life\" campaign, exploring how life affects your drive. Part of a broader initiative to understand the role of psychological safety behind the wheel, the site guided users through a meditative audio-visual survey — subtle animated gradients, smooth transitions, and carefully designed audio cues created a calm, contemplative atmosphere. Users answered questions about driving habits and emotions by selecting from animated, floating response options. At the end, personalised results compared your answers against other participants and offered actionable insights on mindfulness and safety while driving, with a shareable card for social media to spread the campaign further.",
+      "description": "An immersive web experience for Volvo Cars' \"For Life\" campaign, exploring how life affects your drive. Part of a broader initiative to understand the role of psychological safety behind the wheel, the site guided users through a meditative audio-visual survey: subtle animated gradients, smooth transitions, and carefully designed audio cues created a calm, contemplative atmosphere. Users answered questions about driving habits and emotions by selecting from animated, floating response options. At the end, personalised results compared your answers against other participants and offered actionable insights on mindfulness and safety while driving, with a shareable card for social media to spread the campaign further.",
       "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-900",
       "cardVideo": {
@@ -300,7 +301,7 @@
       "title": "Ambassadors of Pride",
       "category": "Campaign Website",
       "year": "2022",
-      "description": "A website built from the ground up for West Pride's Ambassadors of Pride campaign, giving a platform to six anonymous LGBTQ+ refugees who shared their stories to challenge Sweden's asylum process. The site combined storytelling with advocacy — following World Refugee Day coverage, Sweden's Minister Mikael Damberg agreed to personally review demands for changes to the LGBTQ+ asylum process, and West Pride began offering free legal counsel to the ambassadors. The campaign was recognised by MUSE by Clio, Ad Age, and Little Black Book.",
+      "description": "A website built from the ground up for West Pride's Ambassadors of Pride campaign, giving a platform to six anonymous LGBTQ+ refugees who shared their stories to challenge Sweden's asylum process. The site combined storytelling with advocacy. Following World Refugee Day coverage, Sweden's Minister Mikael Damberg agreed to personally review demands for changes to the LGBTQ+ asylum process, and West Pride began offering free legal counsel to the ambassadors. The campaign was recognised by MUSE by Clio, Ad Age, and Little Black Book.",
       "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-900",
       "heroImage": "/projects/ambassadors-of-pride/945f4f97b224.webp",
@@ -338,7 +339,7 @@
       "title": "FUZED",
       "category": "Mobile App & Platform",
       "year": "2025",
-      "description": "A complete revamp of FUZED's mobile app and technical architecture, rewriting the platform from the ground up to integrate seamlessly with their arena ecosystem — managing computer time, physical activity tracking, and user accounts. FUZED rewards kids for physical activity with gaming time, virtual rewards, and real prizes unlocked at arenas. With the launch of FUZED Trophy in summer 2025, we built a full online and offline tournament feature: kids join competitions via the app, follow live progression, and report match scores in real time, backed by an admin system for staff to manage events and resolve issues. The platform helped FUZED secure sponsorships from Nike, Stadium, LEGO, and EA Sports, and reaches 6–8 times more youth than traditional leisure programmes.",
+      "description": "A complete revamp of FUZED's mobile app and technical architecture, rewriting the platform from the ground up to integrate seamlessly with their arena ecosystem: managing computer time, physical activity tracking, and user accounts. FUZED rewards kids for physical activity with gaming time, virtual rewards, and real prizes unlocked at arenas. With the launch of FUZED Trophy in summer 2025, we built a full online and offline tournament feature: kids join competitions via the app, follow live progression, and report match scores in real time, backed by an admin system for staff to manage events and resolve issues. The platform helped FUZED secure sponsorships from Nike, Stadium, LEGO, and EA Sports, and reaches 6–8 times more youth than traditional leisure programmes.",
       "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-900",
       "heroImage": "/projects/fuzed/241b47012a1f.webp",
@@ -386,7 +387,7 @@
       "title": "ARRIVAL",
       "category": "Automotive UX & Prototyping",
       "year": "2021",
-      "description": "As head of the tech team within ARRIVAL's UX department, I led all UI prototyping across web-based and VR experiences for the British electric vehicle manufacturer. The work spanned the full vehicle lineup — van, bus, and car — covering in-car HMI and infotainment prototyping, VR-based interior and exterior design reviews, and interactive experiences used to validate design decisions before production. The web and VR prototypes became a core part of the design pipeline, enabling rapid iteration between the UX, design, and engineering teams.",
+      "description": "As head of the tech team within ARRIVAL's UX department, I led all UI prototyping across web-based and VR experiences for the British electric vehicle manufacturer. The work spanned the full vehicle lineup (van, bus, and car), covering in-car HMI and infotainment prototyping, VR-based interior and exterior design reviews, and interactive experiences used to validate design decisions before production. The web and VR prototypes became a core part of the design pipeline, enabling rapid iteration between the UX, design, and engineering teams.",
       "aspectClass": "aspect-video",
       "bgClass": "bg-neutral-900",
       "heroImage": "/projects/arrival/98587e6328e2.webp",

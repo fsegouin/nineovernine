@@ -62,7 +62,7 @@ export default async function Image({
             marginBottom: 16,
           }}
         >
-          {`${project.category} — ${project.year}`}
+          {`${project.category} | ${project.year}`}
         </div>
         <div
           style={{
