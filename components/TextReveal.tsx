@@ -76,6 +76,8 @@ interface TextRevealProps {
   cursorUntil?: number;
   /** When false, defers animation start until set to true. Defaults to true. */
   active?: boolean;
+  /** Called with each non-space character's element as it appears (needs the cursor). */
+  onType?: (charEl: HTMLElement) => void;
 }
 
 /** Individual character — memoized so it never re-renders after mount. */
@@ -112,6 +114,7 @@ export function TextReveal({
   cursor = true,
   cursorUntil,
   active = true,
+  onType,
 }: TextRevealProps) {
   const chars = useMemo(() => children.split(""), [children]);
   const seed = useMemo(() => seedFor(children), [children]);
@@ -128,6 +131,11 @@ export function TextReveal({
   const ref = useRef<HTMLSpanElement>(null);
   const cursorRef = useRef<HTMLSpanElement>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  // Read through a ref so a new callback identity does not restart the cursor loop
+  const onTypeRef = useRef(onType);
+  useEffect(() => {
+    onTypeRef.current = onType;
+  });
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const prefersReducedMotion = usePrefersReducedMotion();
   const shouldAnimate = (trigger === "mount" || isInView) && active && !prefersReducedMotion;
@@ -161,6 +169,10 @@ export function TextReveal({
       }
 
       if (lastVisible >= 0 && lastVisible !== prevIdx) {
+        for (let i = prevIdx + 1; i <= lastVisible; i++) {
+          const charEl = charRefs.current[i];
+          if (charEl && chars[i].trim()) onTypeRef.current?.(charEl);
+        }
         prevIdx = lastVisible;
         const charEl = charRefs.current[lastVisible];
         if (charEl) {
@@ -174,7 +186,7 @@ export function TextReveal({
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [shouldAnimate, cursor, cursorHideTime]);
+  }, [shouldAnimate, cursor, cursorHideTime, chars]);
 
   return (
     <span ref={ref} className={className}>

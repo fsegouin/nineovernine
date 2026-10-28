@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { TextReveal, estimateStreamDuration } from "./TextReveal";
-import { DitherField } from "./DitherField";
+import { DitherField, pulseDitherAt } from "./DitherField";
 import { useLocale } from "./LocaleProvider";
 import { useEntrance } from "./EntranceProvider";
 import { getContent } from "@/lib/content";
@@ -58,13 +58,13 @@ export function HeroSection() {
                 line on one row. */}
             <h1 data-entrance-el className="text-balance font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl xl:text-8xl">
               <span className="lg:block">
-                <TextReveal delay={line1Start} trigger="mount" cursorUntil={line2Start} active={textActive}>{headline[0]}</TextReveal>
+                <TextReveal delay={line1Start} trigger="mount" onType={pulseDitherAt} cursorUntil={line2Start} active={textActive}>{headline[0]}</TextReveal>
               </span>{" "}
               <span className="lg:block">
-                <TextReveal delay={line2Start} trigger="mount" cursorUntil={line3Start} active={textActive}>{headline[1]}</TextReveal>
+                <TextReveal delay={line2Start} trigger="mount" onType={pulseDitherAt} cursorUntil={line3Start} active={textActive}>{headline[1]}</TextReveal>
               </span>{" "}
               <span className="lg:block">
-                <TextReveal delay={line3Start} trigger="mount" active={textActive}>{headline[2]}</TextReveal>
+                <TextReveal delay={line3Start} trigger="mount" onType={pulseDitherAt} active={textActive}>{headline[2]}</TextReveal>
               </span>
             </h1>
 
