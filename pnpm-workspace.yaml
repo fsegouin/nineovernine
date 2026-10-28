@@ -1,0 +1,6 @@
+# pnpm 11 runs no dependency install scripts unless allowed here. All three ship
+# prebuilt platform binaries as optional dependencies, so their scripts are not needed.
+allowBuilds:
+  esbuild: false
+  sharp: false
+  unrs-resolver: false
