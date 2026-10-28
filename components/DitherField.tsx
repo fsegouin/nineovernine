@@ -19,6 +19,16 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   };
 }
 
+const PULSE_EVENT = "dither:pulse";
+
+/** Pulses the hero dither field at an element's right edge, where a typed character lands. */
+export function pulseDitherAt(el: HTMLElement) {
+  const rect = el.getBoundingClientRect();
+  window.dispatchEvent(
+    new CustomEvent(PULSE_EVENT, { detail: { x: rect.right, y: rect.top + rect.height / 2 } }),
+  );
+}
+
 export const DitherField = memo(function DitherField() {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -111,16 +121,9 @@ export const DitherField = memo(function DitherField() {
       worker.postMessage({ type: "touchend" });
     };
 
-    // Update cached rect on scroll and notify worker to pause rendering
+    // The hero moves with the page, so re-measure it once per frame while scrolling
     let scrollRafId = 0;
-    let scrollNotified = false;
     const onScroll = () => {
-      // Only send scroll message once per burst (worker handles its own timeout)
-      if (!scrollNotified) {
-        worker.postMessage({ type: "scroll" });
-        scrollNotified = true;
-        setTimeout(() => { scrollNotified = false; }, 100);
-      }
       if (!scrollRafId) {
         scrollRafId = requestAnimationFrame(() => {
           cachedRect = container.getBoundingClientRect();
@@ -129,17 +132,28 @@ export const DitherField = memo(function DitherField() {
       }
     };
 
-    // Pause when hero is off-screen
+    // Pause while the hero is off-screen or the tab is hidden
+    let onScreen = true;
+    const postVisibility = () => {
+      worker.postMessage({ type: "visibility", visible: onScreen && !document.hidden });
+    };
     const intersectionObs = new IntersectionObserver(
       ([entry]) => {
-        worker.postMessage({
-          type: "visibility",
-          visible: entry.isIntersecting,
-        });
+        onScreen = entry.isIntersecting;
+        postVisibility();
       },
       { threshold: 0 },
     );
     intersectionObs.observe(container);
+
+    // Any script on the page can dispatch this event, so drop a detail that is not two finite numbers
+    const onPulse = (e: Event) => {
+      const detail = (e as CustomEvent<{ x?: unknown; y?: unknown } | null>).detail;
+      const x = detail?.x;
+      const y = detail?.y;
+      if (typeof x !== "number" || typeof y !== "number" || !Number.isFinite(x) || !Number.isFinite(y)) return;
+      worker.postMessage({ type: "pulse", x: x - cachedRect.left, y: y - cachedRect.top });
+    };
 
     let resizeTimer: ReturnType<typeof setTimeout>;
     const onResize = () => {
@@ -198,6 +212,8 @@ export const DitherField = memo(function DitherField() {
     window.addEventListener("touchend", onTouchEnd);
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener(PULSE_EVENT, onPulse);
+    document.addEventListener("visibilitychange", postVisibility);
 
     return () => {
       worker.postMessage({ type: "destroy" });
@@ -209,6 +225,8 @@ export const DitherField = memo(function DitherField() {
       window.removeEventListener("touchend", onTouchEnd);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener(PULSE_EVENT, onPulse);
+      document.removeEventListener("visibilitychange", postVisibility);
       if (scrollRafId) cancelAnimationFrame(scrollRafId);
       if (mouseRafId) cancelAnimationFrame(mouseRafId);
       clearTimeout(resizeTimer);

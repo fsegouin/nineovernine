@@ -1,5 +1,34 @@
-// DitherField Web Worker — all noise computation and canvas rendering
-// runs off the main thread so scrolling stays at 60fps.
+// DitherField Web Worker: the field renders off the main thread so scrolling stays
+// smooth. It draws with WebGL2 (dither-gl.ts) and falls back to Canvas 2D, where
+// this file computes every dot itself.
+
+import {
+  BASE_OPACITY,
+  CELL_SIZE,
+  CURSOR_BOOST,
+  CURSOR_RADIUS_MAX,
+  CURSOR_RADIUS_MIN,
+  DISSIPATE_BOOST,
+  DISSIPATE_DURATION,
+  DISSIPATE_RING_WIDTH,
+  DISSIPATE_SPEED,
+  ENERGY_DECAY,
+  ENERGY_GROW,
+  GLOW_DECAY,
+  IMPULSE_ENERGY,
+  MAX_ALPHA,
+  MIN_FRAME_MS,
+  MOVE_THRESHOLD,
+  NOISE_SCALE,
+  NOISE_TIME_SCALE,
+  PULSE_BOOST,
+  PULSE_RADIUS,
+  SCATTER_BOOST,
+  SCATTER_RADIUS,
+  SPREAD_GROW,
+  SPREAD_SHRINK,
+} from "./dither-config";
+import { createGlRenderer, MAX_PULSES, type GlRenderer } from "./dither-gl";
 
 // --- Perlin noise (classic 2D) ---
 
@@ -64,27 +93,11 @@ function fbm2(x: number, y: number): number {
 
 // --- Config ---
 
-const CELL_SIZE = 8;
-const BASE_OPACITY = 0.12;
-const CURSOR_RADIUS_MIN = 120;
-const CURSOR_RADIUS_MAX = 350;
-const CURSOR_BOOST = 0.4;
-const GLOW_DECAY = 0.0015;
-const SPREAD_GROW = 0.15;
-const SPREAD_SHRINK = 0.8;
-const MOVE_THRESHOLD = 1.5;
-const NOISE_SCALE = 0.02;
-const NOISE_TIME_SCALE = 0.001;
-const SCATTER_RADIUS = 250;
-const SCATTER_BOOST = 0.35;
-const ENERGY_GROW = 0.004;
-const ENERGY_DECAY = 0.003;
-const IMPULSE_ENERGY = 0.5;
 const SCATTER_RADIUS_SQ = SCATTER_RADIUS * SCATTER_RADIUS;
-const DISSIPATE_SPEED = 0.25;
-const DISSIPATE_RING_WIDTH = 100;
-const DISSIPATE_DURATION = 1200;
-const DISSIPATE_BOOST = 0.3;
+// The Canvas 2D fallback draws dots grouped by quantised opacity, so it changes
+// globalAlpha once per level instead of once per dot. 48 levels step by about 0.0125.
+const ALPHA_LEVELS = 48;
+const MAX_DT_MS = 64;
 
 // --- Helpers ---
 
@@ -111,9 +124,13 @@ interface Dot {
   jy: number;
 }
 
+// Dots are laid out row by row, gridCols per row; pulses index into the grid with it
+let gridCols = 0;
+
 function createDots(width: number, height: number): Dot[] {
   const dots: Dot[] = [];
   const cols = Math.ceil(width / CELL_SIZE) + 1;
+  gridCols = cols;
   const rows = Math.ceil(height / CELL_SIZE) + 1;
 
   for (let row = 0; row < rows; row++) {
@@ -145,6 +162,15 @@ function createDots(width: number, height: number): Dot[] {
 
 let canvas: OffscreenCanvas;
 let ctx: OffscreenCanvasRenderingContext2D;
+// Set when WebGL2 is available; the Canvas 2D path below runs only without it
+let gl: GlRenderer | null = null;
+const pendingPulses: { x: number; y: number }[] = [];
+// WebGL2 idles at about 30fps when nothing is interacting: the ambient drift is slow
+const GL_IDLE_FRAME_MS = 33;
+let lastGlDraw = 0;
+// The brightest glow (PULSE_BOOST) takes about 330ms to decay, so keep drawing a little after interaction stops
+const GLOW_SETTLE_MS = 400;
+let glowSettlesAt = 0;
 let dots: Dot[] = [];
 let dpr = 1;
 const dims = { w: 0, h: 0 };
@@ -166,11 +192,9 @@ const dissipation = { active: false, x: 0, y: 0, elapsed: 0, radius0: 0 };
 // Animation state
 let visible = true;
 let lastTime = 0;
+let lastFrameTime = 0;
 let noiseFrame = 0;
 let running = false;
-let scrolling = false;
-let scrollFrame = 0;
-let scrollTimeout: ReturnType<typeof setTimeout>;
 let needsRender = true; // true when visual state has changed
 
 // --- Animation loop ---
@@ -178,17 +202,14 @@ let needsRender = true; // true when visual state has changed
 function animate(time: number) {
   if (!visible || !running) return;
 
-  // During scroll, render every 4th frame (~15fps) to reduce compositor
-  // contention while keeping the animation visually alive.
-  if (scrolling) {
-    scrollFrame++;
-    if (scrollFrame % 4 !== 0) {
-      scheduleFrame();
-      return;
-    }
+  if (lastFrameTime && time - lastFrameTime < MIN_FRAME_MS) {
+    scheduleFrame();
+    return;
   }
+  lastFrameTime = time;
 
-  const dt = lastTime ? time - lastTime : 16;
+  // Capped so a stalled frame (a busy GPU, a backgrounded tab) does not jump the simulation
+  const dt = lastTime ? Math.min(time - lastTime, MAX_DT_MS) : 16;
   lastTime = time;
 
   const { w: cw, h: ch } = dims;
@@ -218,11 +239,15 @@ function animate(time: number) {
   prevMouse.y = my;
 
   // Spread radius
+  const prevSpread = spread;
   if (!moved && mx > 0 && my > 0) {
     spread = Math.min(CURSOR_RADIUS_MAX, spread + SPREAD_GROW * dt);
   } else {
     spread = Math.max(CURSOR_RADIUS_MIN, spread - SPREAD_SHRINK * dt);
   }
+  // The flashlight keeps easing toward the cursor and growing after the last mouse event
+  const cursorSettling = spread !== prevSpread
+    || Math.abs(mouse.x - mx) > 0.5 || Math.abs(mouse.y - my) > 0.5;
   const cursorRadius = spread;
   const cursorRadiusSq = cursorRadius * cursorRadius;
 
@@ -253,6 +278,46 @@ function animate(time: number) {
   }
 
   const nt = reducedMotion ? 0 : time * NOISE_TIME_SCALE;
+
+  // Both renderers keep drawing until the glow has faded: a skipped frame does not decay it
+  const active = interacting || hasEnergy || dissipation.active || pendingPulses.length > 0 || cursorSettling;
+  if (active) glowSettlesAt = time + GLOW_SETTLE_MS;
+  const settled = time > glowSettlesAt;
+
+  if (gl) {
+    // Reduced motion keeps the field still, so a settled frame would repeat the last one;
+    // a theme change, resize or restored context (needsRender) draws at once either way
+    const skip = settled && !needsRender && (reducedMotion || time - lastGlDraw < GL_IDLE_FRAME_MS);
+    if (!skip) {
+      // Glow decays over the time since the last state pass, not the last animate call
+      const glDt = lastGlDraw ? Math.min(time - lastGlDraw, MAX_DT_MS) : dt;
+      needsRender = false;
+      lastGlDraw = time;
+      gl.draw({
+        dt: glDt,
+        // The noise lattice repeats every 256 units and every time multiplier used
+        // in the shaders maps 1280 to a multiple of 256, so this wrap is seamless.
+        // It keeps float32 precise however long the page stays open.
+        nt: nt % 1280,
+        mouse: { x: mx, y: my },
+        cursorRadius,
+        energy,
+        dissipation: {
+          x: dissipation.x,
+          y: dissipation.y,
+          inner: dissipateInner,
+          outer: dissipateOuter,
+          fade: dissipation.active ? dissipateFade : 0,
+        },
+        pulses: pendingPulses,
+        color,
+      });
+      pendingPulses.length = 0;
+    }
+    scheduleFrame();
+    return;
+  }
+
   const maxDissipateRadius = dissipation.active ? dissipateOuter : 0;
   const maxInteractRadius = Math.max(cursorRadius, hasEnergy ? SCATTER_RADIUS : 0, maxDissipateRadius);
   const maxInteractRadiusSq = maxInteractRadius * maxInteractRadius;
@@ -275,9 +340,9 @@ function animate(time: number) {
     }
   }
 
-  // Skip render if nothing visual has changed:
-  // no noise update, no cursor nearby, no active glow/energy decay, no dissipation
-  if (!needsRender && !interacting && energy < 0.01 && !dissipation.active) {
+  // Skip render if nothing visual has changed: no noise update, no interaction, energy
+  // or dissipation, and no glow still fading (it decays only on drawn frames)
+  if (!needsRender && settled) {
     scheduleFrame();
     return;
   }
@@ -287,6 +352,9 @@ function animate(time: number) {
   // so skipped frames keep the previous image visible.
   ctx.clearRect(0, 0, cw, ch);
   ctx.fillStyle = `rgb(${r},${g},${b})`;
+  if (drawLevel.length < dots.length) allocateDrawBuffers(dots.length);
+  levelCounts.fill(0);
+  let drawn = 0;
 
   for (let i = 0; i < dots.length; i++) {
     const dot = dots[i];
@@ -344,16 +412,94 @@ function animate(time: number) {
       dissipateAlpha = DISSIPATE_BOOST * ringPos * dissipateFade * (0.4 + dn * 0.6);
     }
 
-    const alpha = Math.min(0.6, dot.baseAlpha + dot.glow + scatterAlpha + dissipateAlpha);
-    if (alpha < 0.003) continue;
+    const alpha = Math.min(MAX_ALPHA, dot.baseAlpha + dot.glow + scatterAlpha + dissipateAlpha);
+    const level = Math.round((alpha / MAX_ALPHA) * (ALPHA_LEVELS - 1));
+    if (level === 0) continue;
 
     const half = dot.drawSize * 0.5;
-    ctx.globalAlpha = alpha;
-    ctx.fillRect(dot.px - half + dot.jx, dot.py - half + dot.jy, dot.drawSize, dot.drawSize);
+    drawX[drawn] = dot.px - half + dot.jx;
+    drawY[drawn] = dot.py - half + dot.jy;
+    drawSize[drawn] = dot.drawSize;
+    drawLevel[drawn] = level;
+    levelCounts[level]++;
+    drawn++;
+  }
+
+  // Counting sort by level, then one globalAlpha change per level
+  let offset = 0;
+  for (let l = 0; l < ALPHA_LEVELS; l++) {
+    levelStarts[l] = offset;
+    offset += levelCounts[l];
+  }
+  for (let i = 0; i < drawn; i++) drawOrder[levelStarts[drawLevel[i]]++] = i;
+  let next = 0;
+  for (let l = 1; l < ALPHA_LEVELS; l++) {
+    const count = levelCounts[l];
+    if (count === 0) continue;
+    ctx.globalAlpha = (l / (ALPHA_LEVELS - 1)) * MAX_ALPHA;
+    for (const end = next + count; next < end; next++) {
+      const i = drawOrder[next];
+      ctx.fillRect(drawX[i], drawY[i], drawSize[i], drawSize[i]);
+    }
   }
 
   ctx.globalAlpha = 1;
   scheduleFrame();
+}
+
+// Reused every frame by the Canvas 2D path: each drawn dot's rect and opacity level
+let drawX = new Float32Array(0);
+let drawY = new Float32Array(0);
+let drawSize = new Float32Array(0);
+let drawLevel = new Uint8Array(0);
+let drawOrder = new Uint32Array(0);
+const levelCounts = new Uint32Array(ALPHA_LEVELS);
+const levelStarts = new Uint32Array(ALPHA_LEVELS);
+
+function allocateDrawBuffers(n: number) {
+  drawX = new Float32Array(n);
+  drawY = new Float32Array(n);
+  drawSize = new Float32Array(n);
+  drawLevel = new Uint8Array(n);
+  drawOrder = new Uint32Array(n);
+}
+
+/** Lights up the dots around a point, like a keystroke landing; glow decay fades it. */
+function applyPulse(x: number, y: number) {
+  const rows = Math.ceil(dots.length / gridCols);
+  const col0 = Math.max(0, Math.floor((x - PULSE_RADIUS) / CELL_SIZE));
+  const col1 = Math.min(gridCols - 1, Math.ceil((x + PULSE_RADIUS) / CELL_SIZE));
+  const row0 = Math.max(0, Math.floor((y - PULSE_RADIUS) / CELL_SIZE));
+  const row1 = Math.min(rows - 1, Math.ceil((y + PULSE_RADIUS) / CELL_SIZE));
+  for (let row = row0; row <= row1; row++) {
+    for (let col = col0; col <= col1; col++) {
+      const dot = dots[row * gridCols + col];
+      if (!dot) continue;
+      const dx = dot.px - x;
+      const dy = dot.py - y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist >= PULSE_RADIUS) continue;
+      const proximity = 1 - dist / PULSE_RADIUS;
+      dot.glow = Math.max(dot.glow, PULSE_BOOST * proximity * proximity);
+    }
+  }
+}
+
+/** Sizes the canvas for the current dims and dpr, and hands WebGL2 the dot grid. */
+function sizeCanvas() {
+  if (gl) {
+    const statics = new Float32Array(dots.length * 4);
+    for (let i = 0; i < dots.length; i++) {
+      statics[i * 4] = dots[i].size;
+      statics[i * 4 + 1] = dots[i].jx;
+      statics[i * 4 + 2] = dots[i].jy;
+    }
+    gl.resize(dims.w, dims.h, dpr, gridCols, dots.length / gridCols, statics);
+    return;
+  }
+  canvas.width = dims.w * dpr;
+  canvas.height = dims.h * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 // --- Frame scheduling ---
@@ -397,18 +543,17 @@ self.onmessage = (e: MessageEvent) => {
   switch (msg.type) {
     case "init":
       canvas = msg.canvas;
-      ctx = canvas.getContext("2d")!;
       dpr = msg.dpr;
       isPointerFine = msg.isPointerFine;
       reducedMotion = msg.reducedMotion;
       color = msg.color;
       dims.w = msg.width;
       dims.h = msg.height;
-      canvas.width = msg.width * dpr;
-      canvas.height = msg.height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       initNoise();
       dots = createDots(msg.width, msg.height);
+      gl = createGlRenderer(canvas, PERM, () => { needsRender = true; });
+      if (!gl) ctx = canvas.getContext("2d")!;
+      sizeCanvas();
       running = true;
       noiseFrame = 0; // ensure first frame computes noise
       scheduleFrame();
@@ -418,16 +563,26 @@ self.onmessage = (e: MessageEvent) => {
       dpr = msg.dpr;
       dims.w = msg.width;
       dims.h = msg.height;
-      canvas.width = msg.width * dpr;
-      canvas.height = msg.height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       dots = createDots(msg.width, msg.height);
+      sizeCanvas();
       noiseFrame = 0;
+      needsRender = true;
       break;
 
     case "mouse":
       mouse.x = msg.x;
       mouse.y = msg.y;
+      markInteracting();
+      break;
+
+    case "pulse":
+      // Keystrokes typed while the field is paused would all land at once on return
+      if (reducedMotion || !visible) break;
+      if (gl) {
+        if (pendingPulses.length < MAX_PULSES) pendingPulses.push({ x: msg.x, y: msg.y });
+      } else {
+        applyPulse(msg.x, msg.y);
+      }
       markInteracting();
       break;
 
@@ -471,24 +626,16 @@ self.onmessage = (e: MessageEvent) => {
       visible = msg.visible;
       if (!wasVisible && visible) {
         lastTime = 0;
+        lastFrameTime = 0;
         scheduleFrame();
       }
       break;
     }
 
-    case "scroll":
-      scrolling = true;
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        scrolling = false;
-        scrollFrame = 0;
-        needsRender = true;
-      }, 150);
-      break;
-
     case "reducedMotion":
       reducedMotion = msg.value;
       noiseFrame = 0;
+      needsRender = true;
       break;
 
     case "theme":
