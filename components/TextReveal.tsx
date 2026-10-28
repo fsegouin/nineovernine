@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "motion/react";
+import { motion, useInView } from "motion/react";
 import { memo, useEffect, useMemo, useRef } from "react";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 const CHAR_DELAY = 0.07; // base seconds between characters (~115 WPM)
 const CURSOR_LINGER = 5; // how long cursor stays after last char
@@ -48,9 +49,17 @@ function buildCharTimings(
   return { timings, totalTime: t - baseDelay };
 }
 
-/** Estimate the time the last character appears (for chaining delays). */
+/** Stable seed from the text content so timings don't shift on re-render. */
+function seedFor(text: string) {
+  return text.split("").reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 7);
+}
+
+/** Time the last character appears (for chaining delays). Uses the same
+ *  seeded timings TextReveal renders, so chained lines never overlap. */
 export function estimateStreamDuration(text: string) {
-  return (text.length - 1) * CHAR_DELAY;
+  if (text.length === 0) return 0;
+  const { timings } = buildCharTimings(text.split(""), 0, seedFor(text));
+  return timings[timings.length - 1];
 }
 
 interface TextRevealProps {
@@ -104,16 +113,11 @@ export function TextReveal({
   cursorUntil,
   active = true,
 }: TextRevealProps) {
-  const chars = children.split("");
-
-  // Stable seed from the text content so timings don't shift on re-render
-  const seed = useMemo(
-    () => children.split("").reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 7),
-    [children],
-  );
+  const chars = useMemo(() => children.split(""), [children]);
+  const seed = useMemo(() => seedFor(children), [children]);
   const { timings, totalTime } = useMemo(
     () => buildCharTimings(chars, delay, seed),
-    [chars.length, delay, seed],
+    [chars, delay, seed],
   );
 
   const rawHideTime = cursorUntil ?? delay + totalTime + CURSOR_LINGER;
@@ -125,7 +129,7 @@ export function TextReveal({
   const cursorRef = useRef<HTMLSpanElement>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const shouldAnimate = (trigger === "mount" || isInView) && active && !prefersReducedMotion;
 
   // Cursor follows the last visible character by polling actual opacity
@@ -147,14 +151,13 @@ export function TextReveal({
         return;
       }
 
-      // Find the last character that's actually visible
-      let lastVisible = -1;
-      for (let i = charRefs.current.length - 1; i >= 0; i--) {
+      // Characters reveal strictly in order, so scan forward from the last
+      // visible one instead of reading every character's style each frame.
+      let lastVisible = prevIdx;
+      for (let i = prevIdx + 1; i < charRefs.current.length; i++) {
         const span = charRefs.current[i]?.firstElementChild as HTMLElement | null;
-        if (span && parseFloat(getComputedStyle(span).opacity) > 0.5) {
-          lastVisible = i;
-          break;
-        }
+        if (!span || parseFloat(getComputedStyle(span).opacity) <= 0.5) break;
+        lastVisible = i;
       }
 
       if (lastVisible >= 0 && lastVisible !== prevIdx) {
@@ -175,34 +178,39 @@ export function TextReveal({
 
   return (
     <span ref={ref} className={className}>
-      {chars.map((char, i) => (
-        <span
-          key={i}
-          className="relative"
-          ref={(el) => { charRefs.current[i] = el; }}
-        >
-          <Char
-            char={char}
-            shouldAnimate={shouldAnimate}
-            delay={timings[i]}
-            reducedMotion={!!prefersReducedMotion}
+      {/* Screen readers get the text once; the per-character spans are presentational.
+          The trailing space keeps consecutive TextReveal lines from running together. */}
+      <span className="sr-only">{children} </span>
+      <span aria-hidden="true">
+        {chars.map((char, i) => (
+          <span
+            key={i}
+            className="relative"
+            ref={(el) => { charRefs.current[i] = el; }}
+          >
+            <Char
+              char={char}
+              shouldAnimate={shouldAnimate}
+              delay={timings[i]}
+              reducedMotion={prefersReducedMotion}
+            />
+          </span>
+        ))}
+        {/* Single cursor element, moved via DOM so it never triggers re-renders */}
+        {cursor && !prefersReducedMotion && (
+          <span
+            ref={cursorRef}
+            className="absolute w-[0.3em] bg-current"
+            style={{
+              left: "100%",
+              top: "0.1em",
+              bottom: "0.1em",
+              animation: "cursor-blink 1s step-end infinite",
+              display: "none",
+            }}
           />
-        </span>
-      ))}
-      {/* Single cursor element — moved via DOM, never triggers re-renders */}
-      {cursor && !prefersReducedMotion && (
-        <span
-          ref={cursorRef}
-          className="absolute w-[0.3em] bg-current"
-          style={{
-            left: "100%",
-            top: "0.1em",
-            bottom: "0.1em",
-            animation: "cursor-blink 1s step-end infinite",
-            display: "none",
-          }}
-        />
-      )}
+        )}
+      </span>
     </span>
   );
 }

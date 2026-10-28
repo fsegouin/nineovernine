@@ -79,6 +79,7 @@ const SCATTER_RADIUS = 250;
 const SCATTER_BOOST = 0.35;
 const ENERGY_GROW = 0.004;
 const ENERGY_DECAY = 0.003;
+const IMPULSE_ENERGY = 0.5;
 const SCATTER_RADIUS_SQ = SCATTER_RADIUS * SCATTER_RADIUS;
 const DISSIPATE_SPEED = 0.25;
 const DISSIPATE_RING_WIDTH = 100;
@@ -146,9 +147,11 @@ let canvas: OffscreenCanvas;
 let ctx: OffscreenCanvasRenderingContext2D;
 let dots: Dot[] = [];
 let dpr = 1;
-let dims = { w: 0, h: 0 };
+const dims = { w: 0, h: 0 };
 let color = { r: 250, g: 250, b: 250 };
 let isPointerFine = true;
+// Reduced motion: draw the noise field once and keep it still; cursor interaction stays
+let reducedMotion = false;
 
 // Interaction state
 const mouse = { x: -9999, y: -9999 };
@@ -249,14 +252,14 @@ function animate(time: number) {
     }
   }
 
-  const nt = time * NOISE_TIME_SCALE;
+  const nt = reducedMotion ? 0 : time * NOISE_TIME_SCALE;
   const maxDissipateRadius = dissipation.active ? dissipateOuter : 0;
   const maxInteractRadius = Math.max(cursorRadius, hasEnergy ? SCATTER_RADIUS : 0, maxDissipateRadius);
   const maxInteractRadiusSq = maxInteractRadius * maxInteractRadius;
 
   // Noise update pass — every 4th frame
   noiseFrame++;
-  const isNoiseFrame = noiseFrame % 4 === 1;
+  const isNoiseFrame = noiseFrame % 4 === 1 && (!reducedMotion || noiseFrame === 1);
   if (isNoiseFrame) {
     needsRender = true;
     for (let i = 0; i < dots.length; i++) {
@@ -368,11 +371,22 @@ function markInteracting() {
   idleTimeout = setTimeout(() => { interacting = false; }, 200);
 }
 
+// At most one frame is ever queued, so a visibility toggle while a frame is
+// pending cannot start a second render loop.
+let framePending = false;
+
+function onFrame(time: number) {
+  framePending = false;
+  animate(time);
+}
+
 function scheduleFrame() {
+  if (framePending) return;
+  framePending = true;
   if (hasRAF) {
-    requestAnimationFrame(animate);
+    requestAnimationFrame(onFrame);
   } else {
-    setTimeout(() => animate(performance.now()), 16);
+    setTimeout(() => onFrame(performance.now()), 16);
   }
 }
 
@@ -386,6 +400,7 @@ self.onmessage = (e: MessageEvent) => {
       ctx = canvas.getContext("2d")!;
       dpr = msg.dpr;
       isPointerFine = msg.isPointerFine;
+      reducedMotion = msg.reducedMotion;
       color = msg.color;
       dims.w = msg.width;
       dims.h = msg.height;
@@ -421,7 +436,7 @@ self.onmessage = (e: MessageEvent) => {
       mouse.y = msg.y;
       smoothMouse.x = msg.x;
       smoothMouse.y = msg.y;
-      energy = Math.min(1, energy + 0.5);
+      energy = Math.min(1, energy + IMPULSE_ENERGY);
       markInteracting();
       break;
 
@@ -442,7 +457,7 @@ self.onmessage = (e: MessageEvent) => {
       break;
 
     case "click":
-      energy = Math.min(1, energy + 0.5);
+      energy = Math.min(1, energy + IMPULSE_ENERGY);
       dissipation.active = true;
       dissipation.x = msg.x;
       dissipation.y = msg.y;
@@ -471,8 +486,14 @@ self.onmessage = (e: MessageEvent) => {
       }, 150);
       break;
 
+    case "reducedMotion":
+      reducedMotion = msg.value;
+      noiseFrame = 0;
+      break;
+
     case "theme":
       color = msg.color;
+      needsRender = true;
       break;
 
     case "destroy":

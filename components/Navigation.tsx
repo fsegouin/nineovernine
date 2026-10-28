@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Magnetic } from "./Magnetic";
@@ -10,13 +10,12 @@ import { useLocale } from "./LocaleProvider";
 import { useEntrance } from "./EntranceProvider";
 import { getContent } from "@/lib/content";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-
-const EASE = [0.22, 1, 0.36, 1] as const;
+import { EASE } from "@/lib/motion";
 
 export function Navigation() {
   const locale = useLocale();
   const content = getContent(locale);
-  const { links } = content.nav;
+  const { links, menuLabel, logoLabel } = content.nav;
   const { isFirstVisit, ready } = useEntrance();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoMorphed, setLogoMorphed] = useState(false);
@@ -24,6 +23,25 @@ export function Navigation() {
   const clickTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const lenisRef = useLenis();
   const pathname = usePathname();
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const [menuPathname, setMenuPathname] = useState(pathname);
+
+  // Close the mobile menu when the route changes (adjusting state during render)
+  if (menuPathname !== pathname) {
+    setMenuPathname(pathname);
+    setMenuOpen(false);
+  }
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
 
   // Entrance states:
   // - entranceWaiting: first visit, fonts not ready → elements should be hidden
@@ -79,6 +97,7 @@ export function Navigation() {
           <Link
             href={localePath}
             className="relative font-display text-lg font-bold tracking-tight"
+            aria-label={logoLabel}
             onClick={handleLogoClick}
             data-party-logo
           >
@@ -89,7 +108,7 @@ export function Navigation() {
                   initial={{ scale: 0.5, rotate: -180, opacity: 0 }}
                   animate={{ scale: 1, rotate: 0, opacity: 1 }}
                   exit={{ scale: 0.5, rotate: 180, opacity: 0 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.4, ease: EASE }}
                   className="inline-block"
                 >
                   &infin;<span className="text-muted">/</span>&infin;
@@ -119,7 +138,6 @@ export function Navigation() {
           </Link>
         </Magnetic>
 
-        {/* Desktop nav */}
         <div className="hidden items-center gap-10 sm:flex">
           {links.map((link, i) => (
             <Magnetic key={link.href}>
@@ -163,11 +181,14 @@ export function Navigation() {
           </Magnetic>
         </div>
 
-        {/* Mobile hamburger */}
         <button
+          ref={menuButtonRef}
+          type="button"
           className="flex flex-col gap-1.5 sm:hidden"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
+          aria-label={menuLabel}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
         >
           <span
             className={`block h-px w-5 bg-foreground transition-all duration-300 ${
@@ -182,9 +203,8 @@ export function Navigation() {
         </button>
       </nav>
 
-      {/* Mobile menu */}
       {menuOpen && (
-        <div className="border-t border-border px-6 pb-6 pt-4 sm:hidden">
+        <div id="mobile-menu" className="border-t border-border px-6 pb-6 pt-4 sm:hidden">
           <div className="flex flex-col gap-4">
             {links.map((link) => (
               <Link

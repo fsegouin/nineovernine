@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useEffect, useRef } from "react";
+import { getThemeClass } from "@/lib/theme-class";
 
 function getForegroundColor(): string {
   return getComputedStyle(document.documentElement)
@@ -20,7 +21,6 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 
 export const DitherField = memo(function DitherField() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -45,9 +45,9 @@ export const DitherField = memo(function DitherField() {
     const worker = new Worker(
       new URL("./dither-worker.ts", import.meta.url),
     );
-    workerRef.current = worker;
 
     const isPointerFine = window.matchMedia("(pointer: fine)").matches;
+    const reducedMotionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const rect = container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
@@ -60,12 +60,11 @@ export const DitherField = memo(function DitherField() {
         height: rect.height,
         dpr,
         isPointerFine,
+        reducedMotion: reducedMotionMq.matches,
         color: hexToRgb(getForegroundColor()),
       },
       [offscreen],
     );
-
-    // --- Forward events to worker ---
 
     // Cache bounding rect to avoid layout thrashing on every mouse/touch event.
     // Updated on resize and scroll.
@@ -142,7 +141,6 @@ export const DitherField = memo(function DitherField() {
     );
     intersectionObs.observe(container);
 
-    // Resize
     let resizeTimer: ReturnType<typeof setTimeout>;
     const onResize = () => {
       clearTimeout(resizeTimer);
@@ -157,17 +155,31 @@ export const DitherField = memo(function DitherField() {
       }, 150);
     };
 
-    // Theme changes
-    const themeObs = new MutationObserver(() => {
+    const postTheme = () => {
       worker.postMessage({
         type: "theme",
         color: hexToRgb(getForegroundColor()),
       });
+    };
+    // Lenis toggles classes on <html> while scrolling, so react to the theme class only
+    let prevTheme = getThemeClass();
+    const themeObs = new MutationObserver(() => {
+      const theme = getThemeClass();
+      if (theme === prevTheme) return;
+      prevTheme = theme;
+      postTheme();
     });
     themeObs.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
+    // Without a stored theme the foreground follows the OS preference
+    const colorSchemeMq = window.matchMedia("(prefers-color-scheme: dark)");
+    colorSchemeMq.addEventListener("change", postTheme);
+    const onReducedMotion = () => {
+      worker.postMessage({ type: "reducedMotion", value: reducedMotionMq.matches });
+    };
+    reducedMotionMq.addEventListener("change", onReducedMotion);
 
     const onClick = (e: MouseEvent) => {
       worker.postMessage({
@@ -177,7 +189,6 @@ export const DitherField = memo(function DitherField() {
       });
     };
 
-    // Attach listeners
     if (isPointerFine) {
       window.addEventListener("mousemove", onMouseMove);
       container.addEventListener("click", onClick);
@@ -191,7 +202,6 @@ export const DitherField = memo(function DitherField() {
     return () => {
       worker.postMessage({ type: "destroy" });
       worker.terminate();
-      workerRef.current = null;
       window.removeEventListener("mousemove", onMouseMove);
       container.removeEventListener("click", onClick);
       window.removeEventListener("touchstart", onTouchStart);
@@ -203,6 +213,8 @@ export const DitherField = memo(function DitherField() {
       if (mouseRafId) cancelAnimationFrame(mouseRafId);
       clearTimeout(resizeTimer);
       themeObs.disconnect();
+      colorSchemeMq.removeEventListener("change", postTheme);
+      reducedMotionMq.removeEventListener("change", onReducedMotion);
       intersectionObs.disconnect();
       canvas.remove();
     };

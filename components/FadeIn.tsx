@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { ReactNode } from "react";
+import { EASE } from "@/lib/motion";
 
 interface FadeInProps {
   children: ReactNode;
@@ -32,7 +33,7 @@ export function FadeIn({
       transition={{
         duration: 0.7,
         delay,
-        ease: [0.22, 1, 0.36, 1],
+        ease: EASE,
       }}
       className={className}
     >

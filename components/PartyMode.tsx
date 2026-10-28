@@ -3,11 +3,15 @@
 import { createContext, useCallback, useContext, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useKonamiCode } from "@/hooks/useKonamiCode";
+import { useLocale } from "./LocaleProvider";
+import { getContent } from "@/lib/content";
+import { EASE } from "@/lib/motion";
 
 const PartyContext = createContext(false);
 export const usePartyMode = () => useContext(PartyContext);
 
 export function PartyModeProvider({ children }: { children: React.ReactNode }) {
+  const { partyToast } = getContent(useLocale()).easterEgg;
   const [active, setActive] = useState(false);
 
   const activate = useCallback(() => {
@@ -23,7 +27,7 @@ export function PartyModeProvider({ children }: { children: React.ReactNode }) {
   useKonamiCode(activate);
 
   return (
-    <PartyContext.Provider value={active}>
+    <PartyContext value={active}>
       {children}
       <AnimatePresence>
         {active && (
@@ -31,13 +35,13 @@ export function PartyModeProvider({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.4, ease: EASE }}
             className="pointer-events-none fixed bottom-8 left-1/2 z-[200] -translate-x-1/2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background"
           >
-            You found a secret
+            {partyToast}
           </motion.div>
         )}
       </AnimatePresence>
-    </PartyContext.Provider>
+    </PartyContext>
   );
 }

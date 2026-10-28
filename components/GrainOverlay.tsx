@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { getThemeClass } from "@/lib/theme-class";
 
 /**
  * Generates a canvas noise tile and sets it as --grain-url on <html>.
@@ -49,9 +50,10 @@ function generateNoiseTile(fg: string, isDark: boolean): string {
 export function GrainOverlay() {
   useEffect(() => {
     const apply = () => {
-      const isDark = document.documentElement.classList.contains("dark")
-        || (!document.documentElement.classList.contains("light")
-          && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      const theme = getThemeClass();
+      const isDark =
+        theme === "dark" ||
+        (theme === "" && window.matchMedia("(prefers-color-scheme: dark)").matches);
       const fg = getComputedStyle(document.documentElement)
         .getPropertyValue("--foreground")
         .trim();
@@ -66,18 +68,10 @@ export function GrainOverlay() {
     // Regenerate on theme toggle to match new foreground color.
     // Track the theme class to avoid regenerating on unrelated class
     // changes (e.g. Lenis adds/removes lenis-scrolling on scroll).
-    let prevTheme = document.documentElement.classList.contains("dark")
-      ? "dark"
-      : document.documentElement.classList.contains("light")
-        ? "light"
-        : "";
+    let prevTheme = getThemeClass();
 
     const obs = new MutationObserver(() => {
-      const theme = document.documentElement.classList.contains("dark")
-        ? "dark"
-        : document.documentElement.classList.contains("light")
-          ? "light"
-          : "";
+      const theme = getThemeClass();
       if (theme !== prevTheme) {
         prevTheme = theme;
         apply();
@@ -88,7 +82,14 @@ export function GrainOverlay() {
       attributeFilter: ["class"],
     });
 
-    return () => obs.disconnect();
+    // Without a stored theme the foreground follows the OS preference
+    const colorSchemeMq = window.matchMedia("(prefers-color-scheme: dark)");
+    colorSchemeMq.addEventListener("change", apply);
+
+    return () => {
+      obs.disconnect();
+      colorSchemeMq.removeEventListener("change", apply);
+    };
   }, []);
 
   return null;

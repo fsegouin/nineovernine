@@ -5,11 +5,14 @@ import {
   useContext,
   useState,
   useCallback,
+  useMemo,
 } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useLenis } from "@/components/SmoothScroll";
 import { useLocale } from "./LocaleProvider";
+import { EASE } from "@/lib/motion";
 
 interface Rect {
   top: number;
@@ -25,7 +28,16 @@ interface TransitionState {
   to: Rect;
 }
 
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+// Must mirror the hero container in ProjectContent: max-w-7xl, px-6 lg:px-12,
+// pt-6 lg:pt-12, under the h-16 nav and its 1px bottom border.
+const LG_BREAKPOINT = 1024;
+const MAX_CONTENT_WIDTH = 1280;
+const NAV_HEIGHT = 65;
+const GUTTER_MOBILE = 24;
+const GUTTER_DESKTOP = 48;
+const HERO_ASPECT = 9 / 16;
+const NAVIGATE_DELAY_MS = 50;
+const OVERLAY_CLEAR_DELAY_MS = 150;
 
 interface TransitionContextValue {
   navigateToProject: (
@@ -33,7 +45,7 @@ interface TransitionContextValue {
     bgClass: string,
     el: HTMLElement
   ) => void;
-  navigateBack: (slug: string, bgClass: string) => void;
+  navigateBack: () => void;
   activeSlug: string | null;
   snapshot: string | null;
   clearSnapshot: () => void;
@@ -108,17 +120,14 @@ export function ProjectTransitionProvider({
         height: r.height,
       };
       const vw = document.documentElement.clientWidth;
-      // Match the project page hero container: max-w-7xl (1280px) + px-6 / lg:px-12
-      const padding = vw >= 1024 ? 48 : 24; // lg:px-12 = 48px, px-6 = 24px
-      const containerWidth = Math.min(1280, vw);
-      const contentWidth = containerWidth - padding * 2;
-      const contentLeft = (vw - containerWidth) / 2 + padding;
-      const topPadding = vw >= 1024 ? 48 : 24; // lg:pt-12 = 48px, pt-6 = 24px
+      const gutter = vw >= LG_BREAKPOINT ? GUTTER_DESKTOP : GUTTER_MOBILE;
+      const containerWidth = Math.min(MAX_CONTENT_WIDTH, vw);
+      const contentWidth = containerWidth - gutter * 2;
       const to: Rect = {
-        top: 64 + topPadding,
-        left: contentLeft,
+        top: NAV_HEIGHT + gutter,
+        left: (vw - containerWidth) / 2 + gutter,
         width: contentWidth,
-        height: contentWidth * (9 / 16),
+        height: contentWidth * HERO_ASPECT,
       };
 
       // Stop Lenis to kill any scroll momentum before navigating
@@ -130,31 +139,33 @@ export function ProjectTransitionProvider({
       setTimeout(() => {
         window.scrollTo({ top: 0 });
         router.push(`/${locale}/projects/${slug}`);
-      }, 50);
+      }, NAVIGATE_DELAY_MS);
     },
-    [router, locale]
+    [router, locale, lenisRef]
   );
 
-  const navigateBack = useCallback(
-    (_slug: string, _bgClass: string) => {
-      router.push(`/${locale}/#work`);
-    },
-    [router, locale]
+  const navigateBack = useCallback(() => {
+    router.push(`/${locale}/#work`);
+  }, [router, locale]);
+
+  const value = useMemo(
+    () => ({ navigateToProject, navigateBack, activeSlug, snapshot: persistedSnapshot, clearSnapshot }),
+    [navigateToProject, navigateBack, activeSlug, persistedSnapshot, clearSnapshot],
   );
 
   return (
-    <TransitionContext.Provider value={{ navigateToProject, navigateBack, activeSlug, snapshot: persistedSnapshot, clearSnapshot }}>
+    <TransitionContext value={value}>
       {children}
       <AnimatePresence>
         {state && (
           <motion.div
             key="project-transition"
+            aria-hidden="true"
             className="pointer-events-none fixed inset-0 z-40"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: EASE }}
           >
-            {/* Backdrop */}
             <motion.div
               className="absolute inset-0 bg-background"
               initial={{ opacity: 0 }}
@@ -162,7 +173,6 @@ export function ProjectTransitionProvider({
               transition={{ duration: 0.08, ease: EASE }}
             />
 
-            {/* Animated rect */}
             <motion.div
               className={`${state.bgClass} absolute overflow-hidden`}
               initial={{
@@ -183,20 +193,23 @@ export function ProjectTransitionProvider({
                   lenisRef.current?.start();
                   setState(null);
                   setActiveSlug(null);
-                }, 150);
+                }, OVERLAY_CLEAR_DELAY_MS);
               }}
             >
               {state.snapshot && (
-                <img
+                // A data: URL captured from the card; there is nothing to optimise
+                <Image
                   src={state.snapshot}
                   alt=""
-                  className="h-full w-full object-cover"
+                  fill
+                  unoptimized
+                  className="object-cover"
                 />
               )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </TransitionContext.Provider>
+    </TransitionContext>
   );
 }

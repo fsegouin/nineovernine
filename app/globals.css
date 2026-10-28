@@ -1,31 +1,39 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --background: #fafafa;
   --foreground: #0a0a0a;
   --muted: #737373;
   --border: #e5e5e5;
   --surface: #ffffff;
+  /* red-600: 4.6:1 on --background */
+  --danger: #dc2626;
 }
 
 /* OS preference (when no manual override) */
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
+    color-scheme: dark;
     --background: #0a0a0a;
     --foreground: #fafafa;
     --muted: #a3a3a3;
     --border: #262626;
     --surface: #171717;
+    --danger: #f87171;
   }
 }
 
 /* Manual dark override */
 :root.dark {
+  color-scheme: dark;
   --background: #0a0a0a;
   --foreground: #fafafa;
   --muted: #a3a3a3;
   --border: #262626;
   --surface: #171717;
+  /* red-400: 7:1 on --background */
+  --danger: #f87171;
 }
 
 @theme inline {
@@ -34,6 +42,7 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-surface: var(--surface);
+  --color-danger: var(--danger);
   --font-display: var(--font-jost);
   --font-sans: var(--font-inter);
 }
@@ -44,9 +53,11 @@ body {
   color: var(--foreground);
 }
 
-/* Hide default cursor on pointer devices (custom cursor replaces it) */
+/* Hide the default cursor on pointer devices while the custom cursor is mounted.
+   The /9 and 404 documents have no custom cursor, so they keep the native one. */
 @media (pointer: fine) {
-  * {
+  .has-custom-cursor,
+  .has-custom-cursor * {
     cursor: none !important;
   }
 }
@@ -83,10 +94,12 @@ body {
   50% { transform: scale(1.15); }
 }
 
-.party-mode canvas {
-  animation: party-hue 1s linear infinite;
-}
+@media (prefers-reduced-motion: no-preference) {
+  .party-mode canvas {
+    animation: party-hue 1s linear infinite;
+  }
 
-.party-mode [data-party-logo] {
-  animation: party-pulse 0.6s ease-in-out infinite;
+  .party-mode [data-party-logo] {
+    animation: party-pulse 0.6s ease-in-out infinite;
+  }
 }
