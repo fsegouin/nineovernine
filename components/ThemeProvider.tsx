@@ -7,6 +7,7 @@ import {
   useMemo,
   useSyncExternalStore,
 } from "react";
+import { getThemeClass } from "@/lib/theme-class";
 
 type Theme = "light" | "dark";
 
@@ -34,15 +35,6 @@ function getResolvedTheme(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-/** Storage can throw (blocked site data, some private modes); the inline theme script guards it too. */
-function hasStoredTheme(): boolean {
-  try {
-    return localStorage.getItem("theme") !== null;
-  } catch {
-    return false;
-  }
-}
-
 /** Replace server-rendered media-based metas with a single dynamic one. */
 function syncThemeColor(color: string) {
   document
@@ -63,7 +55,9 @@ function syncThemeColor(color: string) {
 function subscribe(onChange: () => void) {
   const mq = window.matchMedia("(prefers-color-scheme: dark)");
   const onOsChange = () => {
-    if (hasStoredTheme()) return;
+    // A theme class is an explicit choice (stored, or toggled while storage is blocked);
+    // an unusable stored value leaves no class, so the OS preference applies
+    if (getThemeClass()) return;
     syncThemeColor(THEME_COLORS[mq.matches ? "dark" : "light"]);
     onChange();
   };

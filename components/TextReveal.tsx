@@ -185,7 +185,11 @@ export function TextReveal({
     };
 
     rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+    return () => {
+      cancelAnimationFrame(rafId);
+      // Hidden rather than unmounted when the animation stops (reduced motion turned on)
+      cursorEl.style.display = "none";
+    };
   }, [shouldAnimate, cursor, cursorHideTime, chars]);
 
   return (
@@ -208,8 +212,10 @@ export function TextReveal({
             />
           </span>
         ))}
-        {/* Single cursor element, moved via DOM so it never triggers re-renders */}
-        {cursor && !prefersReducedMotion && (
+        {/* Single cursor element, moved via DOM so it never triggers re-renders. It stays
+            mounted under reduced motion (the effect hides it): once moved into a char span,
+            unmounting it would make React remove it from a parent it no longer has */}
+        {cursor && (
           <span
             ref={cursorRef}
             className="absolute w-[0.3em] bg-current"

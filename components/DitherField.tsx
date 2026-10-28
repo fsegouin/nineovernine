@@ -211,6 +211,13 @@ export const DitherField = memo(function DitherField() {
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("touchend", onTouchEnd);
     window.addEventListener("resize", onResize);
+    // The hero can change height without a window resize (a font swap reflowing the
+    // headline); the worker's grid must match the canvas the CSS stretches to fill
+    const resizeObs = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width !== cachedRect.width || height !== cachedRect.height) onResize();
+    });
+    resizeObs.observe(container);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener(PULSE_EVENT, onPulse);
     document.addEventListener("visibilitychange", postVisibility);
@@ -234,6 +241,7 @@ export const DitherField = memo(function DitherField() {
       colorSchemeMq.removeEventListener("change", postTheme);
       reducedMotionMq.removeEventListener("change", onReducedMotion);
       intersectionObs.disconnect();
+      resizeObs.disconnect();
       canvas.remove();
     };
   }, []);

@@ -54,13 +54,17 @@ export function EntranceProvider({ children }: { children: React.ReactNode }) {
     if (!isFirstVisit) return;
 
     let cancelled = false;
-    const timeout = new Promise((r) => setTimeout(r, FONT_WAIT_MS));
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise((r) => {
+      timer = setTimeout(r, FONT_WAIT_MS);
+    });
     Promise.race([document.fonts.ready, timeout]).then(() => {
       if (!cancelled) setFontsReady(true);
     });
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [isFirstVisit]);
 

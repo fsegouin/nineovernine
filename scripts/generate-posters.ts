@@ -1,5 +1,5 @@
 import { execFileSync } from "child_process";
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, statSync, rmSync } from "fs";
 import { join } from "path";
 import { CONTENT_PATHS, ROOT } from "./content-paths";
 
@@ -46,6 +46,12 @@ function extractFrame(input: string, output: string, seek?: string) {
     ],
     { stdio: "pipe" }
   );
+  // ffmpeg exits 0 when a seek lands past the end ("Output file is empty"), so check for
+  // a frame here; an empty file left behind would also pass the "exists" check next run
+  if (!existsSync(output) || statSync(output).size === 0) {
+    rmSync(output, { force: true });
+    throw new Error(`No frame extracted from ${input}`);
+  }
 }
 
 function generatePoster(videoPath: string): string | null {
