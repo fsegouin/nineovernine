@@ -1,85 +1,113 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Magnetic } from "./Magnetic";
 import { useLocale } from "./LocaleProvider";
 import { getContent } from "@/lib/content";
+import {
+  EMAIL_RE,
+  MAX_EMAIL_LENGTH,
+  MAX_MESSAGE_LENGTH,
+  MAX_NAME_LENGTH,
+  MIN_MESSAGE_LENGTH,
+  MIN_NAME_LENGTH,
+} from "@/lib/contact";
+import { EASE } from "@/lib/motion";
+import { trackEvent } from "@/lib/analytics";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
-
-type FormData = {
+type ContactFormData = {
   name: string;
   email: string;
   services: string[];
   message: string;
 };
 
-function validateStep(step: number, data: FormData): string | null {
-  switch (step) {
-    case 0:
-      return data.name.trim().length >= 2 ? null : "Please enter at least 2 characters.";
-    case 1: {
-      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRe.test(data.email) ? null : "Please enter a valid email.";
-    }
-    case 2:
-      return data.services.length > 0 ? null : "Please select at least one service.";
-    case 3:
-      return data.message.trim().length >= 10 ? null : "Please write at least 10 characters.";
-    default:
-      return null;
+type Field = keyof ContactFormData;
+
+function isStepValid(field: Field, data: ContactFormData): boolean {
+  switch (field) {
+    case "name":
+      return data.name.trim().length >= MIN_NAME_LENGTH;
+    case "email":
+      return EMAIL_RE.test(data.email);
+    case "services":
+      return data.services.length > 0;
+    case "message":
+      return data.message.trim().length >= MIN_MESSAGE_LENGTH;
   }
 }
 
 export function ContactForm() {
   const locale = useLocale();
-  const { steps, nextLabel, submitLabel, successHeading, successMessage, errorMessage } = getContent(locale).contact.form;
+  const { steps, nextLabel, submitLabel, successHeading, successMessage, errorMessage, backLabel, errors } = getContent(locale).contact.form;
   const TOTAL_STEPS = steps.length;
   const [step, setStep] = useState(0);
-  const [data, setData] = useState<FormData>({ name: "", email: "", services: [], message: "" });
+  const [data, setData] = useState<ContactFormData>({ name: "", email: "", services: [], message: "" });
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  // Bots fill every field; people never see this one
+  const [honey, setHoney] = useState("");
+  // Set when a step change should move focus. The next step only mounts once the
+  // previous one has animated out, so focus is applied by the new control's ref.
+  const pendingFocus = useRef(false);
 
-  const focusInput = useCallback(() => {
-    const timeout = setTimeout(() => inputRef.current?.focus(), 400);
-    return () => clearTimeout(timeout);
-  }, []);
+  const focusOnMount = (el: HTMLElement | null) => {
+    if (el && pendingFocus.current) {
+      pendingFocus.current = false;
+      el.focus({ preventScroll: true });
+    }
+  };
 
-  const advance = useCallback(() => {
-    const err = validateStep(step, data);
-    if (err) {
-      setError(err);
-      return;
-    }
-    setError(null);
-    if (step < TOTAL_STEPS - 1) {
-      setStep(step + 1);
-      focusInput();
-    } else {
-      submit();
-    }
-  }, [step, data]);
+  const goToStep = (next: number) => {
+    pendingFocus.current = true;
+    setStep(next);
+  };
 
   const submit = async () => {
     setStatus("submitting");
     setError(null);
+    // Stays null when the request never got a response (offline, blocked)
+    let httpStatus: number | null = null;
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, _honey: honey }),
       });
+      httpStatus = res.status;
       if (!res.ok) throw new Error("Failed");
+      trackEvent("contact_submitted", { services: data.services.length });
+      pendingFocus.current = true;
       setStatus("success");
     } catch {
+      trackEvent("contact_failed", { status: httpStatus });
       setStatus("error");
       setError(errorMessage);
     }
   };
 
+  const advance = () => {
+    // The button is disabled while submitting, but the keyboard shortcut is not
+    if (status === "submitting") return;
+    const field = steps[step].field as Field;
+    if (!isStepValid(field, data)) {
+      setError(errors[field]);
+      return;
+    }
+    setError(null);
+    if (step < TOTAL_STEPS - 1) {
+      trackEvent("contact_step", { step: step + 1 });
+      goToStep(step + 1);
+    } else {
+      void submit();
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Buttons (Back, service chips, the action button) handle Enter natively;
+    // intercepting it here made Enter on "Back" advance the form instead.
+    if (e.target instanceof HTMLButtonElement) return;
     if (e.key === "Enter" && steps[step].type !== "textarea") {
       e.preventDefault();
       advance();
@@ -135,8 +163,12 @@ export function ContactForm() {
             transition={{ duration: 0.4, delay: 0.5, ease: EASE }}
           />
         </motion.svg>
-        <h3 className="font-display text-2xl font-bold md:text-3xl">
-          {successHeading.replace("{name}", data.name.split(" ")[0])}
+        <h3
+          ref={focusOnMount}
+          tabIndex={-1}
+          className="font-display text-2xl font-bold outline-none md:text-3xl"
+        >
+          {successHeading.replace("{name}", data.name.trim().split(/\s+/)[0])}
         </h3>
         <p className="mt-2 font-sans text-muted">{successMessage}</p>
       </motion.div>
@@ -148,7 +180,16 @@ export function ContactForm() {
 
   return (
     <div className="mt-12 mx-auto max-w-md text-left" onKeyDown={handleKeyDown}>
-      {/* Progress indicator */}
+      <input
+        type="text"
+        name="website"
+        value={honey}
+        onChange={(e) => setHoney(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute -left-[9999px] h-px w-px opacity-0"
+      />
       <div className="mb-8 flex gap-1.5">
         {steps.map((_, i) => (
           <motion.div
@@ -161,7 +202,8 @@ export function ContactForm() {
         ))}
       </div>
 
-      <div aria-live="polite" className="relative min-h-[180px]">
+      {/* Focus moves to each new step's control, which announces it; the error is role="alert" */}
+      <div className="relative min-h-[180px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -178,25 +220,31 @@ export function ContactForm() {
               <div className="mt-4">
                 {currentStep.type === "text" || currentStep.type === "email" ? (
                   <input
-                    ref={inputRef as React.RefObject<HTMLInputElement>}
+                    ref={focusOnMount}
                     type={currentStep.type}
+                    maxLength={currentStep.field === "email" ? MAX_EMAIL_LENGTH : MAX_NAME_LENGTH}
                     placeholder={currentStep.placeholder}
                     value={data[currentStep.field as "name" | "email"] as string}
                     onChange={(e) => {
                       setError(null);
                       setData((d) => ({ ...d, [currentStep.field]: e.target.value }));
                     }}
-                    className="w-full border-b-2 border-border bg-transparent py-3 font-sans text-lg text-foreground outline-none transition-colors duration-300 placeholder:text-muted/50 focus:border-foreground"
+                    className="w-full border-b-2 border-border bg-transparent py-3 font-sans text-lg text-foreground outline-none transition-colors duration-300 placeholder:text-muted focus:border-foreground"
                     autoComplete={currentStep.field === "email" ? "email" : "name"}
+                    aria-label={currentStep.question}
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={error ? "contact-form-error" : undefined}
                   />
                 ) : currentStep.type === "chips" ? (
                   <div className="flex flex-wrap gap-2">
-                    {currentStep.options!.map((option) => {
+                    {currentStep.options!.map((option, i) => {
                       const selected = data.services.includes(option);
                       return (
                         <motion.button
                           key={option}
+                          ref={i === 0 ? focusOnMount : undefined}
                           type="button"
+                          aria-pressed={selected}
                           onClick={() => toggleService(option)}
                           className={`rounded-full border px-4 py-2 font-sans text-sm transition-colors ${
                             selected
@@ -213,7 +261,8 @@ export function ContactForm() {
                   </div>
                 ) : currentStep.type === "textarea" ? (
                   <textarea
-                    ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                    ref={focusOnMount}
+                    maxLength={MAX_MESSAGE_LENGTH}
                     placeholder={currentStep.placeholder}
                     value={data.message}
                     onChange={(e) => {
@@ -221,12 +270,14 @@ export function ContactForm() {
                       setData((d) => ({ ...d, message: e.target.value }));
                     }}
                     rows={4}
-                    className="w-full resize-none border-b-2 border-border bg-transparent py-3 font-sans text-lg text-foreground outline-none transition-colors duration-300 placeholder:text-muted/50 focus:border-foreground"
+                    aria-label={currentStep.question}
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={error ? "contact-form-error" : undefined}
+                    className="w-full resize-none border-b-2 border-border bg-transparent py-3 font-sans text-lg text-foreground outline-none transition-colors duration-300 placeholder:text-muted focus:border-foreground"
                   />
                 ) : null}
               </div>
 
-              {/* Error */}
               <AnimatePresence>
                 {error && (
                   <motion.p
@@ -234,7 +285,8 @@ export function ContactForm() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.2 }}
-                    className="mt-2 font-sans text-sm text-red-500"
+                    className="mt-2 font-sans text-sm text-danger"
+                    id="contact-form-error"
                     role="alert"
                   >
                     {error}
@@ -243,13 +295,14 @@ export function ContactForm() {
               </AnimatePresence>
             </fieldset>
 
-            {/* Action button */}
             <div className="mt-6">
               <Magnetic strength={0.2} className="inline-block">
                 <motion.button
                   type="button"
                   onClick={advance}
                   disabled={status === "submitting"}
+                  aria-busy={status === "submitting"}
+                  aria-label={status === "submitting" ? submitLabel : undefined}
                   className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 font-sans text-sm font-medium text-background transition-opacity disabled:opacity-50"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -265,6 +318,7 @@ export function ContactForm() {
                       {isLastStep ? submitLabel : nextLabel}
                       <motion.span
                         className="inline-block"
+                        aria-hidden="true"
                         initial={{ x: -4, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ duration: 0.3, ease: EASE }}
@@ -280,17 +334,16 @@ export function ContactForm() {
         </AnimatePresence>
       </div>
 
-      {/* Back link */}
       {step > 0 && status !== "submitting" && (
         <motion.button
           type="button"
-          onClick={() => { setStep(step - 1); setError(null); focusInput(); }}
+          onClick={() => { goToStep(step - 1); setError(null); }}
           className="mt-4 font-sans text-xs text-muted underline underline-offset-4 transition-colors hover:text-foreground"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          &larr; Back
+          <span aria-hidden="true">&larr;</span> {backLabel}
         </motion.button>
       )}
     </div>
