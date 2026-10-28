@@ -43,8 +43,8 @@ function isStepValid(field: Field, data: ContactFormData): boolean {
 
 export function ContactForm() {
   const locale = useLocale();
-  const { steps, nextLabel, submitLabel, successHeading, successMessage, errorMessage, backLabel, errors } = getContent(locale).contact.form;
-  const TOTAL_STEPS = steps.length;
+  const { steps, nextLabel, submitLabel, successHeading, successMessage, errorMessage, backLabel, stepProgress, errors } = getContent(locale).contact.form;
+  const totalSteps = steps.length;
   const [step, setStep] = useState(0);
   const [data, setData] = useState<ContactFormData>({ name: "", email: "", services: [], message: "" });
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export function ContactForm() {
   };
 
   const advance = () => {
-    // The button is disabled while submitting, but the keyboard shortcut is not
+    // The button stays focusable while submitting, so both it and the keyboard shortcut land here
     if (status === "submitting") return;
     const field = steps[step].field as Field;
     if (!isStepValid(field, data)) {
@@ -110,7 +110,7 @@ export function ContactForm() {
       return;
     }
     setError(null);
-    if (step < TOTAL_STEPS - 1) {
+    if (step < totalSteps - 1) {
       trackEvent("contact_step", { step: step + 1 });
       goToStep(step + 1);
     } else {
@@ -151,6 +151,7 @@ export function ContactForm() {
         className="mt-12 text-center"
       >
         <motion.svg
+          aria-hidden="true"
           viewBox="0 0 48 48"
           className="mx-auto mb-6 h-12 w-12 text-foreground"
           initial="hidden"
@@ -190,7 +191,7 @@ export function ContactForm() {
   }
 
   const currentStep = steps[step];
-  const isLastStep = step === TOTAL_STEPS - 1;
+  const isLastStep = step === totalSteps - 1;
 
   return (
     <div className="mt-12 mx-auto max-w-md text-left" onKeyDown={handleKeyDown}>
@@ -228,6 +229,9 @@ export function ContactForm() {
           >
             <fieldset>
               <legend className="font-display text-xl font-bold tracking-tight md:text-2xl">
+                <span className="sr-only">
+                  {stepProgress.replace("{current}", String(step + 1)).replace("{total}", String(totalSteps))}.{" "}
+                </span>
                 {currentStep.question}
               </legend>
 
@@ -245,6 +249,7 @@ export function ContactForm() {
                     }}
                     className="w-full border-b-2 border-border bg-transparent py-3 font-sans text-lg text-foreground outline-none transition-colors duration-300 placeholder:text-muted focus:border-foreground"
                     autoComplete={currentStep.field === "email" ? "email" : "name"}
+                    aria-required="true"
                     aria-label={currentStep.question}
                     aria-invalid={error ? true : undefined}
                     aria-describedby={error ? "contact-form-error" : undefined}
@@ -284,6 +289,7 @@ export function ContactForm() {
                       setData((d) => ({ ...d, message: e.target.value }));
                     }}
                     rows={4}
+                    aria-required="true"
                     aria-label={currentStep.question}
                     aria-invalid={error ? true : undefined}
                     aria-describedby={error ? "contact-form-error" : undefined}
@@ -314,10 +320,11 @@ export function ContactForm() {
                 <motion.button
                   type="button"
                   onClick={advance}
-                  disabled={status === "submitting"}
+                  // aria-disabled rather than disabled, which would drop keyboard focus; advance() ignores clicks while sending
+                  aria-disabled={status === "submitting" || undefined}
                   aria-busy={status === "submitting"}
                   aria-label={status === "submitting" ? submitLabel : undefined}
-                  className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 font-sans text-sm font-medium text-background transition-opacity disabled:opacity-50"
+                  className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 font-sans text-sm font-medium text-background transition-opacity aria-disabled:opacity-50"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

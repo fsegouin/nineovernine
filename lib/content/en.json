@@ -21,6 +21,8 @@
       }
     ],
     "menuLabel": "Toggle menu",
+    "mainLabel": "Main navigation",
+    "languageLabel": "Language",
     "skipLink": "Skip to content",
     "logoLabel": "Nine Over Nine, home"
   },
@@ -117,6 +119,7 @@
       "errorMessage": "Something went wrong. Please try again.",
       "orEmailLabel": "Or email us directly",
       "backLabel": "Back",
+      "stepProgress": "Step {current} of {total}",
       "errors": {
         "name": "Please enter at least 2 characters.",
         "email": "Please enter a valid email.",
@@ -194,7 +197,9 @@
     "clientLabel": "Client",
     "overviewLabel": "Overview",
     "nextLabel": "Next Project",
-    "visitLabel": "Visit project"
+    "visitLabel": "Visit project",
+    "newTabLabel": "(opens in a new tab)",
+    "galleryAlt": "{title}, detail {n}"
   },
   "projects": [
     {

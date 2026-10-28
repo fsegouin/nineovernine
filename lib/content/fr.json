@@ -21,6 +21,8 @@
       }
     ],
     "menuLabel": "Afficher le menu",
+    "mainLabel": "Navigation principale",
+    "languageLabel": "Langue",
     "skipLink": "Aller au contenu",
     "logoLabel": "Nine Over Nine, accueil"
   },
@@ -117,6 +119,7 @@
       "errorMessage": "Une erreur est survenue. Veuillez réessayer.",
       "orEmailLabel": "Ou écrivez-nous directement",
       "backLabel": "Retour",
+      "stepProgress": "Étape {current} sur {total}",
       "errors": {
         "name": "Veuillez saisir au moins 2 caractères.",
         "email": "Veuillez saisir une adresse e-mail valide.",
@@ -194,7 +197,9 @@
     "clientLabel": "Client",
     "overviewLabel": "Aperçu",
     "nextLabel": "Projet suivant",
-    "visitLabel": "Voir le projet"
+    "visitLabel": "Voir le projet",
+    "newTabLabel": "(s'ouvre dans un nouvel onglet)",
+    "galleryAlt": "{title}, détail {n}"
   },
   "projects": [
     {

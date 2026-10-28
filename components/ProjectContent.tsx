@@ -20,8 +20,9 @@ export function ProjectContent({
   nextProject: Project;
 }) {
   const locale = useLocale();
-  const { backLabel, yearLabel, roleLabel, agencyLabel, clientLabel, overviewLabel, nextLabel, visitLabel } = getContent(locale).projectDetail;
+  const { backLabel, yearLabel, roleLabel, agencyLabel, clientLabel, overviewLabel, nextLabel, visitLabel, newTabLabel, galleryAlt } = getContent(locale).projectDetail;
   const nextRef = useRef<HTMLDivElement>(null);
+  const nextVideo = nextProject.cardVideo ?? nextProject.heroVideo;
   const [exiting, setExiting] = useState(false);
   const { navigateToProject, navigateBack, activeSlug, snapshot, clearSnapshot } = useProjectTransition();
   // Whether this page was reached without the card transition is fixed at mount;
@@ -84,7 +85,7 @@ export function ProjectContent({
           )}
         </motion.div>
 
-        {/* Crossfade overlay — card snapshot fades out to reveal hero */}
+        {/* Crossfade overlay: card snapshot fades out to reveal hero */}
         {snapshot && !directLand && (
           <motion.img
             src={snapshot}
@@ -98,7 +99,7 @@ export function ProjectContent({
         )}
       </div>
 
-      {/* Content — enters from below after overlay settles */}
+      {/* Content: enters from below after overlay settles */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -169,7 +170,7 @@ export function ProjectContent({
           </div>
 
           {project.gallery && project.gallery.length > 0 ? (
-            <Gallery items={project.gallery} title={project.title} />
+            <Gallery items={project.gallery} title={project.title} altTemplate={galleryAlt} />
           ) : (
             <div className="mt-24 space-y-6">
               <div className="aspect-video w-full bg-muted/10" />
@@ -198,6 +199,7 @@ export function ProjectContent({
                     className="inline-block font-sans text-xs text-muted underline decoration-border underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground"
                   >
                     {visitLabel} <span aria-hidden="true">&rsaquo;</span>
+                    <span className="sr-only"> {newTabLabel}</span>
                   </a>
                 )}
               </div>
@@ -217,18 +219,18 @@ export function ProjectContent({
                 ref={nextRef}
                 className={`relative ${nextProject.bgClass} aspect-video w-full overflow-hidden transition-transform duration-500 group-hover:scale-[1.01]`}
               >
-                {(nextProject.cardVideo || nextProject.heroVideo) ? (
+                {nextVideo ? (
                   <LoopingVideo
                     aria-hidden="true"
                     className="absolute inset-0 h-full w-full object-cover"
-                    poster={(nextProject.cardVideo ?? nextProject.heroVideo)!.poster}
-                    webm={(nextProject.cardVideo ?? nextProject.heroVideo)!.webm}
-                    mp4={(nextProject.cardVideo ?? nextProject.heroVideo)!.mp4}
+                    poster={nextVideo.poster}
+                    webm={nextVideo.webm}
+                    mp4={nextVideo.mp4}
                   />
                 ) : nextProject.heroImage ? (
                   <Image
                     src={nextProject.heroImage}
-                    alt={nextProject.title}
+                    alt=""
                     fill
                     sizes="100vw"
                     className="object-cover"
@@ -252,7 +254,8 @@ export function ProjectContent({
   );
 }
 
-function Gallery({ items, title }: { items: GalleryItem[]; title: string }) {
+function Gallery({ items, title, altTemplate }: { items: GalleryItem[]; title: string; altTemplate: string }) {
+  const altFor = (n: number) => altTemplate.replace("{title}", () => title).replace("{n}", String(n));
   const halfPairs: GalleryItem[][] = [];
   let halfBuffer: GalleryItem[] = [];
 
@@ -284,8 +287,8 @@ function Gallery({ items, title }: { items: GalleryItem[]; title: string }) {
         <GalleryMedia
           key={`full-${fullIdx}`}
           item={item}
-          alt={`${title} — detail ${++detailNum}`}
-          className="aspect-video w-full object-cover"
+          alt={altFor(++detailNum)}
+          square={false}
           sizes="100vw"
         />
       );
@@ -298,8 +301,8 @@ function Gallery({ items, title }: { items: GalleryItem[]; title: string }) {
             <GalleryMedia
               key={j}
               item={pairItem}
-              alt={`${title} — detail ${++detailNum}`}
-              className="aspect-square w-full object-cover"
+              alt={altFor(++detailNum)}
+              square
               sizes="(min-width: 768px) 50vw, 100vw"
             />
           ))}
@@ -315,18 +318,19 @@ function Gallery({ items, title }: { items: GalleryItem[]; title: string }) {
 function GalleryMedia({
   item,
   alt,
-  className,
+  square,
   sizes,
 }: {
   item: GalleryItem;
   alt: string;
-  className: string;
+  square: boolean;
   sizes: string;
 }) {
+  const aspect = square ? "aspect-square" : "aspect-video";
   if (item.type === "video") {
     return (
       <LoopingVideo
-        className={`${className} bg-muted/10`}
+        className={`${aspect} w-full object-cover bg-muted/10`}
         poster={item.poster}
         webm={item.webm}
         mp4={item.mp4}
@@ -336,10 +340,9 @@ function GalleryMedia({
 
   const pos = item.position ?? "center";
   const posClass = pos === "left" ? "object-left" : pos === "right" ? "object-right" : "object-center";
-  const isSquare = className.includes("aspect-square");
 
   return (
-    <div className={`relative ${isSquare ? "aspect-square" : "aspect-video"}`}>
+    <div className={`relative ${aspect}`}>
       <Image
         src={item.src!}
         alt={alt}

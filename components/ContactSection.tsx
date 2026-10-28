@@ -8,7 +8,7 @@ import type { Locale } from "@/lib/content";
 export function ContactSection({ locale }: { locale: Locale }) {
   const { overline, heading, email, location, form } = getContent(locale).contact;
   return (
-    <section id="contact" className="border-t border-border px-6 py-24 lg:px-12 lg:py-32">
+    <section id="contact" tabIndex={-1} className="border-t border-border px-6 py-24 outline-none lg:px-12 lg:py-32">
       <div className="mx-auto max-w-7xl text-center">
         <FadeIn>
           <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">

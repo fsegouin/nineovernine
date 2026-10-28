@@ -17,7 +17,7 @@ export function WorkSection() {
   const { overline, heading, subtitle } = getContent(locale).work;
   const projects = getProjects(locale);
   return (
-    <section id="work" className="px-6 py-24 lg:px-12 lg:py-32">
+    <section id="work" tabIndex={-1} className="px-6 py-24 outline-none lg:px-12 lg:py-32">
       <div className="mx-auto max-w-7xl">
         <FadeIn>
           <p className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-muted">
@@ -61,6 +61,7 @@ function ProjectCard({ project }: { project: Project }) {
   const locale = useLocale();
   const imageRef = useRef<HTMLDivElement>(null);
   const { navigateToProject, activeSlug } = useProjectTransition();
+  const video = project.cardVideo ?? project.heroVideo;
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     trackEvent("project_opened", { slug: project.slug, source: "work" });
@@ -79,18 +80,18 @@ function ProjectCard({ project }: { project: Project }) {
         className={`relative ${project.aspectClass} ${project.bgClass} w-full overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]`}
         style={activeSlug === project.slug ? { opacity: 0 } : undefined}
       >
-        {(project.cardVideo || project.heroVideo) ? (
+        {video ? (
           <LoopingVideo
             aria-hidden="true"
             className="absolute inset-0 h-full w-full object-cover"
-            poster={(project.cardVideo ?? project.heroVideo)!.poster}
-            webm={(project.cardVideo ?? project.heroVideo)!.webm}
-            mp4={(project.cardVideo ?? project.heroVideo)!.mp4}
+            poster={video.poster}
+            webm={video.webm}
+            mp4={video.mp4}
           />
         ) : project.heroImage ? (
           <Image
             src={project.heroImage}
-            alt={project.title}
+            alt=""
             fill
             sizes="(min-width: 768px) 58vw, 100vw"
             className="object-cover"

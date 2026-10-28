@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
-import { supportedLocales } from "@/lib/content";
+import { getContent, supportedLocales } from "@/lib/content";
 import type { Locale } from "@/lib/content";
 import { trackEvent } from "@/lib/analytics";
 
@@ -34,7 +34,7 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <div className="flex items-center gap-1 font-sans text-xs tracking-wide">
+    <div role="group" aria-label={getContent(locale).nav.languageLabel} className="flex items-center gap-1 font-sans text-xs tracking-wide">
       {supportedLocales.map((l, i) => (
         <span key={l} className="flex items-center gap-1">
           {i > 0 && <span className="text-muted" aria-hidden="true">/</span>}

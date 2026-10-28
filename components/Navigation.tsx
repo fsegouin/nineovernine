@@ -12,10 +12,15 @@ import { getContent } from "@/lib/content";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { EASE } from "@/lib/motion";
 
+const LOGO_CLICKS_TO_MORPH = 9;
+const LOGO_CLICK_WINDOW_MS = 2000;
+const LOGO_MORPH_MS = 3000;
+const ANCHOR_SCROLL_OFFSET = -64;
+
 export function Navigation() {
   const locale = useLocale();
   const content = getContent(locale);
-  const { links, menuLabel, logoLabel } = content.nav;
+  const { links, menuLabel, logoLabel, mainLabel } = content.nav;
   const { isFirstVisit, ready } = useEntrance();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoMorphed, setLogoMorphed] = useState(false);
@@ -54,11 +59,11 @@ export function Navigation() {
     if (logoMorphed) return;
     clickCount.current += 1;
     if (clickTimer.current) clearTimeout(clickTimer.current);
-    clickTimer.current = setTimeout(() => { clickCount.current = 0; }, 2000);
-    if (clickCount.current >= 9) {
+    clickTimer.current = setTimeout(() => { clickCount.current = 0; }, LOGO_CLICK_WINDOW_MS);
+    if (clickCount.current >= LOGO_CLICKS_TO_MORPH) {
       clickCount.current = 0;
       setLogoMorphed(true);
-      setTimeout(() => setLogoMorphed(false), 3000);
+      setTimeout(() => setLogoMorphed(false), LOGO_MORPH_MS);
     }
   }, [logoMorphed]);
 
@@ -72,7 +77,10 @@ export function Navigation() {
       const target = document.querySelector(hash);
       if (target && lenisRef.current) {
         e.preventDefault();
-        lenisRef.current.scrollTo(target as HTMLElement, { offset: -64 });
+        lenisRef.current.scrollTo(target as HTMLElement, { offset: ANCHOR_SCROLL_OFFSET });
+        // Move focus with the scroll so the next Tab continues from the section;
+        // the sections are tabIndex={-1} targets
+        (target as HTMLElement).focus({ preventScroll: true });
       }
     },
     [pathname, lenisRef, localePath]
@@ -92,7 +100,7 @@ export function Navigation() {
         : { duration: 0 }
       }
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-12">
+      <nav aria-label={mainLabel} className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-12">
         <Magnetic strength={0.2}>
           <Link
             href={localePath}
@@ -156,6 +164,7 @@ export function Navigation() {
                 <Link
                   href={`${localePath}${link.href}`}
                   onClick={(e) => handleAnchorClick(e, link.hash)}
+                  aria-current={pathname === `${localePath}${link.href}` ? "page" : undefined}
                   className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
                 >
                   {link.label}
@@ -184,8 +193,8 @@ export function Navigation() {
         <button
           ref={menuButtonRef}
           type="button"
-          className="flex flex-col gap-1.5 sm:hidden"
-          onClick={() => setMenuOpen(!menuOpen)}
+          className="-m-3 flex flex-col gap-1.5 p-3 sm:hidden"
+          onClick={() => setMenuOpen((open) => !open)}
           aria-label={menuLabel}
           aria-expanded={menuOpen}
           aria-controls="mobile-menu"
@@ -211,6 +220,7 @@ export function Navigation() {
                 key={link.href}
                 href={`${localePath}${link.href}`}
                 onClick={(e) => { setMenuOpen(false); handleAnchorClick(e, link.hash); }}
+                aria-current={pathname === `${localePath}${link.href}` ? "page" : undefined}
                 className="font-sans text-sm tracking-wide text-muted transition-colors hover:text-foreground"
               >
                 {link.label}
