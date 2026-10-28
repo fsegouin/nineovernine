@@ -26,38 +26,71 @@ Open [http://localhost:3000](http://localhost:3000).
 pnpm build    # Production build
 pnpm start    # Start production server
 pnpm lint     # Run ESLint
+pnpm generate # Regenerate image blur placeholders and video posters in lib/content/*.json
 ```
 
 ## Project Structure
 
 ```
 app/
-  layout.tsx            # Root layout: fonts, providers, nav, footer, grain overlay
-  globals.css           # Design tokens, Tailwind config, global rules
-  page.tsx              # Home — composed of section components
-  about/page.tsx        # About page
-  projects/[slug]/      # Dynamic project detail (statically pre-rendered)
-  robots.ts             # Disallows all crawlers (pre-launch)
+  globals.css         # Design tokens, Tailwind config, global rules
+  global-not-found.tsx # Styled 404 for every unmatched URL (experimental.globalNotFound)
+  robots.ts           # Disallows all crawlers (pre-launch)
+  9/                  # /9 easter egg page with its own root layout (excluded from the locale redirect)
+  api/contact/route.ts # Contact form endpoint (sends mail through Resend)
+  [locale]/
+    layout.tsx        # Root layout: <html lang>, fonts, inline scripts, providers, nav, footer, metadata, JSON-LD
+    page.tsx          # Home, composed of section components
+    opengraph-image.tsx # Home OG image
+    about/page.tsx    # About page (+ opengraph-image.tsx)
+    projects/[slug]/  # Dynamic project detail, statically pre-rendered (+ opengraph-image.tsx)
+proxy.ts              # Locale negotiation and redirect (Next.js 16 proxy, formerly middleware)
 components/
-  Navigation.tsx        # Sticky header, frosted glass, mobile hamburger
-  Footer.tsx            # Inverted bg, nav links, theme toggle
-  ThemeProvider.tsx      # Dark/light mode context + localStorage
-  SmoothScroll.tsx      # Lenis wrapper
-  Cursor.tsx            # Custom animated cursor (pointer:fine only)
-  Magnetic.tsx          # Magnetic hover effect wrapper
-  FadeIn.tsx            # Scroll-triggered fade+translate animation
-  TextReveal.tsx        # Character-by-character streaming text
-  DitherField.tsx       # Interactive dither pattern background (canvas)
+  Navigation.tsx      # Sticky header, frosted glass, mobile hamburger
+  Footer.tsx          # Inverted bg, nav links, theme toggle
+  LanguageSwitcher.tsx # EN/FR toggle
+  LocaleProvider.tsx  # Locale context for client components
+  ThemeProvider.tsx   # Dark/light mode context + localStorage
+  EntranceProvider.tsx # First-visit entrance sequence state
+  PartyMode.tsx       # Party mode provider (Konami code easter egg)
+  ConsoleMessage.tsx  # Console easter egg message
+  GrainOverlay.tsx    # Generates the grain noise tile (--grain-url)
+  SmoothScroll.tsx    # Lenis wrapper
+  Cursor.tsx          # Custom animated cursor
+  Magnetic.tsx        # Magnetic hover effect wrapper
+  FadeIn.tsx          # Scroll-triggered fade+translate animation
+  TextReveal.tsx      # Character-by-character streaming text
+  DitherField.tsx     # Interactive dither canvas, rendered in dither-worker.ts
   ProjectTransition.tsx # Shared-element page transition
-  ProjectContent.tsx    # Project detail page content
-  HeroSection.tsx       # Home hero with streaming headline + dither field
-  ServicesSection.tsx    # Services grid
-  WorkSection.tsx       # Project cards grid
-  PhilosophySection.tsx # Inverted philosophy block
-  ContactSection.tsx    # Contact CTA
+  ProjectContent.tsx  # Project detail page content
+  HeroSection.tsx     # Home hero with streaming headline + dither field
+  ServicesSection.tsx  # Services grid (server component)
+  WorkSection.tsx     # Project cards grid
+  PhilosophySection.tsx # Inverted philosophy block (server component)
+  ContactSection.tsx  # Contact CTA (server component)
+  ContactForm.tsx     # Multi-step contact form
+  EmailLink.tsx       # mailto link that records email_link_clicked
+  LoopingVideo.tsx    # Muted looping video, paused under reduced motion
+  MotionPreferences.tsx # MotionConfig honouring prefers-reduced-motion
+  NotFoundContent.tsx # 404 body, localised from the URL's locale segment
+hooks/
+  useKonamiCode.ts    # Konami code listener
+  usePrefersReducedMotion.ts # Hydration-safe reduced-motion preference
 lib/
-  projects.ts           # Static project data array + helpers
-  content.json          # Site copy and metadata
+  content.ts          # Locale-aware content loader (getContent, locale helpers)
+  content/en.json     # English copy, metadata and project data
+  content/fr.json     # French copy, metadata and project data
+  projects.ts         # Project types and lookup helpers
+  jsonld.ts           # JSON-LD structured data helpers
+  analytics.ts        # Typed Vercel Analytics event catalogue (trackEvent)
+  contact.ts          # Contact field limits and service options (form + API route)
+  document.ts         # Viewport and the pre-paint theme and entrance scripts
+  fonts.ts            # Jost and Inter via next/font/local
+  motion.ts           # Shared EASE curve
+  og-font.ts          # Jost Bold loader for OG images
+  site.ts             # Site URL
+  theme-class.ts      # Current theme class on <html>
+scripts/              # Asset generation over lib/content/*.json (pnpm generate)
 ```
 
 ## Design System
@@ -81,6 +114,7 @@ Defined in `globals.css` on `:root`, toggled via `.light`/`.dark` classes:
 | `--muted` | `#737373` | `#a3a3a3` |
 | `--border` | `#e5e5e5` | `#262626` |
 | `--surface` | `#ffffff` | `#171717` |
+| `--danger` | `#dc2626` | `#f87171` |
 
 ### Layout
 
