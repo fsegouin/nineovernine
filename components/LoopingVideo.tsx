@@ -15,14 +15,24 @@ export function LoopingVideo({ webm, mp4, ...props }: LoopingVideoProps) {
     const video = ref.current;
     if (!video) return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // Off-screen videos pause too, so a page of looping clips only decodes what is in view
+    let onScreen = true;
     const sync = () => {
-      if (mq.matches) video.pause();
+      if (mq.matches || !onScreen) video.pause();
       // play() rejects when autoplay is blocked; the poster stays visible then
       else video.play().catch(() => {});
     };
+    const io = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      sync();
+    });
+    io.observe(video);
     sync();
     mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
+    return () => {
+      io.disconnect();
+      mq.removeEventListener("change", sync);
+    };
   }, []);
 
   return (

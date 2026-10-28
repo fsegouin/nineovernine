@@ -2,8 +2,21 @@ const JOST_BOLD_CSS = "https://fonts.googleapis.com/css2?family=Jost:wght@700&di
 // A hung font host fails the image instead of holding the function until it times out
 const FETCH_TIMEOUT_MS = 10_000;
 
+// One fetch per process: every OG image renders with the same font. A failed fetch
+// is not kept, so the next render tries again.
+let jostBold: Promise<ArrayBuffer> | null = null;
+
+/** Jost Bold as TTF for next/og, fetched once per process. */
+export function loadJostBold(): Promise<ArrayBuffer> {
+  jostBold ??= fetchJostBold().catch((err: unknown) => {
+    jostBold = null;
+    throw err;
+  });
+  return jostBold;
+}
+
 /** Fetches Jost Bold as TTF for next/og: Satori cannot read the self-hosted woff2, and Google serves TTF to non-browser user agents. */
-export async function loadJostBold(): Promise<ArrayBuffer> {
+async function fetchJostBold(): Promise<ArrayBuffer> {
   const res = await fetch(JOST_BOLD_CSS, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   if (!res.ok) throw new Error(`Failed to load font CSS: ${res.status}`);
   const css = await res.text();
