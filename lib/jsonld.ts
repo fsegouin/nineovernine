@@ -1,8 +1,7 @@
 import type { Project } from "./projects";
 import { getContent, defaultLocale } from "./content";
 import type { Locale } from "./content";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nineovernine.com";
+import { siteUrl } from "./site";
 
 export function organizationJsonLd(locale: Locale = defaultLocale) {
   const content = getContent(locale);
@@ -45,4 +44,9 @@ export function projectJsonLd(project: Project, locale: Locale = defaultLocale) 
     },
     ...(project.heroImage && { image: `${siteUrl}${project.heroImage}` }),
   };
+}
+
+/** JSON for a <script type="application/ld+json"> body: escapes "<" so no value can close the tag. */
+export function serializeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }

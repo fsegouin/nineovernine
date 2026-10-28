@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supportedLocales, defaultLocale } from "./lib/content";
+import { supportedLocales, defaultLocale, isValidLocale } from "./lib/content";
+import type { Locale } from "./lib/content";
 
-function negotiateLocale(acceptLanguage: string | null): string {
+const STATIC_FILE_RE = /\.\w+$/;
+
+function negotiateLocale(acceptLanguage: string | null): Locale {
   if (!acceptLanguage) return defaultLocale;
   const preferred = acceptLanguage
     .split(",")
@@ -12,9 +15,7 @@ function negotiateLocale(acceptLanguage: string | null): string {
     .sort((a, b) => b.q - a.q);
 
   for (const { lang } of preferred) {
-    if (supportedLocales.includes(lang as typeof supportedLocales[number])) {
-      return lang;
-    }
+    if (isValidLocale(lang)) return lang;
   }
   return defaultLocale;
 }
@@ -27,8 +28,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname === "/9" ||
-    pathname.startsWith("/projects/") && pathname.match(/\.\w+$/) ||
-    pathname.match(/\.\w+$/)
+    STATIC_FILE_RE.test(pathname)
   ) {
     return;
   }
@@ -42,12 +42,9 @@ export function proxy(request: NextRequest) {
   // Determine preferred locale
   const preferred =
     request.cookies.get("NEXT_LOCALE")?.value ||
-    negotiateLocale(request.headers.get("accept-language")) ||
-    defaultLocale;
-
-  const locale = supportedLocales.includes(preferred as typeof supportedLocales[number])
-    ? preferred
-    : defaultLocale;
+    negotiateLocale(request.headers.get("accept-language"));
+  // An invalid cookie falls back to the default rather than being negotiated
+  const locale = isValidLocale(preferred) ? preferred : defaultLocale;
 
   // Redirect to locale-prefixed URL
   const url = request.nextUrl.clone();
